@@ -1,0 +1,4 @@
+Perl requirements:
+* Net::Telnet (Debian package libnet-telnet-perl)
+* Config::Properties (install from CPAN)
+
