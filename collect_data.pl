@@ -3,9 +3,10 @@ use strict;
 use warnings;
 
 use Net::Telnet;
-#use Data::Dumper;
+use Data::Dumper;
 use DBI;
 use Config::Properties;
+use File::Basename;
 
 sub telnet_command {
 	my ($t, $cmd) = @_;
@@ -91,6 +92,8 @@ sub get_values {
 	return reverse(@data);
 }
 
+chdir(dirname($0));
+
 open my $fh, '<', 'config.properties' or die "Can't read properties file";
 my $config = Config::Properties->new();
 $config->load($fh);
@@ -118,7 +121,7 @@ my $value_ids = {
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
 my $t = new Net::Telnet(Timeout => 10);
-$t->open($host);
+$t->open(Host => $host, Port => $port);
 $t->waitfor('/Username: /');
 telnet_command($t, $username);
 $t->waitfor('/Password: /');
