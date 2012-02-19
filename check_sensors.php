@@ -21,8 +21,14 @@ foreach($sensors as $sensor) {
 	}
 }
 
-# TODO
-$mysqli = new mysqli('localhost', 'sensor_data', 'sensor_data', 'sensor_data');
+chdir(dirname(__FILE__));
+$config = parse_ini_file('config.properties');
+if(!$config) {
+	# TODO
+	die(3);
+}
+
+$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
 if($mysqli->connect_errno) {
 	# TODO
 	die(3);
