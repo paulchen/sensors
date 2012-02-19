@@ -25,10 +25,10 @@ if(count($parts) != 3) {
 $value = $parts[1];
 $sensor_list = $parts[2];
 
-$stmt = $mysqli->prepare('SELECT id, name, unit, min, max FROM sensor_values WHERE short = ?');
+$stmt = $mysqli->prepare('SELECT id, name, unit, min, max, decimals FROM sensor_values WHERE short = ?');
 $stmt->bind_param('s', $value);
 $stmt->execute();
-$stmt->bind_result($value_id, $value_name, $value_unit, $value_min, $value_max);
+$stmt->bind_result($value_id, $value_name, $value_unit, $value_min, $value_max, $value_decimals);
 if(!$stmt->fetch()) {
 	# TODO
 	die(3);
@@ -89,7 +89,18 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	exit;
 }
 
-# TODO output actual data
-
-exit;
+$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1');
+foreach($sensor_info as $index => $sensor) {
+	$stmt->bind_param('ii', $sensor['id'], $value_id);
+	$stmt->execute();
+	$stmt->bind_result($timestamp, $value);
+	if($stmt->fetch()) {
+		# TODO configurable
+		if(time()-$timestamp < 15*30) {
+			$value = round($value, $value_decimals);
+			echo 'sensor' . $sensor['id'] . ".value $value\n";
+		}
+	}
+}
+$stmt->close();
 

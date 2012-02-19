@@ -94,6 +94,7 @@ foreach($sensors as $sensor) {
 	}
 	$timestamp_warning = false;
 	foreach($timestamps as $timestamp) {
+		# TODO configurable
 		if(time()-$timestamp > 15*60 && !$timestamp_warning) {
 			$timestamp_warning = true;
 			# TODO use sensor description
