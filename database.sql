@@ -88,6 +88,12 @@ CREATE TABLE IF NOT EXISTS `sensor_limits` (
 CREATE TABLE IF NOT EXISTS `sensor_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
+  `short` varchar(20) NOT NULL,
+  `unit` text NOT NULL,
+  `format` text NOT NULL,
+  `min` float DEFAULT NULL,
+  `max` float DEFAULT NULL,
+  `decimals` int(11) NOT NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
@@ -95,11 +101,11 @@ CREATE TABLE IF NOT EXISTS `sensor_values` (
 -- Daten für Tabelle `sensor_values`
 --
 
-INSERT INTO `sensor_values` (`id`, `name`) VALUES
-(1, 'Temperature'),
-(2, 'Humidity'),
-(3, 'Wind speed'),
-(4, 'Precipitation');
+INSERT INTO `sensor_values` (`id`, `name`, `short`, `unit`, `format`, `min`, `max`, `decimals`) VALUES
+(1, 'Temperature', 'temp', 'Celsius', '%s °C', NULL, NULL, 1),
+(2, 'Humidity', 'humid', 'Percent', '%s %', 0, 100, 0),
+(3, 'Wind speed', 'wind', 'km/h', '%s km/h', 0, NULL, 0),
+(4, 'Precipitation', 'rain', 'Millimetres', '%s mm', 0, NULL, 0);
 
 -- --------------------------------------------------------
 
