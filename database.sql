@@ -130,5 +130,5 @@ ALTER TABLE `sensor_data`
 --
 ALTER TABLE `sensor_limits`
   ADD CONSTRAINT `sensor_limits_ibfk_2` FOREIGN KEY (`value`) REFERENCES `sensor_values` (`id`),
-  ADD CONSTRAINT `sensor_limits_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`sensor`);
+  ADD CONSTRAINT `sensor_limits_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 
