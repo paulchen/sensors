@@ -73,9 +73,18 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	}
 
 	echo "graph_category sensor_data\n";
+	$stmt = $mysqli->prepare('SELECT low_crit, low_warn, high_warn, high_crit FROM sensor_limits WHERE sensor = ? AND value = ?');
 	foreach($sensor_info as $index => $sensor) {
-		echo "sensor" . $sensor['id'] . '.label ' . ($sensor['description'] != '' ? $sensor['description'] : "Sensor $index"). "\n";
+		echo 'sensor' . $sensor['id'] . '.label ' . ($sensor['description'] != '' ? $sensor['description'] : "Sensor $index"). "\n";
+		$stmt->bind_param('ii', $sensor['id'], $value_id);
+		$stmt->execute();
+		$stmt->bind_result($low_crit, $low_warn, $high_warn, $high_crit);
+		if($stmt->fetch()) {
+			echo 'sensor' . $sensor['id'] . ".warning $low_warn:$high_warn\n";
+			echo 'sensor' . $sensor['id'] . ".critical $low_crit:$high_crit\n";
+		}
 	}
+	$stmt->close();
 
 	exit;
 }
