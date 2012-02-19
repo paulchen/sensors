@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS `sensors` (
   `description` text NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sensor` (`sensor`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
 -- Daten für Tabelle `sensors`
@@ -49,7 +49,7 @@ CREATE TABLE IF NOT EXISTS `sensor_data` (
   PRIMARY KEY (`id`),
   KEY `sensor` (`sensor`),
   KEY `what` (`what`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=49 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
 -- Daten für Tabelle `sensor_data`
@@ -89,7 +89,7 @@ CREATE TABLE IF NOT EXISTS `sensor_values` (
   `id` int(11) NOT NULL AUTO_INCREMENT,
   `name` text NOT NULL,
   PRIMARY KEY (`id`)
-) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=5 ;
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
 -- Daten für Tabelle `sensor_values`
@@ -100,6 +100,19 @@ INSERT INTO `sensor_values` (`id`, `name`) VALUES
 (2, 'Humidity'),
 (3, 'Wind speed'),
 (4, 'Precipitation');
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `raw_data`
+--
+
+CREATE TABLE IF NOT EXISTS `raw_data` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `data` text NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
 -- Constraints der exportierten Tabellen

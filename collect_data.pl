@@ -65,11 +65,19 @@ sub format_timestamp {
 	die $input;
 }
 
+sub log_raw_data {
+	my ($db, $data) = @_;
+
+	my $stmt = $db->prepare('INSERT INTO raw_data (data) VALUES (?)');
+	$stmt->execute(($data, ));
+}
+
 sub get_values {
-	my ($t, $sensor) = @_;
+	my ($t, $sensor, $db) = @_;
 
 	telnet_command($t, "sensor $sensor");
 	my ($prematch, $match) = $t->waitfor('/IPWE1> /');
+	log_raw_data($db, $prematch);
 	my @data = parse_table($prematch);
 	for my $a (0 .. $#data) {
 		$data[$a]{'Zeitstempel'} = format_timestamp($data[$a]{'Zeitstempel'});
@@ -130,12 +138,13 @@ $t->waitfor('/IPWE1> /');
 
 telnet_command($t, 'status');
 my ($prematch, $match) = $t->waitfor('/IPWE1> /');
+log_raw_data($db, $prematch);
 my @data = parse_table($prematch);
 
 for($a=0; $a<=$#data; $a++) {
 	my @values;
 	if($data[$a]{'Typ'} ne '') {
-		@values = get_values($t, $a);
+		@values = get_values($t, $a, $db);
 		for my $value (@values) {
 			my $sensor = $data[$a]{'Adresse'};
 			my $timestamp = $value->{'Zeitstempel'};
