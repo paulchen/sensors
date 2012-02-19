@@ -59,9 +59,19 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	$title .= ' ' . implode(', ', $sensors);
 	$title .= ': ' . $value_name;
 
-	# TODO limits, graph_args
+	# TODO limits
 	echo "graph_title $title\n";
 	echo "graph_vtitle $value_unit\n";
+	if($value_min != '' && $value_max != '') {
+		echo "graph_args -l $value_min --upper-limit $value_max\n";
+	}
+	else if($value_min != '') {
+		echo "graph_args -l $value_min\n";
+	}
+	else if($value_max != '') {
+		echo "graph_args --upper-limit $value_max\n";
+	}
+
 	echo "graph_category sensor_data\n";
 	foreach($sensor_info as $index => $sensor) {
 		echo "sensor" . $sensor['id'] . '.label ' . ($sensor['description'] != '' ? $sensor['description'] : "Sensor $index"). "\n";
