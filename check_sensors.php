@@ -6,7 +6,7 @@ function usage() {
 	die(3);
 }
 
-if($argc != 3) {
+if($argc != 3 && $argc != 5) {
 	usage();
 }
 if($argv[1] != '--sensors' && $argv[1] != '-s') {
@@ -21,8 +21,16 @@ foreach($sensors as $sensor) {
 	}
 }
 
-chdir(dirname(__FILE__));
-$config = parse_ini_file('config.properties');
+$config_file = dirname(__FILE__) . '/config.properties';
+
+if($argc == 5 && $argv[3] != '--config-file' && $argv[3] != '-c') {
+	usage();
+}
+else if($argc == 5) {
+	$config_file = $argv[4] . '/config.properties';
+}
+
+$config = parse_ini_file($config_file);
 if(!$config) {
 	# TODO
 	die(3);
