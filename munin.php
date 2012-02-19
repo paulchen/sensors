@@ -17,42 +17,51 @@ if($mysqli->connect_errno) {
 	die(3);
 }
 
-$pos = strpos($argv[0], '_');
-if($pos === false) {
+$parts = explode('_', $argv[0]);
+if(count($parts) != 3) {
 	# TODO
 	die(3);
 }
+$value = $parts[1];
+$sensor_list = $parts[2];
 
-$sensor_list = substr($argv[0], $pos+1);
+$stmt = $mysqli->prepare('SELECT id, name, unit, min, max FROM sensor_values WHERE short = ?');
+$stmt->bind_param('s', $value);
+$stmt->execute();
+$stmt->bind_result($value_id, $value_name, $value_unit, $value_min, $value_max);
+if(!$stmt->fetch()) {
+	# TODO
+	die(3);
+}
+$stmt->close();
+
 $sensors = explode(',', $sensor_list);
 $sensor_info = array();
 
-$stmt = $mysqli->prepare('SELECT id, type, description FROM sensors WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1');
-foreach($sensors as $sensor) {
-	$stmt->bind_param('i', $sensor);
+$stmt = $mysqli->prepare('SELECT sensor, type, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
+foreach($sensors as $sensor_id) {
+	$stmt->bind_param('i', $sensor_id);
 	$stmt->execute();
-	$stmt->bind_result($id, $type, $description);
+	$stmt->bind_result($sensor, $type, $description);
 	if(!$stmt->fetch()) {
 		# TODO
 		die(3);
 	}
-	$sensor_info[$sensor] = array('id' => $id, 'type' => $type, 'description' => $description);
+	$sensor_info[$sensor] = array('id' => $sensor_id, 'sensor' => $sensor, 'type' => $type, 'description' => $description);
 }
 $stmt->close();
-
-# TODO check: don't mix temperatures, humidities, ...
 
 if(isset($argv[1]) && $argv[1] == 'config') {
 	$title = 'Sensor';
 	if(count($sensor_info) > 1) {
 		$title .= 's';
 	}
-	$title .=  ' ' . implode(', ', $sensors);
+	$title .= ' ' . implode(', ', $sensors);
+	$title .= ': ' . $value_name;
 
-	# TODO what if not temperature?
-	# TODO limits
+	# TODO limits, graph_args
 	echo "graph_title $title\n";
-	echo "graph_vtitle Celsius\n";
+	echo "graph_vtitle $value_unit\n";
 	echo "graph_category sensor_data\n";
 	foreach($sensor_info as $index => $sensor) {
 		echo "sensor" . $sensor['id'] . '.label ' . ($sensor['description'] != '' ? $sensor['description'] : "Sensor $index"). "\n";
