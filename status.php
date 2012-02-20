@@ -50,32 +50,47 @@ while($stmt->fetch()) {
 }
 $stmt->close();
 
+$tendencies = array();
 foreach($keys as $index => $key) {
-	$sensor = $key['sensor'];
-	$what = $key['what'];
-
-	# TODO sensor description
-	echo "\n\nSensor $sensor/$what:\n\n";
-	# TODO format, round
-	echo "Current value: " . $current_values[$index]['value'] . " (" . date('Y-m-d H:i', $current_values[$index]['timestamp']) . ")\n";
-	echo "Maximum value (24 hours): " . $max_values[$index]['value'] . " (" . date('Y-m-d H:i', $max_values[$index]['timestamp']) . ")\n";
-	echo "Minimum value (24 hours): " . $min_values[$index]['value'] . " (" . date('Y-m-d H:i', $min_values[$index]['timestamp']) . ")\n";
-	echo "Current tendency: ";
-
 	$old = $first_values[$index]['value'];
 	$new = $current_values[$index]['value'];
 	# TODO configurable
 	if(abs(1-$old/$new) < .01) {
-		echo "stable";
+		$tendencies[$index] = 'stable';
 	}
 	else if($old > $new) {
-		echo "decreasing";
+		$tendencies[$index] = 'decreasing';
 	}
 	else {
-		echo "increasing";
+		$tendencies[$index] = 'increasing';
 	};
-	echo "\n";
 }
 
+$stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
+$stmt->execute();
+$stmt->bind_result($id, $name, $format, $decimals);
+$values = array();
+while($stmt->fetch()) {
+	$values[$id] = array('name' => $name, 'format' => $format, 'decimals' => $decimals);
+}
+$stmt->close();
+
+if(php_sapi_name() == 'cli') {
+	foreach($keys as $index => $key) {
+		$sensor = $key['sensor'];
+		$what = $key['what'];
+
+		# TODO sensor description
+		echo "\n\nSensor $sensor - " . $values[$what]['name'] . ":\n\n";
+		# TODO format, round
+		# TODO current state (ok/warning/critical)
+		echo "Current value: " . round($current_values[$index]['value'], $values[$what]['decimals']) . " (" . date('Y-m-d H:i', $current_values[$index]['timestamp']) . ")\n";
+		echo "Maximum value (24 hours): " . round($max_values[$index]['value'], $values[$what]['decimals']) . " (" . date('Y-m-d H:i', $max_values[$index]['timestamp']) . ")\n";
+		echo "Minimum value (24 hours): " . round($min_values[$index]['value'], $values[$what]['decimals']) . " (" . date('Y-m-d H:i', $min_values[$index]['timestamp']) . ")\n";
+		echo "Current tendency: " . $tendencies[$index] . "\n";
+	}
+
+	exit;
+}
 # TODO webpage
 
