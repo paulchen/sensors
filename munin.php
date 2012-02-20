@@ -35,7 +35,7 @@ if(!$stmt->fetch()) {
 }
 $stmt->close();
 
-$sensors = explode(',', $sensor_list);
+$sensors = explode('.', $sensor_list);
 $sensor_info = array();
 
 $stmt = $mysqli->prepare('SELECT sensor, type, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
