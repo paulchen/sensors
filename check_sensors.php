@@ -13,7 +13,6 @@ if($argv[1] != '--sensors' && $argv[1] != '-s') {
 	usage();
 }
 
-# TODO also check this for munin
 $sensors = split(',', $argv[2]);
 foreach($sensors as $sensor) {
 	if(!preg_match('/^[0-9]+/', $sensor)) {
