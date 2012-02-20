@@ -59,7 +59,6 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	$title .= ' ' . implode(', ', $sensors);
 	$title .= ': ' . $value_name;
 
-	# TODO limits
 	echo "graph_title $title\n";
 	echo "graph_vtitle $value_unit\n";
 	if($value_min != '' && $value_max != '') {
@@ -95,8 +94,7 @@ foreach($sensor_info as $index => $sensor) {
 	$stmt->execute();
 	$stmt->bind_result($timestamp, $value);
 	if($stmt->fetch()) {
-		# TODO configurable
-		if(time()-$timestamp < 15*30) {
+		if(time()-$timestamp < $config['value_outdated_period']) {
 			$value = round($value, $value_decimals);
 			echo 'sensor' . $sensor['id'] . ".value $value\n";
 		}
