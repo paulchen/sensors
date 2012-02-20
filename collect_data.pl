@@ -118,15 +118,14 @@ my $db_username = $config->getProperty('db_username');
 my $db_password = $config->getProperty('db_password');
 my $db_database = $config->getProperty('db_database');;
 
-# TODO obtain from database
-my $value_ids = {
-	'Temperature' => 1,
-	'Humidity' => 2,
-	'Wind speed' => 3,
-	'Precipitation' => 4,
-};
-
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
+
+my $stmt = $db->prepare('SELECT id, name FROM sensor_values');
+$stmt->execute();
+my $value_ids = {};
+while(my @result = ($stmt->fetchrow_array())) {
+	$value_ids->{$result[1]} = $result[0];	
+}
 
 my $t = new Net::Telnet(Timeout => 10);
 $t->open(Host => $host, Port => $port);
@@ -151,7 +150,7 @@ for($a=0; $a<=$#data; $a++) {
 			my $type = $data[$a]{'Typ'};
 			my $description = $data[$a]{'Beschreibung'};
 
-			my $stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
+			$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
 			$stmt->execute(($sensor, $type, $description));
 			my @result = $stmt->fetchrow_array();
 			if(!@result) {
