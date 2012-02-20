@@ -49,6 +49,34 @@ while($stmt->fetch()) {
 }
 $stmt->close();
 
+$stmt = $mysqli->prepare('SELECT pos, id FROM sensors');
+$stmt->execute();
+$stmt->bind_result($pos, $id);
+$position = array();
+while($stmt->fetch()) {
+	$position[$id] = $pos;
+}
+$stmt->close();
+
+$keys2 = $keys;
+uksort($keys, function($a, $b) {
+	global $position, $keys2;
+
+	if($position[$keys2[$a]['sensor']] < $position[$keys2[$b]['sensor']]) {
+		return -1;
+	}
+	if($position[$keys2[$a]['sensor']] > $position[$keys2[$b]['sensor']]) {
+		return 1;
+	}
+	if($keys2[$a]['what'] < $keys2[$b]['what']) {
+		return -1;
+	}
+	if($keys2[$a]['what'] > $keys2[$b]['what']) {
+		return 1;
+	}
+	return 0;
+});
+
 $tendencies = array();
 foreach($keys as $index => $key) {
 	$old = $first_values[$index]['value'];
