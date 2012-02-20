@@ -1,12 +1,27 @@
-username=admin
-password=
-host=10.0.0.3
-port=23
+# username for Telnet login on IPWE1 device
+username = admin
+# password for Telnet login
+password =
+# hostname or IP address of IPWE1 device
+host = paulchen.homelinux.org
+# port where IPWE1 is listening
+port = 10023
 
+# MySQL host
+db_host = localhost
+# MySQL username
+db_username = sensor_data
+# MySQL password
+db_password = sensor_data
+# MySQL database name
+db_database = sensor_data
+
+# if two values fall inside this period (in seconds), they will be considered to be duplicates of each other
 time_margin = 30
-
-db_host=localhost
-db_username=sensor_data
-db_password=sensor_data
-db_database=sensor_data
+# if the value changes less than this ratio within 'tendency_period' seconds (see below), it will be considered 'stable'
+stable_margin = .01
+# period to calculate tendency over (see 'stable_margin' above)
+tendency_period = 3600
+# seconds after which a recorded value will be considered outdated; if there are no newer values, the sensor's state will change to 'unknown'
+value_outdated_period = 900
 

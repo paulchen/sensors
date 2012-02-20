@@ -3,13 +3,13 @@
 chdir(dirname(__FILE__));
 $config = parse_ini_file('config.properties');
 if(!$config) {
-	# TODO
+	echo "Could not read configuration file";
 	die(3);
 }
 
 $mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
 if($mysqli->connect_errno) {
-	# TODO
+	echo "Could not connect to database.";
 	die(3);
 }
 
@@ -42,8 +42,8 @@ while($stmt->fetch()) {
 			$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 		}
 	}
-	# TODO configurable
-	if($timestamp < time()-3600 || !isset($first_values[$key])) {
+	
+	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
@@ -53,8 +53,8 @@ $tendencies = array();
 foreach($keys as $index => $key) {
 	$old = $first_values[$index]['value'];
 	$new = $current_values[$index]['value'];
-	# TODO configurable
-	if(abs(1-$old/$new) < .01) {
+
+	if(abs(1-$old/$new) < $config['stable_margin']) {
 		$tendencies[$index] = 'stable';
 	}
 	else if($old > $new) {
@@ -99,8 +99,7 @@ $states = array();
 $state_class = array();
 foreach($keys as $index => $key) {
 	if(isset($limits[$index])) {
-		# TODO configurable
-		if(time()-$current_values[$index]['timestamp'] > 15*60) {
+		if(time()-$current_values[$index]['timestamp'] > $config['value_outdated_period']) {
 			$states[$index] = 'UNKNOWN (most recent value is too old)';
 			$state_class[$index] = 'unknown';
 		}

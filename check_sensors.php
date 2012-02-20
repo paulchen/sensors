@@ -14,7 +14,6 @@ if($argv[1] != '--sensors' && $argv[1] != '-s') {
 }
 
 # TODO also check this for munin
-# TODO use sensor IDs here
 $sensors = split(',', $argv[2]);
 foreach($sensors as $sensor) {
 	if(!preg_match('/^[0-9]+/', $sensor)) {
@@ -55,11 +54,11 @@ $stmt->close();
 
 $states = array(0);
 $messages = array();
-foreach($sensors as $sensor) {
-	$stmt = $mysqli->prepare('SELECT id FROM sensors WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1');
-	$stmt->bind_param('i', $sensor);
+foreach($sensors as $sensor_id) {
+	$stmt = $mysqli->prepare('SELECT sensor FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
+	$stmt->bind_param('i', $sensor_id);
 	$stmt->execute();
-	$stmt->bind_result($sensor_id);
+	$stmt->bind_result($sensor);
 	if(!$stmt->fetch()) {
 		echo "No data for sensor with ID $sensor\n";
 		die(3);
@@ -91,7 +90,7 @@ foreach($sensors as $sensor) {
 	$stmt->close();
 	if(count($data) == 0) {
 		# TODO use sensor description
-		echo "No data for sensor with ID $sensor\n";
+		echo "No data for sensor with ID $sensor_id\n";
 		die(3);
 	}
 	$timestamp_warning = false;
@@ -109,7 +108,7 @@ foreach($sensors as $sensor) {
 		ksort($data);
 		foreach($data as $what => $item) {
 			if(!isset($limits[$what])) {
-				echo "Missing limits for sensor with ID $sensor\n";
+				echo "Missing limits for sensor with ID $sensor_id\n";
 				die(3);
 			}
 
