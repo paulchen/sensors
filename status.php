@@ -43,7 +43,7 @@ while($stmt->fetch()) {
 		}
 	}
 	# TODO configurable
-	if($timestamp < time()-3600) {
+	if($timestamp < time()-3600 || !isset($first_values[$key])) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
