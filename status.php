@@ -75,14 +75,30 @@ while($stmt->fetch()) {
 }
 $stmt->close();
 
+$stmt = $mysqli->prepare('SELECT id, sensor, type, description FROM sensors');
+$stmt->execute();
+$stmt->bind_result($id, $sensor, $type, $description);
+$sensors = array();
+while($stmt->fetch()) {
+	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description);
+}
+$stmt->close();
+
 if(php_sapi_name() == 'cli') {
 	foreach($keys as $index => $key) {
 		$sensor = $key['sensor'];
 		$what = $key['what'];
 
 		# TODO sensor description
-		echo "\n\nSensor $sensor - " . $values[$what]['name'] . ":\n\n";
-		# TODO format, round
+		echo "\n\n";
+		if($sensors[$sensor]['description'] == '') {
+			echo "Sensor $sensor";
+		}
+		else {
+			echo $sensors[$sensor]['description'];
+		}
+		echo " - " . $values[$what]['name'] . ":\n\n";
+		# TODO format
 		# TODO current state (ok/warning/critical)
 		echo "Current value: " . round($current_values[$index]['value'], $values[$what]['decimals']) . " (" . date('Y-m-d H:i', $current_values[$index]['timestamp']) . ")\n";
 		echo "Maximum value (24 hours): " . round($max_values[$index]['value'], $values[$what]['decimals']) . " (" . date('Y-m-d H:i', $max_values[$index]['timestamp']) . ")\n";
