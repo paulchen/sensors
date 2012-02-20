@@ -29,6 +29,7 @@ while($stmt->fetch()) {
 	$stmt2->fetch();
 	$previous_timestamp = $timestamp;
 	while($stmt2->fetch()) {
+		# TODO configurable
 		if($timestamp-$previous_timestamp > 240) {
 			echo 'Outage from ';
 			echo date('Y-m-d H:i', $previous_timestamp);
