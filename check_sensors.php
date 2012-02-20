@@ -32,13 +32,13 @@ else if($argc == 5) {
 
 $config = parse_ini_file($config_file);
 if(!$config) {
-	# TODO
+	echo "Could not read configuration file.\n";
 	die(3);
 }
 
 $mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
 if($mysqli->connect_errno) {
-	# TODO
+	echo "Could not connect to database.\n";
 	die(3);
 }
 
@@ -94,8 +94,7 @@ foreach($sensors as $sensor_id) {
 	}
 	$timestamp_warning = false;
 	foreach($timestamps as $timestamp) {
-		# TODO configurable
-		if(time()-$timestamp > 15*60 && !$timestamp_warning) {
+		if(time()-$timestamp > $config['value_outdated_period'] && !$timestamp_warning) {
 			$timestamp_warning = true;
 			# TODO use sensor description
 			$messages[] = "sensor $sensor - no recent data";
