@@ -24,4 +24,6 @@ stable_margin = .01
 tendency_period = 3600
 # seconds after which a recorded value will be considered outdated; if there are no newer values, the sensor's state will change to 'unknown'
 value_outdated_period = 900
+# if there are no sensor values for this time in seconds, it will be considered as an outage
+outage_period = 240
 
