@@ -155,8 +155,8 @@ if(php_sapi_name() == 'cli') {
 		echo $sensors[$sensor]['description'] . " - " . $values[$what]['name'] . ":\n\n";
 		echo "Current state: " . $states[$index] . "\n";
 		echo "Current value: " . $current_values[$index]['formatted_value'] . " (" . $current_values[$index]['formatted_timestamp'] . ")\n";
-		echo "Maximum value (24 hours): " . $min_values[$index]['formatted_value'] . " (" . $min_values[$index]['formatted_timestamp'] . ")\n";
-		echo "Minimum value (24 hours): " . $max_values[$index]['formatted_value'] . " (" . $max_values[$index]['formatted_timestamp'] . ")\n";
+		echo "Maximum value (24 hours): " . $max_values[$index]['formatted_value'] . " (" . $max_values[$index]['formatted_timestamp'] . ")\n";
+		echo "Minimum value (24 hours): " . $min_values[$index]['formatted_value'] . " (" . $min_values[$index]['formatted_timestamp'] . ")\n";
 		echo "Current tendency: " . $tendencies[$index] . "\n";
 		echo "\n\n";
 	}
