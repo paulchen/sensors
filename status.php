@@ -1,4 +1,3 @@
-#!/usr/bin/php
 <?php
 
 chdir(dirname(__FILE__));
@@ -97,37 +96,47 @@ while($stmt->fetch()) {
 $stmt->close();
 
 $states = array();
+$state_class = array();
 foreach($keys as $index => $key) {
 	if(isset($limits[$index])) {
 		# TODO configurable
 		if(time()-$current_values[$index]['timestamp'] > 15*60) {
 			$states[$index] = 'UNKNOWN (most recent value is too old)';
+			$state_class[$index] = 'unknown';
 		}
 		else {
 			$value = $current_values[$index]['value'];
 			if($value < $limits[$index]['low_crit']) {
-				$states[$index] = 'CRITICAL (below limit of ' . str_replace('%s', round($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key]['what']['format']) . ')';
+				$states[$index] = 'CRITICAL (below limit of ' . str_replace('%s', round($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
+				$state_class[$index] = 'critical';
 			}
 			else if($value < $limits[$index]['low_warn']) {
-				$states[$index] = 'WARNING (below limit of ' . str_replace('%s', round($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key]['what']['format']) . ')';
+				$states[$index] = 'WARNING (below limit of ' . str_replace('%s', round($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
+				$state_class[$index] = 'warning';
 			}
 			else if($value > $limits[$index]['high_crit']) {
-				$states[$index] = 'CRITICAL (above limit of ' . str_replace('%s', round($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key]['what']['format']) . ')';
+				$states[$index] = 'CRITICAL (above limit of ' . str_replace('%s', round($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
+				$state_class[$index] = 'critical';
 			}
 			else if($value > $limits[$index]['high_warn']) {
-				$states[$index] = 'WARNING (above limit of ' . str_replace('%s', round($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key]['what']['format']) . ')';
+				$states[$index] = 'WARNING (above limit of ' . str_replace('%s', round($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
+				$state_class[$index] = 'warning';
 			}
 			else {
 				$states[$index] = 'OK';
+				$state_class[$index] = 'ok';
 			}
 		}
 	}
 	else {
 		$states[$index] = 'UNKNOWN (no limits set)';
+		$state_class[$index] = 'unknown';
 	}
 }
 
 foreach($keys as $index => $key) {
+	$what = $key['what'];
+
 	$current_values[$index]['formatted_value'] = str_replace('%s', round($current_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 	$current_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $current_values[$index]['timestamp']);
 
@@ -154,5 +163,46 @@ if(php_sapi_name() == 'cli') {
 
 	exit;
 }
-# TODO webpage
+?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+    "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<title>Sensor status</title>
+<style type="text/css">
+body { font-family: Verdana,Arial,Helvetica,sans-serif;; }
+body > div { margin: auto; }
+td, th { white-space: nowrap; text-align: left; background-color: #e7e7e7; width: 800px; }
+td.state_ok, td.state_warning, td.state_critical, td.state_unknown { text-align: center; }
+td.state_ok { background-color: #00cc33; }
+td.state_warning { background-color: #ffa500; }
+td.state_critical { background-color: #ff3300; }
+td.state_unknown { background-color: #e066ff; }
+</style>
+</head>
+<body>
+<div>
+<h1>Current sensor state</h1>
+<table>
+<thead>
+<tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Current tendency</th></tr>
+</thead>
+<tbody>
+<?php foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; ?>
+<tr>
+<td><?php echo $sensors[$sensor]['description'] ?></td>
+<td><?php echo $values[$what]['name'] ?></td>
+<td class="state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
+<td><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td><?php echo $tendencies[$index] ?></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
+</div>
+</body>
+</html>
 
