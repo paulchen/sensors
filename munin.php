@@ -7,19 +7,19 @@ if(isset($_ENV['config_dir'])) {
 }
 $config = parse_ini_file($config_file);
 if(!$config) {
-	# TODO
+	echo "Could not read configuration file.\n";
 	die(3);
 }
 
 $mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
 if($mysqli->connect_errno) {
-	# TODO
+	echo "Could not connect to the database.\n";
 	die(3);
 }
 
 $parts = explode('_', $argv[0]);
 if(count($parts) != 3) {
-	# TODO
+	echo "Invalid name of symlink.\n";
 	die(3);
 }
 $value = $parts[1];
@@ -30,7 +30,7 @@ $stmt->bind_param('s', $value);
 $stmt->execute();
 $stmt->bind_result($value_id, $value_name, $value_unit, $value_min, $value_max, $value_decimals);
 if(!$stmt->fetch()) {
-	# TODO
+	echo "Invalid sensor value specified.\n";
 	die(3);
 }
 $stmt->close();
@@ -44,7 +44,7 @@ foreach($sensors as $sensor_id) {
 	$stmt->execute();
 	$stmt->bind_result($sensor, $type, $description);
 	if(!$stmt->fetch()) {
-		# TODO
+		echo "Unknown sensor ID: $sensor_id\n";
 		die(3);
 	}
 	$sensor_info[$sensor] = array('id' => $sensor_id, 'sensor' => $sensor, 'type' => $type, 'description' => $description);
