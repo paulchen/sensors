@@ -126,6 +126,7 @@ my $value_ids = {};
 while(my @result = ($stmt->fetchrow_array())) {
 	$value_ids->{$result[1]} = $result[0];	
 }
+$stmt->finish();
 
 my $t = new Net::Telnet(Timeout => 10);
 $t->open(Host => $host, Port => $port);
@@ -153,18 +154,22 @@ for($a=0; $a<=$#data; $a++) {
 			$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
 			$stmt->execute(($sensor, $type, $description));
 			my @result = $stmt->fetchrow_array();
+			$stmt->finish();
 			if(!@result) {
 				$stmt = $db->prepare('INSERT INTO sensors (sensor, type, description) VALUES (?, ?, ?)');
 				$stmt->execute(($sensor, $type, $description));
+				$stmt->finish();
 				$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
 				$stmt->execute(($sensor, $type, $description));
 				@result = $stmt->fetchrow_array();
+				$stmt->finish();
 			}
 			my $sensor_id = $result[0];
 
 			$stmt = $db->prepare('SELECT COUNT(*) `count` FROM sensor_data WHERE sensor = ? AND UNIX_TIMESTAMP(timestamp) > ? AND UNIX_TIMESTAMP(timestamp) < ?');
 			$stmt->execute(($sensor_id, $timestamp-$time_margin, $timestamp+$time_margin));
 			@result = $stmt->fetchrow_array();
+			$stmt->finish();
 			if($result[0] == 0) {
 				$stmt = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
@@ -176,6 +181,7 @@ for($a=0; $a<=$#data; $a++) {
 				if($value->{'Regenmenge'} > -1) {
 					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $data[$a]->{'Regenmenge'}));
 				}
+				$stmt->finish();
 			}
 		}
 	}
