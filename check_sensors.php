@@ -2,7 +2,8 @@
 <?php
 
 function usage() {
-	# TODO
+	echo "Usage: check_sensors.php --sensors <sensor>,<sensor>,... --config-file <directory>\n";
+	echo "--sensors and --config-file can be abbreviated to -s and -c, respectively.\n";
 	die(3);
 }
 
@@ -42,25 +43,28 @@ if($mysqli->connect_errno) {
 	die(3);
 }
 
-$stmt = $mysqli->prepare('SELECT id, name FROM sensor_values');
+$stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
 $stmt->execute();
-$stmt->bind_result($id, $name);
+$stmt->bind_result($id, $name, $format, $decimals);
 $value_ids = array();
 while($stmt->fetch()) {
-	$value_ids[$id] = $name;
+	$value_ids[$id] = array('name' => $name, 'format' => $format, 'decimals' => $decimals);
 }
 $stmt->close();
 
 $states = array(0);
 $messages = array();
 foreach($sensors as $sensor_id) {
-	$stmt = $mysqli->prepare('SELECT sensor FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
+	$stmt = $mysqli->prepare('SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
 	$stmt->bind_param('i', $sensor_id);
 	$stmt->execute();
-	$stmt->bind_result($sensor);
+	$stmt->bind_result($sensor, $sensor_description);
 	if(!$stmt->fetch()) {
 		echo "No data for sensor with ID $sensor\n";
 		die(3);
+	}
+	if($sensor_description == '') {
+		$sensor_description = "Sensor $sensor";
 	}
 	$stmt->close();
 
@@ -88,16 +92,14 @@ foreach($sensors as $sensor_id) {
 	}
 	$stmt->close();
 	if(count($data) == 0) {
-		# TODO use sensor description
-		echo "No data for sensor with ID $sensor_id\n";
+		echo "No data for '$sensor_description'.\n";
 		die(3);
 	}
 	$timestamp_warning = false;
 	foreach($timestamps as $timestamp) {
 		if(time()-$timestamp > $config['value_outdated_period'] && !$timestamp_warning) {
 			$timestamp_warning = true;
-			# TODO use sensor description
-			$messages[] = "sensor $sensor - no recent data";
+			$messages[] = "$sensor_description - no recent data";
 			$states[] = 3;
 		}
 	}
@@ -110,23 +112,22 @@ foreach($sensors as $sensor_id) {
 				die(3);
 			}
 
+			$name = $value_ids[$what]['name'];
+			$value = str_replace('%s', round($item, $value_ids[$what]['decimals']), $value_ids[$what]['format']);
 			if($item <= $limits[$what]['low_crit']) {
-				# TODO use sensor description
-				# TODO replace what by something meaningful
-				# TODO format value accordingly
-				$messages[] = "sensor $sensor $what - CRITICAL ($item)";
+				$messages[] = "$sensor_description/$name - CRITICAL ($value)";
 				$states[] = 2;
 			}
 			else if($item <= $limits[$what]['low_warn']) {
-				$messages[] = "sensor $sensor $what - WARNING ($item)";
+				$messages[] = "$sensor_description/$name - WARNING ($value)";
 				$states[] = 1;
 			}
 			else if($item >= $limits[$what]['high_crit']) {
-				$messages[] = "sensor $sensor $what - CRITICAL ($item)";
+				$messages[] = "$sensor_description/$name - CRITICAL ($value)";
 				$states[] = 2;
 			}
 			else if($item >= $limits[$what]['high_warn']) {
-				$messages[] = "sensor $sensor $what - WARNING ($item)";
+				$messages[] = "$sensor_description/$name - WARNING ($value)";
 				$states[] = 1;
 			}
 		}
