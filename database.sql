@@ -132,6 +132,19 @@ CREATE TABLE IF NOT EXISTS `cronjob_executions` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `munin_graphs`
+--
+
+CREATE TABLE IF NOT EXISTS `munin_graphs` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `url` text NOT NULL,
+  `row` int(11) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
+
 --
 -- Constraints der exportierten Tabellen
 --
