@@ -120,6 +120,18 @@ CREATE TABLE IF NOT EXISTS `raw_data` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `cronjob_executions`
+--
+
+CREATE TABLE IF NOT EXISTS `cronjob_executions` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
 --
 -- Constraints der exportierten Tabellen
 --
