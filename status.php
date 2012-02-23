@@ -210,6 +210,22 @@ if(php_sapi_name() == 'cli') {
 
 	exit;
 }
+
+$stmt = $mysqli->prepare('SELECT url, row FROM munin_graphs ORDER BY id ASC');
+$stmt->execute();
+$stmt->bind_result($url, $row);
+$graphs = array();
+$last_row = -1;
+while($stmt->fetch()) {
+	$new_row = 0;
+	if($last_row != $row) {
+		$new_row = 1;
+	}
+	$graphs[] = array('url' => $url, 'new_row' => $new_row);
+	$last_row = $row;
+}
+$stmt->close();
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -228,6 +244,7 @@ td.state_warning { background-color: #ffa500; }
 td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
 div#lastrun { padding-bottom: 2em; }
+body > div > p { text-align: center; }
 </style>
 </head>
 <body>
@@ -256,6 +273,12 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <?php endforeach; ?>
 </tbody>
 </table>
+<p>
+<?php foreach($graphs as $graph): ?>
+<?php if($graph['new_row']): ?><br /><?php endif; ?>
+<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" />
+<?php endforeach; ?>
+</p>
 </div>
 </body>
 </html>
