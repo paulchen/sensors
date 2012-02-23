@@ -7,6 +7,12 @@ use Data::Dumper;
 use DBI;
 use Config::Properties;
 use File::Basename;
+use Time::Format;
+
+sub log_status{
+	my ($msg) = @_;
+	print "$time{'yyyy/mm/dd hh:mm:ss'} $msg\n";
+}
 
 sub telnet_command {
 	my ($t, $cmd) = @_;
@@ -75,6 +81,8 @@ sub log_raw_data {
 sub get_values {
 	my ($t, $sensor, $db) = @_;
 
+	log_status("Querying status for sensor $sensor");
+
 	telnet_command($t, "sensor $sensor");
 	my ($prematch, $match) = $t->waitfor('/IPWE1> /');
 	log_raw_data($db, $prematch);
@@ -99,6 +107,8 @@ sub get_values {
 
 	return reverse(@data);
 }
+
+log_status("Cronjob started");
 
 chdir(dirname($0));
 
@@ -132,13 +142,20 @@ while(my @result = ($stmt->fetchrow_array())) {
 }
 $stmt->finish();
 
+log_status("Connecting");
+
 my $t = new Net::Telnet(Timeout => 10);
 $t->open(Host => $host, Port => $port);
+
+log_status("Logging in");
+
 $t->waitfor('/Username: /');
 telnet_command($t, $username);
 $t->waitfor('/Password: /');
 telnet_command($t, $password);
 $t->waitfor('/IPWE1> /');
+
+log_status("Querying status");
 
 telnet_command($t, 'status');
 my ($prematch, $match) = $t->waitfor('/IPWE1> /');
@@ -192,4 +209,6 @@ for($a=0; $a<=$#data; $a++) {
 }
 
 $db->disconnect();
+
+log_status("Cronjob finished");
 
