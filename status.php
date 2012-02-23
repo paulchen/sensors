@@ -216,7 +216,7 @@ if(php_sapi_name() == 'cli') {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="refresh" content="300; URL=." />
+<meta http-equiv="refresh" content="60; URL=." />
 <title>Sensor status</title>
 <style type="text/css">
 body { font-family: Verdana,Arial,Helvetica,sans-serif;; }
@@ -235,7 +235,8 @@ div#lastrun { padding-bottom: 2em; }
 <h1>Current sensor state</h1>
 <div id="lastrun">
 Last cronjob run: <?php echo $last_cron_run; ?><br />
-Last successful cronjob run: <?php echo $last_successful_cron_run; ?>
+Last successful cronjob run: <?php echo $last_successful_cron_run; ?><br />
+Last page load: <?php echo date('Y-m-d H:i'); ?>
 </div>
 <table>
 <thead>
