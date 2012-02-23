@@ -120,11 +120,11 @@ my $db_database = $config->getProperty('db_database');;
 
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
-$stmt = $db->prepare('INSERT INTO cronjob_executions () VALUES ()');
+my $stmt = $db->prepare('INSERT INTO cronjob_executions () VALUES ()');
 $stmt->execute();
 $stmt->finish();
 
-my $stmt = $db->prepare('SELECT id, name FROM sensor_values');
+$stmt = $db->prepare('SELECT id, name FROM sensor_values');
 $stmt->execute();
 my $value_ids = {};
 while(my @result = ($stmt->fetchrow_array())) {
