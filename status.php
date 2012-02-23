@@ -133,19 +133,19 @@ foreach($keys as $index => $key) {
 		}
 		else {
 			$value = $current_values[$index]['value'];
-			if($value < $limits[$index]['low_crit']) {
+			if($value <= $limits[$index]['low_crit']) {
 				$states[$index] = 'CRITICAL (below limit of ' . str_replace('%s', round($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
 				$state_class[$index] = 'critical';
 			}
-			else if($value < $limits[$index]['low_warn']) {
+			else if($value <= $limits[$index]['low_warn']) {
 				$states[$index] = 'WARNING (below limit of ' . str_replace('%s', round($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
 				$state_class[$index] = 'warning';
 			}
-			else if($value > $limits[$index]['high_crit']) {
+			else if($value >= $limits[$index]['high_crit']) {
 				$states[$index] = 'CRITICAL (above limit of ' . str_replace('%s', round($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
 				$state_class[$index] = 'critical';
 			}
-			else if($value > $limits[$index]['high_warn']) {
+			else if($value >= $limits[$index]['high_warn']) {
 				$states[$index] = 'WARNING (above limit of ' . str_replace('%s', round($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']) . ')';
 				$state_class[$index] = 'warning';
 			}
