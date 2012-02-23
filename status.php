@@ -174,7 +174,27 @@ foreach($keys as $index => $key) {
 	$max_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $max_values[$index]['timestamp']);
 }
 
+$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1');
+$stmt->execute();
+$stmt->bind_result($timestamp);
+$last_cron_run = 'never';
+if($stmt->fetch()) {
+	$last_cron_run = date('Y-m-d H:i', $timestamp);
+}
+$stmt->close();
+
+$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) FROM raw_data ORDER BY id DESC LIMIT 0, 1');
+$stmt->execute();
+$stmt->bind_result($timestamp);
+$last_successful_cron_run = 'never';
+if($stmt->fetch()) {
+	$last_successful_cron_run = date('Y-m-d H:i', $timestamp);
+}
+$stmt->close();
+
 if(php_sapi_name() == 'cli') {
+	echo "Last cronjob run: $last_cron_run\n";
+	echo "Last successful cronjob run: $last_successful_cron_run\n\n\n";
 	foreach($keys as $index => $key) {
 		$sensor = $key['sensor'];
 		$what = $key['what'];
@@ -207,11 +227,16 @@ td.state_ok { background-color: #00cc33; }
 td.state_warning { background-color: #ffa500; }
 td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
+div#lastrun { padding-bottom: 2em; }
 </style>
 </head>
 <body>
 <div>
 <h1>Current sensor state</h1>
+<div id="lastrun">
+Last cronjob run: <?php echo $last_cron_run; ?><br />
+Last successful cronjob run: <?php echo $last_successful_cron_run; ?>
+</div>
 <table>
 <thead>
 <tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Current tendency</th></tr>
