@@ -278,6 +278,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <?php if($graph['new_row']): ?><br /><?php endif; ?>
 <img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" />
 <?php endforeach; ?>
+<br />
 </p>
 </div>
 </body>
