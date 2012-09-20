@@ -17,6 +17,21 @@ SET time_zone = "+00:00";
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `battery_changes`
+--
+
+CREATE TABLE IF NOT EXISTS `battery_changes` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `sensor` int(11) NOT NULL,
+  `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  PRIMARY KEY (`id`),
+  KEY `sensor` (`sensor`),
+  KEY `sensor_2` (`sensor`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1 AUTO_INCREMENT=1 ;
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `sensors`
 --
 
@@ -162,4 +177,10 @@ ALTER TABLE `sensor_data`
 ALTER TABLE `sensor_limits`
   ADD CONSTRAINT `sensor_limits_ibfk_2` FOREIGN KEY (`value`) REFERENCES `sensor_values` (`id`),
   ADD CONSTRAINT `sensor_limits_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
+
+--
+-- Constraints for table `battery_changes`
+--
+ALTER TABLE `battery_changes`
+  ADD CONSTRAINT `battery_changes_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 

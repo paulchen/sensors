@@ -110,9 +110,21 @@ while($stmt->fetch()) {
 	if($description == '') {
 		$description = "Sensor $sensor";
 	}
-	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description);
+	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description, 'battery_date' => 'never', 'battery_days' => '');
 }
 $stmt->close();
+
+foreach($sensors as $id => $sensor) {
+	$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1');
+	$stmt->bind_param('i', $id);
+	$stmt->execute();
+	$stmt->bind_result($timestamp);
+	while($stmt->fetch()) {
+		$sensors[$id]['battery_date'] = date('Y-m-d H:i', $timestamp);
+		$sensors[$id]['battery_days'] = floor((time()-$timestamp)/86400) . ' day(s)';
+	}
+	$stmt->close();
+}
 
 $stmt = $mysqli->prepare('SELECT sensor, value, low_crit, low_warn, high_warn, high_crit FROM sensor_limits');
 $stmt->execute();
@@ -237,14 +249,16 @@ $stmt->close();
 <style type="text/css">
 body { font-family: Verdana,Arial,Helvetica,sans-serif;; }
 body > div { margin: auto; }
-td, th { white-space: nowrap; text-align: left; background-color: #e7e7e7; width: 800px; }
+td, th { white-space: nowrap; text-align: left; background-color: #e0e0e0; width: 800px; }
 td.state_ok, td.state_warning, td.state_critical, td.state_unknown { text-align: center; }
 td.state_ok { background-color: #00cc33; }
 td.state_warning { background-color: #ffa500; }
 td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
+td.odd { background-color: #f1f1f1; }
 div#lastrun { padding-bottom: 2em; }
 body > div > p { text-align: center; }
+a { text-decoration: none; }
 </style>
 </head>
 <body>
@@ -260,15 +274,15 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Current tendency</th></tr>
 </thead>
 <tbody>
-<?php foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; ?>
+<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
 <tr>
-<td><?php echo $sensors[$sensor]['description'] ?></td>
-<td><?php echo $values[$what]['name'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $values[$what]['name'] ?></td>
 <td class="state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
-<td><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td><?php echo $tendencies[$index] ?></td>
+<td<?php echo $oddstring ?>><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td<?php echo $oddstring ?>><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td<?php echo $oddstring ?>><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td<?php echo $oddstring ?>><?php echo $tendencies[$index] ?></td>
 </tr>
 <?php endforeach; ?>
 </tbody>
@@ -281,6 +295,22 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <br />
 </p>
 </div>
+<a id="battery"></a>
+<table>
+<thead>
+<tr><th>Sensor</th><th>Last battery change</th><th>Days</th><th></th></tr>
+</thead>
+<tbody>
+<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
+<tr>
+<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_date'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_days'] ?></td>
+<td<?php echo $oddstring ?>><a href="battery.php?id=<?php echo $sensor ?>">Change battery</a></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 </body>
 </html>
 
