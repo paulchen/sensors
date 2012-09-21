@@ -110,7 +110,7 @@ while($stmt->fetch()) {
 	if($description == '') {
 		$description = "Sensor $sensor";
 	}
-	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description, 'battery_date' => 'never', 'battery_days' => '');
+	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description, 'battery_date' => 'never', 'battery_days' => '', 'battery_state' => 'unknown');
 }
 $stmt->close();
 
@@ -121,7 +121,17 @@ foreach($sensors as $id => $sensor) {
 	$stmt->bind_result($timestamp);
 	while($stmt->fetch()) {
 		$sensors[$id]['battery_date'] = date('Y-m-d H:i', $timestamp);
-		$sensors[$id]['battery_days'] = floor((time()-$timestamp)/86400) . ' day(s)';
+		$battery_days = floor((time()-$timestamp)/86400);
+		$sensors[$id]['battery_days'] = "$battery_days day(s)";
+		if($battery_days <= $config['battery_warning']) {
+			$sensors[$id]['battery_state'] = 'ok';
+		}
+		else if($battery_days <= $config['battery_critical']) {
+			$sensors[$id]['battery_state'] = 'warning';
+		}
+		else {
+			$sensors[$id]['battery_state'] = 'critical';
+		}
 	}
 	$stmt->close();
 }
@@ -305,7 +315,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <tr>
 <td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
 <td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_date'] ?></td>
-<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_days'] ?></td>
+<td class="state_<?php echo $sensors[$sensor]['battery_state'] ?>"><?php echo $sensors[$sensor]['battery_days'] ?></td>
 <td<?php echo $oddstring ?>><a href="battery.php?id=<?php echo $sensor ?>">Change battery</a></td>
 </tr>
 <?php endforeach; ?>

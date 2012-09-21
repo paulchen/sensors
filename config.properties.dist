@@ -26,4 +26,8 @@ tendency_period = 3600
 value_outdated_period = 900
 # if there are no sensor values for this time in seconds, it will be considered as an outage
 outage_period = 240
+# if the battery has not been changed for this period of time in days, this will trigger a 'WARNING' state
+battery_warning = 365
+# if the battery has not been changed for this period of time in days, this will trigger a 'CRITICAL' state
+battery_critical = 400
 
