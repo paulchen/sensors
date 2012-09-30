@@ -1,8 +1,9 @@
-package at.rueckgr.ipwe;
+package at.rueckgr.android.ipwe;
 
 import android.os.Bundle;
 import android.app.Activity;
 import android.view.Menu;
+import at.rueckgr.android.ipwe.R;
 
 public class OverviewActivity extends Activity {
 
