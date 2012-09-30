@@ -9,7 +9,7 @@ echo '<?xml version="1.0"?>';
 					<?php foreach($sensor_data[$sensor['id']]['values'] as $value): ?>
 						<value type="<?php echo $value['type']; ?>">
 							<?php foreach($value['measurements'] as $measurement): ?>
-								<measurement value="<?php echo $measurement['value']; ?>" timestamp="<?php echo date(DateTime::W3C, $measurement['timestamp']) ?>" />
+								<measurement value="<?php echo $measurement['value']; ?>" timestamp="<?php echo date(DateTime::W3C, $measurement['timestamp']) ?>" state = "<?php echo htmlentities($measurement['state'], ENT_QUOTES, 'UTF-8') ?>"/>
 							<?php endforeach; ?>
 						</value>
 					<?php endforeach; ?>
