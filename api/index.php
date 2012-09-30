@@ -67,11 +67,20 @@ switch($action) {
 		die();
 }
 
-header('Content-Type: application/xml');
-
+ob_start();
 if(isset($success) && $success) {
 	require_once('templates/success.php');
 }
 else {
 	require_once('templates/error.php');
 }
+$data = ob_get_contents();
+ob_end_clean();
+
+$tidy = new tidy();
+$tidy->parseString($data, array('indent' => true, 'input-xml' => true, 'wrap' => 1000), 'utf8');
+$tidy->cleanRepair();
+
+header('Content-Type: application/xml');
+echo $tidy;
+

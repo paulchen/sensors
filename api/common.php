@@ -67,16 +67,17 @@ function get_sensors_state($sensors = array()) {
 	$stmt->bind_result($sensor_id, $what, $timestamp, $value);
 	$sensor_data = array();
 	while($stmt->fetch()) {
+		$value = round($value, 2);
 		if(!isset($sensor_data[$sensor_id])) {
 			$sensor_data[$sensor_id] = array('values' => array());
 		}
 		if(!isset($sensor_data[$sensor_id]['values'][$what])) {
-			$sensor_data[$sensor_id]['values'][$what] = array('value' => $value, 'timestamp' => $timestamp);
+			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value)));
 		}
 		else {
-			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['timestamp'];
+			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['measurements'][0]['timestamp'];
 			if($old_timestamp > $timestamp) {
-				$sensor_data[$sensor_id]['values'][$what] = array('value' => $value, 'timestamp' => $timestamp);
+				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value)));
 			}
 		}
 	}
