@@ -2,6 +2,8 @@ package at.rueckgr.android.ipwe.data;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.util.ArrayList;
+import java.util.List;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -12,9 +14,15 @@ import org.apache.http.client.ClientProtocolException;
 import org.apache.http.client.methods.HttpGet;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import android.util.Log;
+
 public class Status {
+	private static final String TAG = "Status";
+	private List<Sensor> sensors;
 
 	public void update() {
 		
@@ -59,6 +67,20 @@ public class Status {
 		}
 		try {
 			Document document = documentBuilder.parse(inputStream);
+			NodeList nodes = document.getChildNodes();
+			
+			sensors = new ArrayList<Sensor>();
+			boolean nodeProcessed = false;
+			for(int a=0; a<nodes.getLength(); a++) {
+				Node node = nodes.item(a);
+				if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("sensors")) {
+					if(nodeProcessed) {
+						// TODO duplicate <sensors> element
+					}
+					nodeProcessed = true;
+					processNode(node);
+				}
+			}
 		} catch (SAXException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -71,4 +93,22 @@ public class Status {
 		
 	}
 
+	private void processNode(Node parentNode) {
+		NodeList nodes = parentNode.getChildNodes();
+		for(int a=0; a<nodes.getLength(); a++) {
+			Node node = nodes.item(a);
+			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("sensor")) {
+				sensors.add(new Sensor(node));
+			}
+		}
+	}
+
+	public List<Sensor> getSensors() {
+		return sensors;
+	}
+	
+	@Override
+	public String toString() {
+		return "[Status:sensors=" + sensors.toString() + "]";
+	}
 }
