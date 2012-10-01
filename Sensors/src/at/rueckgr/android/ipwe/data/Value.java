@@ -1,5 +1,6 @@
 package at.rueckgr.android.ipwe.data;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import org.w3c.dom.Node;
@@ -20,6 +21,7 @@ public class Value {
 	}
 
 	private void processNode(Node parentNode) {
+		measurements = new ArrayList<Measurement>();
 		NodeList nodes = parentNode.getChildNodes();
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);
