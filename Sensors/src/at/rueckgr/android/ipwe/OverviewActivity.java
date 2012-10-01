@@ -1,9 +1,9 @@
 package at.rueckgr.android.ipwe;
 
-import android.os.Bundle;
 import android.app.Activity;
+import android.content.Intent;
+import android.os.Bundle;
 import android.view.Menu;
-import at.rueckgr.android.ipwe.R;
 
 public class OverviewActivity extends Activity {
 
@@ -11,6 +11,9 @@ public class OverviewActivity extends Activity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
+        
+        Intent pollServiceIntent = new Intent(this, PollService.class);
+        startService(pollServiceIntent);
     }
 
     @Override
