@@ -24,9 +24,9 @@ public class Informant {
 
 	public void notifyUpdate(Status status) {
 		for(Handler callback : callbacks) {
-			// TODO refine
-			callback.sendMessage(new Message());
-			// callback.notify(status);
+			// TODO magic number 0?
+			Message message = Message.obtain(callback, 0, status);
+			callback.sendMessage(message);
 		}
 	}
 	

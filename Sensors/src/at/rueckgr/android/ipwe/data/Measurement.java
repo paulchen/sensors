@@ -1,23 +1,28 @@
 package at.rueckgr.android.ipwe.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
+import at.rueckgr.android.ipwe.CommonData;
+
 public class Measurement {
-	private float value;
+	private float measurement;
 	private Date date;
-	// TODO replace by class/enum
-	private String state;
+	private State state;
+	private Value value;
 	
-	public Measurement(Node node) {
+	public Measurement(Node node, Value value) {
+		this.value = value;
+		
 		// TODO possible NumberFormatException
 		// TODO possibly null
-		value = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
+		measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
 		// TODO possibly null
-		// TODO fuck off Java
-		/*
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
 		} catch (DOMException e) {
@@ -27,28 +32,35 @@ public class Measurement {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/		
+		CommonData commonData = CommonData.getInstance();
 		// TODO possibly null
-		state = node.getAttributes().getNamedItem("state").getTextContent();		
+		state = commonData.getState(node.getAttributes().getNamedItem("state").getTextContent());		
 	}
 
-	public float getValue() {
-		return value;
+	public float getMeasurement() {
+		return measurement;
 	}
 
 	public Date getDate() {
 		return date;
 	}
 
-	public String getState() {
+	public State getState() {
 		return state;
 	}
 	
 	public String toString() {
-		return "[Measurement:value=" + value + "state=" + state + "]";
-		/*
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		// return "[Measurement:value=" + value + "state=" + state + "]";
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return "[Measurement:timestamp=" + sdf.format(date) + ";value=" + value + "state=" + state + "]";
-		*/
+	}
+
+	public Value getValue() {
+		return value;
+	}
+
+	public CharSequence getTimestampString() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return sdf.format(date);
 	}
 }

@@ -15,6 +15,6 @@ public class OverviewHandler extends Handler {
 	@Override
 	public void handleMessage(Message msg) {
 		// TODO refine
-		callback.notify(new Status());
+		callback.notify((Status)msg.obj);
 	}
 }

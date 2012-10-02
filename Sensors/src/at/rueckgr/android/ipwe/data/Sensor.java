@@ -10,8 +10,11 @@ public class Sensor {
 	private int id;
 	private String name;
 	private List<Value> values;
+	private Status status;
 	
-	public Sensor(Node parentNode) {
+	public Sensor(Node parentNode, Status status) {
+		this.status = status;
+		
 		// TODO possible NumberFormatException
 		// TODO possibly null
 		id = Integer.parseInt(parentNode.getAttributes().getNamedItem("id").getTextContent());
@@ -38,7 +41,7 @@ public class Sensor {
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);
 			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("value")) {
-				values.add(new Value(node));
+				values.add(new Value(node, this));
 			}
 		}
 	}
@@ -58,5 +61,9 @@ public class Sensor {
 	@Override
 	public String toString() {
 		return "[Sensor:id=" + id + ";name=" + name + ";values=" + values.toString() + "]";
+	}
+
+	public Status getStatus() {
+		return status;
 	}
 }

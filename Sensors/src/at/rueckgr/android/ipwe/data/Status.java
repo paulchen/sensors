@@ -20,6 +20,7 @@ import org.xml.sax.SAXException;
 
 import android.util.Log;
 
+// TODO rename Status -> state
 public class Status {
 	private static final String TAG = "Status";
 	private List<Sensor> sensors;
@@ -98,7 +99,7 @@ public class Status {
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);
 			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("sensor")) {
-				sensors.add(new Sensor(node));
+				sensors.add(new Sensor(node, this));
 			}
 		}
 	}

@@ -30,8 +30,7 @@ public class PollThread extends Thread {
 				Thread.sleep(300000);
 			}
 			catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+				/* do nothing */
 			}
 		}
 	}
