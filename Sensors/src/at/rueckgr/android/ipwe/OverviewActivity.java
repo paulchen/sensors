@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
 import at.rueckgr.android.ipwe.data.Measurement;
@@ -18,6 +19,8 @@ import at.rueckgr.android.ipwe.data.Value;
 public class OverviewActivity extends Activity implements InformantCallback {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
+    // TODO move to CommonData
+	private static Status status;
     
     public OverviewActivity() {
         commonData = CommonData.getInstance();
@@ -35,7 +38,8 @@ public class OverviewActivity extends Activity implements InformantCallback {
         	startService(commonData.pollServiceIntent);
         }
         else {
-        	commonData.pollService.triggerUpdate();
+        	notify(status);
+//        	commonData.pollService.triggerUpdate();
         }
     }
 
@@ -47,8 +51,11 @@ public class OverviewActivity extends Activity implements InformantCallback {
 
 	// @Override
 	public void notify(Status status) {
+		OverviewActivity.status = status;
 		// TODO
 //		Context context = getApplicationContext();
+		
+		// TODO suppress if update untriggered
 		CharSequence text = "Hello toast!";
 		int duration = Toast.LENGTH_SHORT;
 
@@ -69,5 +76,24 @@ public class OverviewActivity extends Activity implements InformantCallback {
         StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
 	    ((ListView)findViewById(R.id.listView1)).setAdapter(saa);
 	}
-	
+
+	@Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.menu_exit:
+			// TODO
+			break;
+		
+		case R.id.menu_settings:
+			// TODO
+			break;
+			
+		case R.id.menu_update:
+			commonData.pollService.triggerUpdate();
+			// TODO
+			break;
+		}
+		
+		return true;
+	}
 }
