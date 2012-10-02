@@ -124,7 +124,7 @@ function get_sensors_state($sensors = array()) {
 		}
 		else {
 			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['measurements'][0]['timestamp'];
-			if($old_timestamp > $timestamp) {
+			if($old_timestamp < $timestamp) {
 				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
 			}
 		}
