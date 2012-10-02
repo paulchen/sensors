@@ -56,13 +56,13 @@ public class OverviewActivity extends Activity implements InformantCallback {
 //		Context context = getApplicationContext();
 		
 		// TODO suppress if update untriggered
-		CharSequence text = "Hello toast!";
+		CharSequence text = "Sensors updated";
 		int duration = Toast.LENGTH_SHORT;
 
 		Toast toast = Toast.makeText(this, text, duration);
 		toast.show();
 		
-		Log.d(TAG, "Notification received!");
+		Log.d(TAG, "Notification received");
 		
 		List<Measurement> measurements = new ArrayList<Measurement>();
 		for(Sensor sensor : status.getSensors()) {
