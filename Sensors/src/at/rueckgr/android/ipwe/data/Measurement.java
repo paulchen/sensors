@@ -1,7 +1,10 @@
 package at.rueckgr.android.ipwe.data;
 
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 public class Measurement {
@@ -18,9 +21,7 @@ public class Measurement {
 		// TODO possibly null
 		measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
 		// TODO possibly null
-		// TODO fuck off Java
-		/*
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
 		} catch (DOMException e) {
@@ -30,7 +31,6 @@ public class Measurement {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		*/		
 		// TODO possibly null
 		state = node.getAttributes().getNamedItem("state").getTextContent();		
 	}
@@ -48,14 +48,17 @@ public class Measurement {
 	}
 	
 	public String toString() {
-		return "[Measurement:value=" + value + "state=" + state + "]";
-		/*
-		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
+		// return "[Measurement:value=" + value + "state=" + state + "]";
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return "[Measurement:timestamp=" + sdf.format(date) + ";value=" + value + "state=" + state + "]";
-		*/
 	}
 
 	public Value getValue() {
 		return value;
+	}
+
+	public CharSequence getTimestampString() {
+		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+		return sdf.format(date);
 	}
 }
