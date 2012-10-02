@@ -10,6 +10,8 @@ import android.util.Log;
 import android.view.Menu;
 import android.widget.ListView;
 import android.widget.Toast;
+import at.rueckgr.android.ipwe.data.Measurement;
+import at.rueckgr.android.ipwe.data.Sensor;
 import at.rueckgr.android.ipwe.data.Status;
 import at.rueckgr.android.ipwe.data.Value;
 
@@ -47,14 +49,16 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		
 		Log.d(TAG, "Notification received!");
 		
-		List<Value> values = new ArrayList<Value>();
-		values.add(new Value());
-		values.add(new Value());
-		values.add(new Value());
+		List<Measurement> measurements = new ArrayList<Measurement>();
+		for(Sensor sensor : status.getSensors()) {
+			for(Value value : sensor.getValues()) {
+				measurements.addAll(value.getMeasurements());
+			}
+		}
 		
 		// TODO rename saa
 		// TODO rename listView1
-        StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, values);
+        StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
 	    ((ListView)findViewById(R.id.listView1)).setAdapter(saa);
 	}
 	

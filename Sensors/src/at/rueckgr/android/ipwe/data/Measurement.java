@@ -5,15 +5,18 @@ import java.util.Date;
 import org.w3c.dom.Node;
 
 public class Measurement {
-	private float value;
+	private float measurement;
 	private Date date;
 	// TODO replace by class/enum
 	private String state;
+	private Value value;
 	
-	public Measurement(Node node) {
+	public Measurement(Node node, Value value) {
+		this.value = value;
+		
 		// TODO possible NumberFormatException
 		// TODO possibly null
-		value = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
+		measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
 		// TODO possibly null
 		// TODO fuck off Java
 		/*
@@ -32,8 +35,8 @@ public class Measurement {
 		state = node.getAttributes().getNamedItem("state").getTextContent();		
 	}
 
-	public float getValue() {
-		return value;
+	public float getMeasurement() {
+		return measurement;
 	}
 
 	public Date getDate() {
@@ -50,5 +53,9 @@ public class Measurement {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ssXXX");
 		return "[Measurement:timestamp=" + sdf.format(date) + ";value=" + value + "state=" + state + "]";
 		*/
+	}
+
+	public Value getValue() {
+		return value;
 	}
 }
