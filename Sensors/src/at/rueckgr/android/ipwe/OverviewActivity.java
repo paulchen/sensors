@@ -16,9 +16,13 @@ import at.rueckgr.android.ipwe.data.Status;
 import at.rueckgr.android.ipwe.data.Value;
 
 public class OverviewActivity extends Activity implements InformantCallback {
-
     private static final String TAG = "OverviewActivity";
-
+    private CommonData commonData;
+    
+    public OverviewActivity() {
+        commonData = CommonData.getInstance();
+    }
+    
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -26,9 +30,13 @@ public class OverviewActivity extends Activity implements InformantCallback {
         
         Informant.getInstance().addCallback(new OverviewHandler(this));
 
-        // TODO make a singleton out of this service?
-        Intent pollServiceIntent = new Intent(this, PollService.class);
-        startService(pollServiceIntent);
+        if(commonData.pollServiceIntent == null) {
+        	commonData.pollServiceIntent = new Intent(this, PollService.class);
+        	startService(commonData.pollServiceIntent);
+        }
+        else {
+        	commonData.pollService.triggerUpdate();
+        }
     }
 
     @Override

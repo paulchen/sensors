@@ -8,6 +8,12 @@ import at.rueckgr.android.ipwe.data.Status;
 
 public class PollService extends Service {
 	private static final String TAG = "PollService";
+	private PollThread pollThread;
+	private CommonData commonData;
+	
+	public PollService() {
+		commonData = CommonData.getInstance();
+	}
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
@@ -22,9 +28,15 @@ public class PollService extends Service {
 		// TODO hrm, put somewhere else?
 		Status status = new Status();
 		
-		PollThread pollThread = new PollThread(status);
+		pollThread = new PollThread(status);
 		pollThread.start();
 		
+		commonData.pollService = this;
+		
 		return START_STICKY;
+	}
+	
+	public void triggerUpdate() {
+		pollThread.interrupt();
 	}
 }
