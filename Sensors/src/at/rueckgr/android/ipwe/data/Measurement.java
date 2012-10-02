@@ -7,11 +7,12 @@ import java.util.Date;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
+import at.rueckgr.android.ipwe.CommonData;
+
 public class Measurement {
 	private float measurement;
 	private Date date;
-	// TODO replace by class/enum
-	private String state;
+	private State state;
 	private Value value;
 	
 	public Measurement(Node node, Value value) {
@@ -31,8 +32,9 @@ public class Measurement {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		CommonData commonData = CommonData.getInstance();
 		// TODO possibly null
-		state = node.getAttributes().getNamedItem("state").getTextContent();		
+		state = commonData.getState(node.getAttributes().getNamedItem("state").getTextContent());		
 	}
 
 	public float getMeasurement() {
@@ -43,7 +45,7 @@ public class Measurement {
 		return date;
 	}
 
-	public String getState() {
+	public State getState() {
 		return state;
 	}
 	

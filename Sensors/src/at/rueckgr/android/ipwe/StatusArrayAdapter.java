@@ -3,6 +3,7 @@ package at.rueckgr.android.ipwe;
 import java.util.List;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -48,12 +49,12 @@ public class StatusArrayAdapter extends ArrayAdapter<Measurement> {
 			row = inflater.inflate(R.layout.overview_list_item, parent, false);
 		}
 		
-		
 		// TODO
 		((TextView) row.findViewById(R.id.sensor_name)).setText(sensor.getName());
 		((TextView) row.findViewById(R.id.value_timestamp)).setText(measurement.getTimestampString());
 		((TextView) row.findViewById(R.id.sensor_value)).setText(String.valueOf(measurement.getMeasurement()));
-		((TextView) row.findViewById(R.id.sensor_status_color)).setText(measurement.getState());
+		((TextView) row.findViewById(R.id.sensor_status_color)).setText(measurement.getState().getName());
+		((TextView) row.findViewById(R.id.sensor_status_color)).setTextColor(Color.parseColor(measurement.getState().getColor()));
 
 		return row;
 	}
