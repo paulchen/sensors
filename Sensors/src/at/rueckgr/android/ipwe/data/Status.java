@@ -18,11 +18,9 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import android.util.Log;
-
-// TODO rename Status -> state
+// TODO rename Status -> state?
 public class Status {
-	private static final String TAG = "Status";
+//	private static final String TAG = "Status";
 	private List<Sensor> sensors;
 
 	public void update() {

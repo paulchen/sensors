@@ -17,14 +17,11 @@ import android.widget.ListView;
 import android.widget.Toast;
 import at.rueckgr.android.ipwe.data.Measurement;
 import at.rueckgr.android.ipwe.data.Sensor;
-import at.rueckgr.android.ipwe.data.Status;
 import at.rueckgr.android.ipwe.data.Value;
 
 public class OverviewActivity extends Activity implements InformantCallback {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
-    // TODO move to CommonData
-	private static Status status;
     
     public OverviewActivity() {
         commonData = CommonData.getInstance();
@@ -42,8 +39,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
         	startService(commonData.pollServiceIntent);
         }
         else {
-        	notify(status);
-//        	commonData.pollService.triggerUpdate();
+        	update(false);
         }
     }
 
@@ -53,47 +49,65 @@ public class OverviewActivity extends Activity implements InformantCallback {
         return true;
     }
 
-	// @Override
-	public void notify(Status status) {
-		OverviewActivity.status = status;
-		// TODO
-//		Context context = getApplicationContext();
-		
-		// TODO suppress if update untriggered
-		CharSequence text = "Sensors updated";
-		int duration = Toast.LENGTH_SHORT;
-
-		Toast toast = Toast.makeText(this, text, duration);
-		toast.show();
+    
+    @Override
+    public void update() {
+    	update(true);
+    }
+    
+	public void update(boolean showToast) {
+		if(showToast) {
+			// TODO don't hardcode string
+			Toast toast = Toast.makeText(this, "Sensors updated", Toast.LENGTH_SHORT);
+			toast.show();
+		}
 		
 		Log.d(TAG, "Notification received");
 		
 		// TODO generalize?
-		boolean warning = false;
-		boolean critical = false;
+		int warning = 0;
+		int critical = 0;
+		int ok = 0;
 		List<Measurement> measurements = new ArrayList<Measurement>();
-		for(Sensor sensor : status.getSensors()) {
+		for(Sensor sensor : commonData.getStatus().getSensors()) {
 			for(Value value : sensor.getValues()) {
 				measurements.addAll(value.getMeasurements());
 				for(Measurement measurement : measurements) {
 					if(measurement.getState().getName().equals("warning")) {
-						warning = true;
+						warning++;
 					}
-					if(measurement.getState().getName().equals("warning")) {
-						critical = true;
+					else if(measurement.getState().getName().equals("critical")) {
+						critical++;
+					}
+					else {
+						ok++;
 					}
 				}
 			}
 		}
+		int total = ok + warning + critical;
 		
-		if(warning || critical) {
-			// TODO more detailled info
+		if(warning + critical > 0) {
+			// TODO don't hardcode strings here
 			CharSequence notificationText;
-			if(critical) {
-				notificationText = "At least one service is in critical state.";
+			if(critical > 0 && warning > 0) {
+				notificationText = "Sensors in critical and warning states.";
+			}
+			else if(critical > 0) {
+				if(critical > 1) {
+					notificationText = "Sensors report critical state.";
+				}
+				else {
+					notificationText = "Sensor reports critical state.";
+				}
 			}
 			else {
-				notificationText = "At least one service is in warning state.";
+				if(warning > 1) {
+					notificationText = "Sensors report warning state.";
+				}
+				else {
+					notificationText = "Sensor reports warning state.";
+				}
 			}
 			
 			String ns = Context.NOTIFICATION_SERVICE;
@@ -106,30 +120,25 @@ public class OverviewActivity extends Activity implements InformantCallback {
 			Notification notification = new Notification(icon, notificationText, when);
 			
 			Context context = getApplicationContext();
-			// TODO
-			CharSequence contentTitle = "My notification";
-			CharSequence contentText = "Hello World!";
+			// TODO don't hardcode strings here
+			CharSequence contentTitle = "Sensor report";
+			CharSequence contentText = "Services: " + total + " - O: " + ok + " - W: " + warning + " - C: " + critical;
 			Intent notificationIntent = new Intent(this, OverviewActivity.class);
 			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
 
 			// TODO deprecated
 			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
 			
-			// TODO magic number for ID (first parameter)
-			mNotificationManager.notify(1, notification);
-			
-			// TODO remove notification when tipping on it/service is not critical anymore
+			mNotificationManager.notify(CommonData.NOTIFICATION_ID, notification);
 		}
 		else {
 			String ns = Context.NOTIFICATION_SERVICE;
 			NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
-			// TODO magic number
-			mNotificationManager.cancel(1);
+			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
-		// TODO rename saa
-		// TODO rename listView1
-        StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
-	    ((ListView)findViewById(R.id.listView1)).setAdapter(saa);
+
+        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
+	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 
 	@Override
@@ -145,7 +154,6 @@ public class OverviewActivity extends Activity implements InformantCallback {
 			
 		case R.id.menu_update:
 			commonData.pollService.triggerUpdate();
-			// TODO
 			break;
 		}
 		

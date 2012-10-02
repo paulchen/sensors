@@ -6,15 +6,17 @@ import at.rueckgr.android.ipwe.data.Status;
 
 public class OverviewHandler extends Handler {
 	private InformantCallback callback;
+	private CommonData commonData;
 	
 	public OverviewHandler(InformantCallback callback) {
 		super();
 		this.callback = callback;
+		commonData = CommonData.getInstance();
 	}
 
 	@Override
 	public void handleMessage(Message msg) {
-		// TODO refine
-		callback.notify((Status)msg.obj);
+		commonData.setStatus((Status)msg.obj);
+		callback.update();
 	}
 }

@@ -5,13 +5,18 @@ import java.util.Map;
 
 import android.content.Intent;
 import at.rueckgr.android.ipwe.data.State;
+import at.rueckgr.android.ipwe.data.Status;
 
 public class CommonData {
+	public static final int NOTIFICATION_ID = 1;
+	
 	public Intent pollServiceIntent;
 	public PollService pollService;
 	
 	private static CommonData commonData;
 	private Map<String, State> states;
+
+	private Status status;
 	
 	private CommonData() {
 		states = new HashMap<String, State>();
@@ -31,5 +36,13 @@ public class CommonData {
 	
 	public State getState(String name) {
 		return states.get(name);
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
 	}
 }
