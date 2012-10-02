@@ -1,12 +1,17 @@
 package at.rueckgr.android.ipwe;
 
+import java.util.ArrayList;
+import java.util.List;
+
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
+import android.widget.ListView;
 import android.widget.Toast;
 import at.rueckgr.android.ipwe.data.Status;
+import at.rueckgr.android.ipwe.data.Value;
 
 public class OverviewActivity extends Activity implements InformantCallback {
 
@@ -41,6 +46,16 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		toast.show();
 		
 		Log.d(TAG, "Notification received!");
+		
+		List<Value> values = new ArrayList<Value>();
+		values.add(new Value());
+		values.add(new Value());
+		values.add(new Value());
+		
+		// TODO rename saa
+		// TODO rename listView1
+        StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, values);
+	    ((ListView)findViewById(R.id.listView1)).setAdapter(saa);
 	}
 	
 }

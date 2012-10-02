@@ -20,6 +20,11 @@ public class Value {
 		processNode(node);
 	}
 
+	// TODO remove this
+	public Value() {
+		// TODO Auto-generated constructor stub
+	}
+
 	private void processNode(Node parentNode) {
 		measurements = new ArrayList<Measurement>();
 		NodeList nodes = parentNode.getChildNodes();
