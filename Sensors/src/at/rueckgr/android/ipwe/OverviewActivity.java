@@ -9,6 +9,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -72,7 +73,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		for(Sensor sensor : commonData.getStatus().getSensors()) {
 			for(Value value : sensor.getValues()) {
 				measurements.addAll(value.getMeasurements());
-				for(Measurement measurement : measurements) {
+				for(Measurement measurement : value.getMeasurements()) {
 					if(measurement.getState().getName().equals("warning")) {
 						warning++;
 					}
@@ -87,53 +88,22 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		}
 		int total = ok + warning + critical;
 		
-		if(warning + critical > 0) {
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		if(warning + critical > 0) {			
 			// TODO don't hardcode strings here
-			CharSequence notificationText;
-			if(critical > 0 && warning > 0) {
-				notificationText = "Sensors in critical and warning states.";
-			}
-			else if(critical > 0) {
-				if(critical > 1) {
-					notificationText = "Sensors report critical state.";
-				}
-				else {
-					notificationText = "Sensor reports critical state.";
-				}
-			}
-			else {
-				if(warning > 1) {
-					notificationText = "Sensors report warning state.";
-				}
-				else {
-					notificationText = "Sensor reports warning state.";
-				}
-			}
-			
-			String ns = Context.NOTIFICATION_SERVICE;
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
-			
-			int icon = R.drawable.ic_launcher;
-			long when = System.currentTimeMillis();
-
-			// TODO deprecated
-			Notification notification = new Notification(icon, notificationText, when);
-			
-			Context context = getApplicationContext();
-			// TODO don't hardcode strings here
-			CharSequence contentTitle = "Sensor report";
-			CharSequence contentText = "Services: " + total + " - O: " + ok + " - W: " + warning + " - C: " + critical;
-			Intent notificationIntent = new Intent(this, OverviewActivity.class);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-			// TODO deprecated
-			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
+			// TODO configurable
+			Notification notification = new Notification.Builder(getApplicationContext())
+						.setContentTitle("Sensor report")
+						.setContentText("Sensors: " + total + " - O: " + ok + " - W: " + warning + " - C: " + critical)
+						.setSmallIcon(R.drawable.ic_launcher)
+						.setOngoing(true)
+						.setLights(Color.argb(0, 255, 0, 255), 100, 200)
+						.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
+						.getNotification();
 			
 			mNotificationManager.notify(CommonData.NOTIFICATION_ID, notification);
 		}
 		else {
-			String ns = Context.NOTIFICATION_SERVICE;
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
 			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
 
