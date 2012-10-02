@@ -25,7 +25,6 @@ public class OverviewActivity extends Activity implements InformantCallback {
     private CommonData commonData;
     // TODO move to CommonData
 	private static Status status;
-    private static int cnt = 0;
     
     public OverviewActivity() {
         commonData = CommonData.getInstance();
@@ -85,11 +84,6 @@ public class OverviewActivity extends Activity implements InformantCallback {
 					}
 				}
 			}
-		}
-		
-		if(cnt == 0) {
-			warning = true;
-			cnt++;
 		}
 		
 		if(warning || critical) {
