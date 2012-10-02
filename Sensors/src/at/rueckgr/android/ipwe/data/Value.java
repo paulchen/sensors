@@ -12,12 +12,18 @@ public class Value {
 	private int type;
 	private List<Measurement> measurements;
 	private Sensor sensor;
+	private String format;
+	private String description;
 	
 	public Value(Node node, Sensor sensor) {
 		this.sensor = sensor;
 		// TODO possible NumberFormatException
 		// TODO possibly null
 		type = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
+		// TODO possibly null
+		format = node.getAttributes().getNamedItem("format").getTextContent();
+		// TODO possibly null
+		description = node.getAttributes().getNamedItem("description").getTextContent();
 
 		processNode(node);
 	}
@@ -47,5 +53,13 @@ public class Value {
 
 	public Sensor getSensor() {
 		return sensor;
+	}
+	
+	public String getFormat() {
+		return format;
+	}
+	
+	public String getDescription() {
+		return description;
 	}
 }
