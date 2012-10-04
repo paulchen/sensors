@@ -32,6 +32,10 @@ public class PollThread extends Thread {
 			catch (InterruptedException e) {
 				/* do nothing */
 			}
+			catch (Exception e) {
+				// TODO
+				return;
+			}
 		}
 	}
 }

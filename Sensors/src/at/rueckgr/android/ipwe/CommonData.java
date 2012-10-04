@@ -4,6 +4,8 @@ import java.util.HashMap;
 import java.util.Map;
 
 import android.content.Intent;
+import android.content.SharedPreferences;
+import android.preference.PreferenceManager;
 import at.rueckgr.android.ipwe.data.State;
 import at.rueckgr.android.ipwe.data.Status;
 
@@ -17,6 +19,10 @@ public class CommonData {
 	private Map<String, State> states;
 
 	private Status status;
+
+	private OverviewActivity context;
+
+	private SharedPreferences preferences;
 	
 	private CommonData() {
 		states = new HashMap<String, State>();
@@ -44,5 +50,49 @@ public class CommonData {
 
 	public void setStatus(Status status) {
 		this.status = status;
+	}
+
+	public void setContext(OverviewActivity context) {
+		this.context = context;
+	}
+
+	public boolean isConfigured() {
+		return getPreferences().getBoolean("configured", false);
+	}
+
+	// TODO don't hardcode default values here
+	public String getSettingsURL() {
+		return getPreferences().getString("settings_url", "");
+	}
+	
+	// TODO getter for authenticator 
+	public boolean getSettingsAuth() {
+		return getPreferences().getBoolean("settings_auth", false);
+	}
+
+	public boolean getSettingsRefresh() {
+		return getPreferences().getBoolean("settings_refresh", false);
+	}
+	
+	public int getSettingsRefreshInterval() {
+		// TOOD don't hardcode 300 here
+		return getPreferences().getInt("settings_refresh_interval", 300);
+	}
+	
+	private SharedPreferences getPreferences() {
+		if(preferences == null) {
+			if(context != null) {
+				preferences = PreferenceManager.getDefaultSharedPreferences(context);
+			}
+			else {
+				// TODO epic problem
+				return null;
+			}
+		}
+		return preferences;
+	}
+	
+	public void update() {
+		context.update(true);
 	}
 }

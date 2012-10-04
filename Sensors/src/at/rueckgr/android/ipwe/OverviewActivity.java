@@ -10,6 +10,7 @@ import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -25,9 +26,12 @@ import at.rueckgr.android.ipwe.data.Value;
 public class OverviewActivity extends Activity implements InformantCallback {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
+    private OverviewActivity _this;
     
     public OverviewActivity() {
         commonData = CommonData.getInstance();
+        commonData.setContext(this);
+        _this = this;
     }
     
 	@Override
@@ -37,6 +41,22 @@ public class OverviewActivity extends Activity implements InformantCallback {
         
         Informant.getInstance().addCallback(new OverviewHandler(this));
 
+        if(!commonData.isConfigured()) {
+    		AlertDialog alertDialog = new AlertDialog.Builder(_this).create();
+    		// TODO don't hardcode strings
+    		alertDialog.setTitle("Welcome");
+    		alertDialog.setMessage("This is the first time you run this app. You will have to configure it in order to use it.");
+    		alertDialog.setButton("Ok", new OnClickListener() {
+    			@Override
+    			public void onClick(DialogInterface dialog, int which) {
+    				dialog.dismiss();
+    				Intent intent = new Intent(_this, SettingsActivity.class);
+    				startActivity(intent);
+    			}
+    		});
+    		alertDialog.show();
+    	}
+        
         if(commonData.pollServiceIntent == null) {
         	commonData.pollServiceIntent = new Intent(this, PollService.class);
         	startService(commonData.pollServiceIntent);
@@ -66,6 +86,11 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		}
 		
 		Log.d(TAG, "Notification received");
+		
+		// TODO why is this necessary? why is update() called even if nothing has been updated yet?
+		if(commonData.getStatus() == null || commonData.getStatus().getSensors() == null) {
+			return;
+		}
 		
 		// TODO generalize?
 		int warning = 0;
@@ -148,7 +173,8 @@ public class OverviewActivity extends Activity implements InformantCallback {
 			break;
 		
 		case R.id.menu_settings:
-			// TODO
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
 			break;
 			
 		case R.id.menu_update:

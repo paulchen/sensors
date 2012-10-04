@@ -18,15 +18,23 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import at.rueckgr.android.ipwe.CommonData;
+
 // TODO rename Status -> state?
 public class Status {
 //	private static final String TAG = "Status";
 	private List<Sensor> sensors;
+	private CommonData commonData;
 
+	public Status() {
+		commonData = CommonData.getInstance();
+	}
+	
 	public void update() {
 		
 		// TODO configurable URL
-		String url = "https://rueckgr.at/sensors/api/?action=status";
+		// String url = "https://rueckgr.at/sensors/api/?action=status";
+		String url = commonData.getSettingsURL() + "?action=status";
 		
 		// TODO error handling
 		DefaultHttpClient httpClient = new DefaultHttpClient();
@@ -34,6 +42,10 @@ public class Status {
 		HttpResponse httpResponse;
 		try {
 			httpResponse = httpClient.execute(httpGet);
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return;
 		} catch (ClientProtocolException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
