@@ -111,11 +111,16 @@ public class OverviewActivity extends Activity implements InformantCallback {
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 
+	private void shutdown() {
+		stopService(commonData.pollServiceIntent);
+		finish();
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 		case R.id.menu_exit:
-			// TODO
+			shutdown();
 			break;
 		
 		case R.id.menu_settings:
