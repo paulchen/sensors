@@ -4,10 +4,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
 import android.os.Bundle;
@@ -111,6 +113,28 @@ public class OverviewActivity extends Activity implements InformantCallback {
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 
+	private void askShutdown() {
+		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		        switch (which){
+		        case DialogInterface.BUTTON_POSITIVE:
+		            shutdown();
+		            break;
+
+		        case DialogInterface.BUTTON_NEGATIVE:
+		            /* do nothing */
+		            break;
+		        }
+		    }
+		};
+
+		AlertDialog.Builder builder = new AlertDialog.Builder(this);
+		// TODO don't hardcode strings here
+		builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
+		    .setNegativeButton("No", dialogClickListener).show();
+	}
+	
 	private void shutdown() {
 		stopService(commonData.pollServiceIntent);
 		finish();
@@ -120,7 +144,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 		case R.id.menu_exit:
-			shutdown();
+			askShutdown();
 			break;
 		
 		case R.id.menu_settings:
