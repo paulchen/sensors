@@ -23,7 +23,7 @@ import at.rueckgr.android.ipwe.data.Measurement;
 import at.rueckgr.android.ipwe.data.Sensor;
 import at.rueckgr.android.ipwe.data.Value;
 
-public class OverviewActivity extends Activity implements InformantCallback {
+public class OverviewActivity extends Activity implements Notifyable {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
     private OverviewActivity _this;
@@ -39,7 +39,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
         
-        Informant.getInstance().addCallback(new OverviewHandler(this));
+        commonData.addCallback(new OverviewHandler(this));
 
         if(!commonData.isConfigured()) {
         	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
@@ -64,7 +64,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
         	startService(commonData.pollServiceIntent);
         }
         else {
-        	update(false);
+        	notifyUpdate(false);
         }
     }
 
@@ -76,11 +76,11 @@ public class OverviewActivity extends Activity implements InformantCallback {
 
     
     @Override
-    public void update() {
-    	update(true);
+    public void notifyUpdate() {
+    	notifyUpdate(true);
     }
     
-	public void update(boolean showToast) {
+	public void notifyUpdate(boolean showToast) {
 		if(showToast) {
 			// TODO don't hardcode string
 			Toast toast = Toast.makeText(this, "Sensors updated", Toast.LENGTH_SHORT);

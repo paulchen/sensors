@@ -5,10 +5,10 @@ import android.os.Message;
 import at.rueckgr.android.ipwe.data.Status;
 
 public class OverviewHandler extends Handler {
-	private InformantCallback callback;
+	private Notifyable callback;
 	private CommonData commonData;
 	
-	public OverviewHandler(InformantCallback callback) {
+	public OverviewHandler(Notifyable callback) {
 		super();
 		this.callback = callback;
 		commonData = CommonData.getInstance();
@@ -17,6 +17,6 @@ public class OverviewHandler extends Handler {
 	@Override
 	public void handleMessage(Message msg) {
 		commonData.setStatus((Status)msg.obj);
-		callback.update();
+		callback.notifyUpdate();
 	}
 }

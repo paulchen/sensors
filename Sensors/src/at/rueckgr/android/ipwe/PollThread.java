@@ -8,26 +8,25 @@ public class PollThread extends Thread {
 	private static final String TAG = "PollThread";
 	
 	private Status status;
+	private CommonData commonData;
 	
 	public PollThread(Status status) {
 		this.status = status;
+		commonData = CommonData.getInstance();
 	}
 	
 	@Override
 	public void run() {
 		Looper.prepare();
 		
-		// TODO
 		Log.d(TAG, "Thread started");
 		
-		Informant informant = Informant.getInstance();
 		for(;;) {
 			try {
 				Log.e(TAG, "Updating...");
 				status.update();
-				informant.notifyUpdate(status);
-				// TODO configurable interval
-				Thread.sleep(300000);
+				commonData.notifyUpdate(status);
+				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
 			catch (InterruptedException e) {
 				/* do nothing */

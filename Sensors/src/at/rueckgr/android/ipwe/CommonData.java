@@ -1,10 +1,14 @@
 package at.rueckgr.android.ipwe;
 
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
 import android.preference.PreferenceManager;
 import at.rueckgr.android.ipwe.data.State;
 import at.rueckgr.android.ipwe.data.Status;
@@ -23,7 +27,9 @@ public class CommonData {
 	private OverviewActivity context;
 
 	private SharedPreferences preferences;
-	
+
+	private List<Handler> callbacks;
+
 	private CommonData() {
 		states = new HashMap<String, State>();
 		
@@ -31,6 +37,8 @@ public class CommonData {
 		states.put("warning", new State("warning", "#00cc33"));
 		states.put("critical", new State("critical", "#00cc33"));
 		states.put("unknown", new State("unknown", "#00cc33"));
+		
+		callbacks = new ArrayList<Handler>();
 	}
 
 	public static CommonData getInstance() {
@@ -92,7 +100,15 @@ public class CommonData {
 		return preferences;
 	}
 	
-	public void update() {
-		context.update(true);
+	public void notifyUpdate(Status status) {
+		for(Handler callback : callbacks) {
+			// TODO magic number 0?
+			Message message = Message.obtain(callback, 0, status);
+			callback.sendMessage(message);
+		}
+	}
+	
+	public void addCallback(Handler callback) {
+		callbacks.add(callback);
 	}
 }
