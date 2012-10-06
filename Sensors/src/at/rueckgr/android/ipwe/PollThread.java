@@ -23,9 +23,11 @@ public class PollThread extends Thread {
 		
 		for(;;) {
 			try {
-				Log.e(TAG, "Updating...");
-				status.update();
-				commonData.notifyUpdate(status);
+				if(commonData.getSettingsRefresh()) {
+					Log.e(TAG, "Updating...");
+					status.update();
+					commonData.notifyUpdate(status);
+				}
 				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
 			catch (InterruptedException e) {
