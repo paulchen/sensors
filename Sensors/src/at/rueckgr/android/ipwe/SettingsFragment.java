@@ -26,7 +26,6 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		
 		preferences.unregisterOnSharedPreferenceChangeListener(this);
 		
-		// TODO move to CommonData
 		Editor editor = preferences.edit();
 		editor.putBoolean("configured", true);
 		editor.commit();
