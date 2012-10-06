@@ -42,19 +42,21 @@ public class OverviewActivity extends Activity implements InformantCallback {
         Informant.getInstance().addCallback(new OverviewHandler(this));
 
         if(!commonData.isConfigured()) {
-    		AlertDialog alertDialog = new AlertDialog.Builder(_this).create();
-    		// TODO don't hardcode strings
-    		alertDialog.setTitle("Welcome");
-    		alertDialog.setMessage("This is the first time you run this app. You will have to configure it in order to use it.");
-    		alertDialog.setButton("Ok", new OnClickListener() {
-    			@Override
-    			public void onClick(DialogInterface dialog, int which) {
+        	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
     				dialog.dismiss();
     				Intent intent = new Intent(_this, SettingsActivity.class);
     				startActivity(intent);
-    			}
-    		});
-    		alertDialog.show();
+				}
+			};
+			
+    		// TODO don't hardcode strings
+    		new AlertDialog.Builder(_this).setTitle("Welcome")
+    			.setMessage("This is the first time you run this app. You will have to configure it in order to use it.")
+    			.setCancelable(false)
+    			.setPositiveButton("Ok", dialogClickListener)
+    			.show();
     	}
         
         if(commonData.pollServiceIntent == null) {
@@ -139,7 +141,7 @@ public class OverviewActivity extends Activity implements InformantCallback {
 	}
 
 	private void askShutdown() {
-		DialogInterface.OnClickListener dialogClickListener = new DialogInterface.OnClickListener() {
+		OnClickListener dialogClickListener = new OnClickListener() {
 		    @Override
 		    public void onClick(DialogInterface dialog, int which) {
 		        switch (which){
@@ -154,10 +156,12 @@ public class OverviewActivity extends Activity implements InformantCallback {
 		    }
 		};
 
-		AlertDialog.Builder builder = new AlertDialog.Builder(this);
 		// TODO don't hardcode strings here
-		builder.setMessage("Are you sure?").setPositiveButton("Yes", dialogClickListener)
-		    .setNegativeButton("No", dialogClickListener).show();
+		new AlertDialog.Builder(this)
+			.setMessage("Are you sure?")
+			.setPositiveButton("Yes", dialogClickListener)
+		    .setNegativeButton("No", dialogClickListener)
+		    .show();
 	}
 	
 	private void shutdown() {
