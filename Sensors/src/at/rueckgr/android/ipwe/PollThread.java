@@ -2,6 +2,7 @@ package at.rueckgr.android.ipwe;
 
 import android.os.Looper;
 import android.util.Log;
+import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.Status;
 
 public class PollThread extends Thread {
@@ -30,12 +31,12 @@ public class PollThread extends Thread {
 				}
 				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
+			catch (SensorsException e) {
+				e.printStackTrace();
+				commonData.notifyUpdateError();
+			}
 			catch (InterruptedException e) {
 				/* do nothing */
-			}
-			catch (Exception e) {
-				// TODO
-				return;
 			}
 		}
 	}

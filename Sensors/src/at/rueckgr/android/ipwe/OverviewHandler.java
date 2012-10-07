@@ -16,7 +16,18 @@ public class OverviewHandler extends Handler {
 
 	@Override
 	public void handleMessage(Message msg) {
-		commonData.setStatus((Status)msg.obj);
-		callback.notifyUpdate();
+		switch(msg.what) {
+			case CommonData.MESSAGE_UPDATE_SUCCESS:
+				commonData.setStatus((Status)msg.obj);
+				callback.notifyUpdate();
+				break;
+				
+			case CommonData.MESSAGE_UPDATE_ERROR:
+				callback.notifyError();
+				break;
+			
+			default:
+				/* will never happen */
+		}
 	}
 }

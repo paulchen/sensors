@@ -17,7 +17,7 @@ public class PollService extends Service {
 	
 	@Override
 	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
+		/* do nothing */
 		return null;
 	}
 
@@ -25,7 +25,6 @@ public class PollService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "Service started");
 		
-		// TODO hrm, put somewhere else?
 		Status status = new Status();
 		
 		pollThread = new PollThread(status);

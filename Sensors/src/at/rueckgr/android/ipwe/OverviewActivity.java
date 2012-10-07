@@ -95,6 +95,11 @@ public class OverviewActivity extends Activity implements Notifyable {
 		}
 		
 		// TODO generalize?
+		/*
+		int warning = commonData.getStatus().getWarningsCount();
+		int critical = commonData.getStatus().getCriticalCount();
+		int ok = commonData.getStatus().getOkCount();
+		*/
 		int warning = 0;
 		int critical = 0;
 		int ok = 0;
@@ -187,5 +192,12 @@ public class OverviewActivity extends Activity implements Notifyable {
 		}
 		
 		return true;
+	}
+
+	@Override
+	public void notifyError() {
+		// TODO don't hardcode string
+		Toast toast = Toast.makeText(this, "Error while updating sensors.", Toast.LENGTH_SHORT);
+		toast.show();
 	}
 }

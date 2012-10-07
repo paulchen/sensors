@@ -15,20 +15,24 @@ public class Value {
 	private String format;
 	private String description;
 	
-	public Value(Node node, Sensor sensor) {
+	public Value(Node node, Sensor sensor) throws SensorsException {
 		this.sensor = sensor;
-		// TODO possible NumberFormatException
-		// TODO possibly null
-		type = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
-		// TODO possibly null
-		format = node.getAttributes().getNamedItem("format").getTextContent();
-		// TODO possibly null
-		description = node.getAttributes().getNamedItem("description").getTextContent();
-
+		
+		try {
+			type = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
+			format = node.getAttributes().getNamedItem("format").getTextContent();
+			description = node.getAttributes().getNamedItem("description").getTextContent();
+		}
+		catch (NumberFormatException e) {
+			throw new SensorsException(e);
+		}
+		catch (NullPointerException e) {
+			throw new SensorsException(e);
+		}
 		processNode(node);
 	}
 
-	private void processNode(Node parentNode) {
+	private void processNode(Node parentNode) throws SensorsException {
 		measurements = new ArrayList<Measurement>();
 		NodeList nodes = parentNode.getChildNodes();
 		for(int a=0; a<nodes.getLength(); a++) {

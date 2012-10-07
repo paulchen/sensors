@@ -28,12 +28,17 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
 import at.rueckgr.android.ipwe.data.Status;
 
 // TODO rename to Common?
 public class CommonData {
 	public static final int NOTIFICATION_ID = 1;
+
+	public static final int MESSAGE_UPDATE_SUCCESS = 0;
+
+	public static final int MESSAGE_UPDATE_ERROR = 1;
 	
 	public Intent pollServiceIntent;
 	public PollService pollService;
@@ -95,9 +100,13 @@ public class CommonData {
 		return getPreferences().getBoolean("settings_refresh", false);
 	}
 	
-	public int getSettingsRefreshInterval() {
-		// TODO possible NumberFormatException
-		return Integer.parseInt(getPreferences().getString("settings_refresh_interval", "300"));
+	public int getSettingsRefreshInterval() throws SensorsException {
+		try {
+			return Integer.parseInt(getPreferences().getString("settings_refresh_interval", "300"));
+		}
+		catch (NumberFormatException e) {
+			throw new SensorsException(e);
+		}
 	}
 	
 	private SharedPreferences getPreferences() {
@@ -115,8 +124,7 @@ public class CommonData {
 	
 	public void notifyUpdate(Status status) {
 		for(Handler callback : callbacks) {
-			// TODO magic number 0?
-			Message message = Message.obtain(callback, 0, status);
+			Message message = Message.obtain(callback, CommonData.MESSAGE_UPDATE_SUCCESS, status);
 			callback.sendMessage(message);
 		}
 	}
@@ -125,14 +133,12 @@ public class CommonData {
 		callbacks.add(callback);
 	}
 
-	public InputStream executeHttpGet(String url) {
+	public InputStream executeHttpGet(String url) throws SensorsException {
 		final URI uri;
 		try {
 			uri = new URI(url);
 		} catch (URISyntaxException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return null;
+			throw new SensorsException(e);
 		}
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		
@@ -155,16 +161,18 @@ public class CommonData {
 			HttpResponse httpResponse = httpClient.execute(new HttpGet(uri));
 			return httpResponse.getEntity().getContent();
 		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new SensorsException(e);
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new SensorsException(e);
 		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			throw new SensorsException(e);
 		}
-		// TODO
-		return null;
+	}
+
+	public void notifyUpdateError() {
+		for(Handler callback : callbacks) {
+			Message message = Message.obtain(callback, CommonData.MESSAGE_UPDATE_ERROR);
+			callback.sendMessage(message);
+		}
 	}
 }

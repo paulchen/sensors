@@ -26,20 +26,18 @@ public class Status {
 		commonData = CommonData.getInstance();
 	}
 	
-	public void update() {
+	public void update() throws SensorsException {
 		
 		String url = commonData.getSettingsURL() + "?action=status";
 		
-		// TODO error handling
 		InputStream inputStream = commonData.executeHttpGet(url);
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
 		try {
 			documentBuilder = documentBuilderFactory.newDocumentBuilder();
-		} catch (ParserConfigurationException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
+		}
+		catch (ParserConfigurationException e) {
+			throw new SensorsException(e);
 		}
 		try {
 			Document document = documentBuilder.parse(inputStream);
@@ -51,25 +49,22 @@ public class Status {
 				Node node = nodes.item(a);
 				if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("sensors")) {
 					if(nodeProcessed) {
-						// TODO duplicate <sensors> element
+						throw new SensorsException("Duplicate <sensors> as root element in XML input from API.");
 					}
 					nodeProcessed = true;
 					processNode(node);
 				}
 			}
-		} catch (SAXException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
 		}
-		
-		// TODO Auto-generated method stub
-		
+		catch (SAXException e) {
+			throw new SensorsException(e);
+		}
+		catch (IOException e) {
+			throw new SensorsException(e);
+		}
 	}
 
-	private void processNode(Node parentNode) {
+	private void processNode(Node parentNode) throws SensorsException {
 		NodeList nodes = parentNode.getChildNodes();
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);

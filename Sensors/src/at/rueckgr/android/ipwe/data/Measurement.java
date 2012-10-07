@@ -15,26 +15,28 @@ public class Measurement {
 	private State state;
 	private Value value;
 	
-	public Measurement(Node node, Value value) {
+	public Measurement(Node node, Value value) throws SensorsException {
 		this.value = value;
-		
-		// TODO possible NumberFormatException
-		// TODO possibly null
-		measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
-		// TODO possibly null
+		CommonData commonData = CommonData.getInstance();
+
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
+			measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
 			date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
-		} catch (DOMException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ParseException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			state = commonData.getState(node.getAttributes().getNamedItem("state").getTextContent());		
 		}
-		CommonData commonData = CommonData.getInstance();
-		// TODO possibly null
-		state = commonData.getState(node.getAttributes().getNamedItem("state").getTextContent());		
+		catch (NumberFormatException e) {
+			throw new SensorsException(e);
+		}
+		catch (NullPointerException e) {
+			throw new SensorsException(e);
+		}
+		catch (DOMException e) {
+			throw new SensorsException(e);
+		}
+		catch (ParseException e) {
+			throw new SensorsException(e);
+		}
 	}
 
 	public float getMeasurement() {
@@ -50,7 +52,6 @@ public class Measurement {
 	}
 	
 	public String toString() {
-		// return "[Measurement:value=" + value + "state=" + state + "]";
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		return "[Measurement:timestamp=" + sdf.format(date) + ";value=" + value + "state=" + state + "]";
 	}

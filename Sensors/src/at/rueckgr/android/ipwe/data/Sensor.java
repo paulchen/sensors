@@ -12,14 +12,19 @@ public class Sensor {
 	private List<Value> values;
 	private Status status;
 	
-	public Sensor(Node parentNode, Status status) {
+	public Sensor(Node parentNode, Status status) throws SensorsException {
 		this.status = status;
 		
-		// TODO possible NumberFormatException
-		// TODO possibly null
-		id = Integer.parseInt(parentNode.getAttributes().getNamedItem("id").getTextContent());
-		// TODO possibly null
-		name = parentNode.getAttributes().getNamedItem("name").getTextContent();
+		try {
+			id = Integer.parseInt(parentNode.getAttributes().getNamedItem("id").getTextContent());
+			name = parentNode.getAttributes().getNamedItem("name").getTextContent();
+		}
+		catch (NumberFormatException e) {
+			throw new SensorsException(e);
+		}
+		catch (NullPointerException e) {
+			throw new SensorsException(e);
+		}
 		
 		values = new ArrayList<Value>();
 		NodeList nodes = parentNode.getChildNodes();
@@ -28,7 +33,7 @@ public class Sensor {
 			Node node = nodes.item(a);
 			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("values")) {
 				if(nodeProcessed) {
-					// TODO duplicate <values> element
+					throw new SensorsException("Duplicate <values> element inside <sensor> element in XML input from API.");
 				}
 				nodeProcessed = true;
 				processNode(node);
@@ -36,7 +41,7 @@ public class Sensor {
 		}
 	}
 
-	private void processNode(Node parentNode) {
+	private void processNode(Node parentNode) throws SensorsException {
 		NodeList nodes = parentNode.getChildNodes();
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);
