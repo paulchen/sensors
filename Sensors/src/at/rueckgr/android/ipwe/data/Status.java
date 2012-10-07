@@ -82,4 +82,24 @@ public class Status {
 	public String toString() {
 		return "[Status:sensors=" + sensors.toString() + "]";
 	}
+
+	public Integer getStateCount(State state) {
+		int count = 0;
+		
+		for(Sensor sensor : sensors) {
+			count += sensor.getStateCount(state);
+		}
+		
+		return count;
+	}
+
+	public List<Measurement> getMeasurements() {
+		List<Measurement> measurements = new ArrayList<Measurement>();
+		
+		for(Sensor sensor : sensors) {
+			measurements.addAll(sensor.getMeasurements());
+		}
+		
+		return measurements;
+	}
 }

@@ -68,4 +68,8 @@ public class Measurement {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(date);
 	}
+
+	public int getStateCount(State state) {
+		return state.equals(this.state) ? 1 : 0;
+	}
 }

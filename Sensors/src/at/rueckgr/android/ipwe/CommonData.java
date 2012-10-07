@@ -28,6 +28,7 @@ import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.Message;
 import android.preference.PreferenceManager;
+import at.rueckgr.android.ipwe.data.Measurement;
 import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
 import at.rueckgr.android.ipwe.data.Status;
@@ -57,10 +58,10 @@ public class CommonData {
 	private CommonData() {
 		states = new HashMap<String, State>();
 		
-		states.put("ok", new State("ok", "#00cc33"));
-		states.put("warning", new State("warning", "#00cc33"));
-		states.put("critical", new State("critical", "#00cc33"));
-		states.put("unknown", new State("unknown", "#00cc33"));
+		states.put("ok", new State("ok", "#00cc33", true));
+		states.put("warning", new State("warning", "#00cc33", false));
+		states.put("critical", new State("critical", "#00cc33", false));
+		states.put("unknown", new State("unknown", "#00cc33", false));
 		
 		callbacks = new ArrayList<Handler>();
 	}
@@ -75,7 +76,7 @@ public class CommonData {
 	public State getState(String name) {
 		return states.get(name);
 	}
-
+	
 	public Status getStatus() {
 		return status;
 	}
@@ -174,5 +175,17 @@ public class CommonData {
 			Message message = Message.obtain(callback, CommonData.MESSAGE_UPDATE_ERROR);
 			callback.sendMessage(message);
 		}
+	}
+
+	public Map<String, Integer> getStateCounts() {
+		Map<String, Integer> stateCounts = new HashMap<String, Integer>();
+		for(String stateName : states.keySet()) {
+			stateCounts.put(stateName, status.getStateCount(states.get(stateName)));
+		}
+		return stateCounts;
+	}
+
+	public List<Measurement> getMeasurements() {
+		return status.getMeasurements();
 	}
 }

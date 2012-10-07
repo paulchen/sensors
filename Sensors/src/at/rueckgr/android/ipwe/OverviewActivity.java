@@ -1,7 +1,6 @@
 package at.rueckgr.android.ipwe;
 
-import java.util.ArrayList;
-import java.util.List;
+import java.util.Map;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -19,9 +18,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-import at.rueckgr.android.ipwe.data.Measurement;
-import at.rueckgr.android.ipwe.data.Sensor;
-import at.rueckgr.android.ipwe.data.Value;
+import at.rueckgr.android.ipwe.data.State;
 
 public class OverviewActivity extends Activity implements Notifyable {
     private static final String TAG = "OverviewActivity";
@@ -94,41 +91,28 @@ public class OverviewActivity extends Activity implements Notifyable {
 			return;
 		}
 		
-		// TODO generalize?
-		/*
-		int warning = commonData.getStatus().getWarningsCount();
-		int critical = commonData.getStatus().getCriticalCount();
-		int ok = commonData.getStatus().getOkCount();
-		*/
-		int warning = 0;
-		int critical = 0;
+		Map<String, Integer> stateCounts = commonData.getStateCounts();
+		int total = 0;
 		int ok = 0;
-		List<Measurement> measurements = new ArrayList<Measurement>();
-		for(Sensor sensor : commonData.getStatus().getSensors()) {
-			for(Value value : sensor.getValues()) {
-				measurements.addAll(value.getMeasurements());
-				for(Measurement measurement : value.getMeasurements()) {
-					if(measurement.getState().getName().equals("warning")) {
-						warning++;
-					}
-					else if(measurement.getState().getName().equals("critical")) {
-						critical++;
-					}
-					else {
-						ok++;
-					}
-				}
+		for(String stateName : stateCounts.keySet()) {
+			total += stateCounts.get(stateName);
+			if(commonData.getState(stateName).isOk()) {
+				ok += stateCounts.get(stateName);
 			}
 		}
-		int total = ok + warning + critical;
 		
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		if(warning + critical > 0) {			
+		if(ok != total) {
+			String statusText = "Sensors: " + total;
+			for(String stateName : stateCounts.keySet()) {
+				State state = commonData.getState(stateName);
+				statusText += " - " + state.getLetter() + ": " + stateCounts.get(stateName);
+			}
 			// TODO don't hardcode strings here
 			// TODO configurable
 			Notification notification = new Notification.Builder(getApplicationContext())
 						.setContentTitle("Sensor report")
-						.setContentText("Sensors: " + total + " - O: " + ok + " - W: " + warning + " - C: " + critical)
+						.setContentText(statusText)
 						.setSmallIcon(R.drawable.ic_launcher)
 						.setOngoing(true)
 						.setLights(Color.argb(0, 255, 0, 255), 100, 200)
@@ -141,7 +125,7 @@ public class OverviewActivity extends Activity implements Notifyable {
 			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
 
-        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
+        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, commonData.getMeasurements());
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 

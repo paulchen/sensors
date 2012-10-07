@@ -66,4 +66,14 @@ public class Value {
 	public String getDescription() {
 		return description;
 	}
+
+	public int getStateCount(State state) {
+		int count = 0;
+		
+		for(Measurement measurement : measurements) {
+			count += measurement.getStateCount(state);
+		}
+		
+		return count;
+	}
 }

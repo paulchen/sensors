@@ -71,4 +71,24 @@ public class Sensor {
 	public Status getStatus() {
 		return status;
 	}
+
+	public int getStateCount(State state) {
+		int count = 0;
+		
+		for(Value value : values) {
+			count += value.getStateCount(state);
+		}
+		
+		return count;
+	}
+
+	public List<Measurement> getMeasurements() {
+		List<Measurement> measurements = new ArrayList<Measurement>();
+		
+		for(Value value : values) {
+			measurements.addAll(value.getMeasurements());
+		}
+		
+		return measurements;
+	}
 }
