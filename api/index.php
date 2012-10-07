@@ -21,6 +21,45 @@ if($mysqli->connect_errno) {
 
 require_once('common.php');
 
+if($config['api_authentication'] == 0) {
+	/* do nothing */
+}
+else if($config['api_authentication'] == 1) {
+	/* HTTP basic authentication */
+	if(!isset($_SERVER['PHP_AUTH_USER'])) {
+		header('WWW-Authenticate: Basic realm="Sensors API"');
+		header('HTTP/1.0 401 Unauthorized');
+		// TODO XML reply
+		die();
+	}
+
+	$username = $_SERVER['PHP_AUTH_USER'];
+	$password = $_SERVER['PHP_AUTH_PW'];
+	
+	$stmt = $mysqli->prepare('SELECT hash FROM api_accounts WHERE username = ?');
+	$stmt->bind_param('s', $username);
+	$stmt->execute();
+	$stmt->bind_result($db_hash);
+	$found = false;
+	while($stmt->fetch()) {
+		$found = true;
+	}
+	$stmt->close();
+
+	$hash = crypt($password, $db_hash);
+	if($hash != $db_hash) {
+		// TODO duplicate code
+		header('WWW-Authenticate: Basic realm="Sensors API"');
+		header('HTTP/1.0 401 Unauthorized');
+		// TODO XML reply
+		die();
+	}
+}
+else {
+	echo "Wrong value for configuration setting 'api_authentication'.\n";
+	die(3);
+}
+
 $stmt = $mysqli->prepare('SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC');
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $stmt->bind_param('s', $start_timestamp);

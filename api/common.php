@@ -68,7 +68,7 @@ function get_limits($sensors = array()) {
 }
 
 function get_sensors_state($sensors = array()) {
-	global $mysqli;
+	global $mysqli, $config;
 
 	if(!is_array($sensors)) {
 		// TODO
@@ -108,7 +108,10 @@ function get_sensors_state($sensors = array()) {
 	$sensor_data = array();
 	while($stmt->fetch()) {
 		$value = round($value, 2);
-		if($value <= $limits[$sensor_id][$what]['low_crit']) {
+		if(time()-$timestamp > $config['value_outdated_period']) {
+			$state = 'unknown';
+		}
+		else if($value <= $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
 		}
 		else if($value <= $limits[$sensor_id][$what]['low_warn']) {
