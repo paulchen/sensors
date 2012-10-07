@@ -9,54 +9,29 @@ import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
-import org.apache.http.HttpResponse;
-import org.apache.http.client.ClientProtocolException;
-import org.apache.http.client.methods.HttpGet;
-import org.apache.http.impl.client.DefaultHttpClient;
 import org.w3c.dom.Document;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import android.util.Log;
+import at.rueckgr.android.ipwe.CommonData;
 
-// TODO rename Status -> state
+// TODO rename Status -> state?
 public class Status {
-	private static final String TAG = "Status";
+//	private static final String TAG = "Status";
 	private List<Sensor> sensors;
+	private CommonData commonData;
 
+	public Status() {
+		commonData = CommonData.getInstance();
+	}
+	
 	public void update() {
 		
-		// TODO configurable URL
-		String url = "https://rueckgr.at/sensors/api/?action=status";
+		String url = commonData.getSettingsURL() + "?action=status";
 		
 		// TODO error handling
-		DefaultHttpClient httpClient = new DefaultHttpClient();
-		HttpGet httpGet = new HttpGet(url);
-		HttpResponse httpResponse;
-		try {
-			httpResponse = httpClient.execute(httpGet);
-		} catch (ClientProtocolException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}
-		InputStream inputStream;
-		try {
-			inputStream = httpResponse.getEntity().getContent();
-		} catch (IllegalStateException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-			return;
-		}
+		InputStream inputStream = commonData.executeHttpGet(url);
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
 		try {

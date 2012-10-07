@@ -59,6 +59,10 @@ public class Measurement {
 		return value;
 	}
 
+	public String getFormattedMeasurement() {
+		return value.getFormat().replace("%s", String.valueOf(measurement));
+	}
+	
 	public CharSequence getTimestampString() {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 		return sdf.format(date);

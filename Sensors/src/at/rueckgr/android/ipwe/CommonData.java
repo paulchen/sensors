@@ -1,18 +1,54 @@
 package at.rueckgr.android.ipwe;
 
+import java.io.IOException;
+import java.io.InputStream;
+import java.net.URI;
+import java.net.URISyntaxException;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
-import android.content.Intent;
-import at.rueckgr.android.ipwe.data.State;
+import org.apache.http.HttpException;
+import org.apache.http.HttpRequest;
+import org.apache.http.HttpRequestInterceptor;
+import org.apache.http.HttpResponse;
+import org.apache.http.auth.AuthState;
+import org.apache.http.auth.Credentials;
+import org.apache.http.auth.UsernamePasswordCredentials;
+import org.apache.http.client.ClientProtocolException;
+import org.apache.http.client.methods.HttpGet;
+import org.apache.http.client.protocol.ClientContext;
+import org.apache.http.impl.auth.BasicScheme;
+import org.apache.http.impl.client.DefaultHttpClient;
+import org.apache.http.protocol.HttpContext;
 
+import android.content.Intent;
+import android.content.SharedPreferences;
+import android.os.Handler;
+import android.os.Message;
+import android.preference.PreferenceManager;
+import at.rueckgr.android.ipwe.data.State;
+import at.rueckgr.android.ipwe.data.Status;
+
+// TODO rename to Common?
 public class CommonData {
+	public static final int NOTIFICATION_ID = 1;
+	
 	public Intent pollServiceIntent;
 	public PollService pollService;
 	
 	private static CommonData commonData;
 	private Map<String, State> states;
-	
+
+	private Status status;
+
+	private OverviewActivity context;
+
+	private SharedPreferences preferences;
+
+	private List<Handler> callbacks;
+
 	private CommonData() {
 		states = new HashMap<String, State>();
 		
@@ -20,6 +56,8 @@ public class CommonData {
 		states.put("warning", new State("warning", "#00cc33"));
 		states.put("critical", new State("critical", "#00cc33"));
 		states.put("unknown", new State("unknown", "#00cc33"));
+		
+		callbacks = new ArrayList<Handler>();
 	}
 
 	public static CommonData getInstance() {
@@ -31,5 +69,102 @@ public class CommonData {
 	
 	public State getState(String name) {
 		return states.get(name);
+	}
+
+	public Status getStatus() {
+		return status;
+	}
+
+	public void setStatus(Status status) {
+		this.status = status;
+	}
+
+	public void setContext(OverviewActivity context) {
+		this.context = context;
+	}
+
+	public boolean isConfigured() {
+		return getPreferences().getBoolean("configured", false);
+	}
+
+	public String getSettingsURL() {
+		return getPreferences().getString("settings_url", "");
+	}
+	
+	public boolean getSettingsRefresh() {
+		return getPreferences().getBoolean("settings_refresh", false);
+	}
+	
+	public int getSettingsRefreshInterval() {
+		// TODO possible NumberFormatException
+		return Integer.parseInt(getPreferences().getString("settings_refresh_interval", "300"));
+	}
+	
+	private SharedPreferences getPreferences() {
+		if(preferences == null) {
+			if(context != null) {
+				preferences = PreferenceManager.getDefaultSharedPreferences(context);
+			}
+			else {
+				// TODO epic problem
+				return null;
+			}
+		}
+		return preferences;
+	}
+	
+	public void notifyUpdate(Status status) {
+		for(Handler callback : callbacks) {
+			// TODO magic number 0?
+			Message message = Message.obtain(callback, 0, status);
+			callback.sendMessage(message);
+		}
+	}
+	
+	public void addCallback(Handler callback) {
+		callbacks.add(callback);
+	}
+
+	public InputStream executeHttpGet(String url) {
+		final URI uri;
+		try {
+			uri = new URI(url);
+		} catch (URISyntaxException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			return null;
+		}
+		DefaultHttpClient httpClient = new DefaultHttpClient();
+		
+		if(getPreferences().getBoolean("settings_auth", false)) {
+			HttpRequestInterceptor preemptiveAuth = new HttpRequestInterceptor() {
+			    public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
+			        AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
+		            Credentials credentials =
+		            		new UsernamePasswordCredentials(
+		            				getPreferences().getString("settings_username", ""),
+		            				getPreferences().getString("settings_password", "")
+		            		);
+	                authState.setAuthScheme(new BasicScheme());
+	                authState.setCredentials(credentials);
+			    }    
+			};
+			httpClient.addRequestInterceptor(preemptiveAuth, 0);
+		}
+		try {
+			HttpResponse httpResponse = httpClient.execute(new HttpGet(uri));
+			return httpResponse.getEntity().getContent();
+		} catch (ClientProtocolException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IllegalStateException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		// TODO
+		return null;
 	}
 }

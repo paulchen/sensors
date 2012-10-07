@@ -4,11 +4,15 @@ import java.util.ArrayList;
 import java.util.List;
 
 import android.app.Activity;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.Context;
+import android.content.DialogInterface;
+import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
@@ -17,17 +21,17 @@ import android.widget.ListView;
 import android.widget.Toast;
 import at.rueckgr.android.ipwe.data.Measurement;
 import at.rueckgr.android.ipwe.data.Sensor;
-import at.rueckgr.android.ipwe.data.Status;
 import at.rueckgr.android.ipwe.data.Value;
 
-public class OverviewActivity extends Activity implements InformantCallback {
+public class OverviewActivity extends Activity implements Notifyable {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
-    // TODO move to CommonData
-	private static Status status;
+    private OverviewActivity _this;
     
     public OverviewActivity() {
         commonData = CommonData.getInstance();
+        commonData.setContext(this);
+        _this = this;
     }
     
 	@Override
@@ -35,15 +39,32 @@ public class OverviewActivity extends Activity implements InformantCallback {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_overview);
         
-        Informant.getInstance().addCallback(new OverviewHandler(this));
+        commonData.addCallback(new OverviewHandler(this));
 
+        if(!commonData.isConfigured()) {
+        	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
+				@Override
+				public void onClick(DialogInterface dialog, int which) {
+    				dialog.dismiss();
+    				Intent intent = new Intent(_this, SettingsActivity.class);
+    				startActivity(intent);
+				}
+			};
+			
+    		// TODO don't hardcode strings
+    		new AlertDialog.Builder(_this).setTitle("Welcome")
+    			.setMessage("This is the first time you run this app. You will have to configure it in order to use it.")
+    			.setCancelable(false)
+    			.setPositiveButton("Ok", dialogClickListener)
+    			.show();
+    	}
+        
         if(commonData.pollServiceIntent == null) {
         	commonData.pollServiceIntent = new Intent(this, PollService.class);
         	startService(commonData.pollServiceIntent);
         }
         else {
-        	notify(status);
-//        	commonData.pollService.triggerUpdate();
+        	notifyUpdate(false);
         }
     }
 
@@ -53,99 +74,115 @@ public class OverviewActivity extends Activity implements InformantCallback {
         return true;
     }
 
-	// @Override
-	public void notify(Status status) {
-		OverviewActivity.status = status;
-		// TODO
-//		Context context = getApplicationContext();
-		
-		// TODO suppress if update untriggered
-		CharSequence text = "Sensors updated";
-		int duration = Toast.LENGTH_SHORT;
-
-		Toast toast = Toast.makeText(this, text, duration);
-		toast.show();
+    
+    @Override
+    public void notifyUpdate() {
+    	notifyUpdate(true);
+    }
+    
+	public void notifyUpdate(boolean showToast) {
+		if(showToast) {
+			// TODO don't hardcode string
+			Toast toast = Toast.makeText(this, "Sensors updated", Toast.LENGTH_SHORT);
+			toast.show();
+		}
 		
 		Log.d(TAG, "Notification received");
 		
+		// TODO why is this necessary? why is update() called even if nothing has been updated yet?
+		if(commonData.getStatus() == null || commonData.getStatus().getSensors() == null) {
+			return;
+		}
+		
 		// TODO generalize?
-		boolean warning = false;
-		boolean critical = false;
+		int warning = 0;
+		int critical = 0;
+		int ok = 0;
 		List<Measurement> measurements = new ArrayList<Measurement>();
-		for(Sensor sensor : status.getSensors()) {
+		for(Sensor sensor : commonData.getStatus().getSensors()) {
 			for(Value value : sensor.getValues()) {
 				measurements.addAll(value.getMeasurements());
-				for(Measurement measurement : measurements) {
+				for(Measurement measurement : value.getMeasurements()) {
 					if(measurement.getState().getName().equals("warning")) {
-						warning = true;
+						warning++;
 					}
-					if(measurement.getState().getName().equals("warning")) {
-						critical = true;
+					else if(measurement.getState().getName().equals("critical")) {
+						critical++;
+					}
+					else {
+						ok++;
 					}
 				}
 			}
 		}
+		int total = ok + warning + critical;
 		
-		if(warning || critical) {
-			// TODO more detailled info
-			CharSequence notificationText;
-			if(critical) {
-				notificationText = "At least one service is in critical state.";
-			}
-			else {
-				notificationText = "At least one service is in warning state.";
-			}
+		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+		if(warning + critical > 0) {			
+			// TODO don't hardcode strings here
+			// TODO configurable
+			Notification notification = new Notification.Builder(getApplicationContext())
+						.setContentTitle("Sensor report")
+						.setContentText("Sensors: " + total + " - O: " + ok + " - W: " + warning + " - C: " + critical)
+						.setSmallIcon(R.drawable.ic_launcher)
+						.setOngoing(true)
+						.setLights(Color.argb(0, 255, 0, 255), 100, 200)
+						.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
+						.getNotification();
 			
-			String ns = Context.NOTIFICATION_SERVICE;
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
-			
-			int icon = R.drawable.ic_launcher;
-			long when = System.currentTimeMillis();
-
-			// TODO deprecated
-			Notification notification = new Notification(icon, notificationText, when);
-			
-			Context context = getApplicationContext();
-			// TODO
-			CharSequence contentTitle = "My notification";
-			CharSequence contentText = "Hello World!";
-			Intent notificationIntent = new Intent(this, OverviewActivity.class);
-			PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
-
-			// TODO deprecated
-			notification.setLatestEventInfo(context, contentTitle, contentText, contentIntent);
-			
-			// TODO magic number for ID (first parameter)
-			mNotificationManager.notify(1, notification);
-			
-			// TODO remove notification when tipping on it/service is not critical anymore
+			mNotificationManager.notify(CommonData.NOTIFICATION_ID, notification);
 		}
 		else {
-			String ns = Context.NOTIFICATION_SERVICE;
-			NotificationManager mNotificationManager = (NotificationManager) getSystemService(ns);
-			// TODO magic number
-			mNotificationManager.cancel(1);
+			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
-		// TODO rename saa
-		// TODO rename listView1
-        StatusArrayAdapter saa = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
-	    ((ListView)findViewById(R.id.listView1)).setAdapter(saa);
+
+        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, measurements);
+	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 
+	private void askShutdown() {
+		OnClickListener dialogClickListener = new OnClickListener() {
+		    @Override
+		    public void onClick(DialogInterface dialog, int which) {
+		        switch (which){
+		        case DialogInterface.BUTTON_POSITIVE:
+		            shutdown();
+		            break;
+
+		        case DialogInterface.BUTTON_NEGATIVE:
+		            /* do nothing */
+		            break;
+		        }
+		    }
+		};
+
+		// TODO don't hardcode strings here
+		new AlertDialog.Builder(this)
+			.setMessage("Are you sure?")
+			.setPositiveButton("Yes", dialogClickListener)
+		    .setNegativeButton("No", dialogClickListener)
+		    .show();
+	}
+	
+	private void shutdown() {
+		stopService(commonData.pollServiceIntent);
+		finish();
+	}
+	
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		switch(item.getItemId()) {
 		case R.id.menu_exit:
-			// TODO
+			askShutdown();
 			break;
 		
 		case R.id.menu_settings:
-			// TODO
+			Intent intent = new Intent(this, SettingsActivity.class);
+			startActivity(intent);
 			break;
 			
 		case R.id.menu_update:
 			commonData.pollService.triggerUpdate();
-			// TODO
 			break;
 		}
 		

@@ -6,5 +6,15 @@
     <string name="title_activity_overview">Sensors</string>
     <string name="menu_update">Update</string>
     <string name="menu_exit">Exit</string>
-
+    <string name="settings_username">Username</string>
+    <string name="settings_password">Password</string>
+    <string name="settings">Settings</string>
+    <string name="settings_url">URL</string>
+    <string name="settings_auth">HTTP Basic Authentication</string>
+    <string name="settings_refresh_interval">Interval (seconds)</string>
+    <string name="settings_refresh">Update periodically</string>
+    <string name="settings_header_general">General</string>
+    <string name="settings_header_auth">Authentication</string>
+    <string name="settings_header_refresh">Updates</string>
+    
 </resources>

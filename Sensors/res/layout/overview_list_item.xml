@@ -9,7 +9,7 @@
         android:id="@+id/sensor_name"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="name"
+        android:textSize="20sp"
         android:textColor="#fff" />
 
     <LinearLayout
@@ -20,22 +20,22 @@
             android:id="@+id/value_timestamp"
             android:layout_width="144dp"
             android:layout_height="wrap_content"
-            android:text="timestamp"
-            android:textColor="#fff" />
+            android:textColor="#888" />
 
         <TextView
             android:id="@+id/sensor_value"
             android:layout_width="116dp"
             android:layout_height="wrap_content"
-            android:text="value"
+            android:gravity="right"
             android:textColor="#fff" />
 
         <TextView
             android:id="@+id/sensor_status_color"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:text="xxx"
-            android:textColor="#fff" />
+            android:textColor="#fff"
+            android:gravity="right"
+            android:textSize="20sp" />
 
     </LinearLayout>
 
