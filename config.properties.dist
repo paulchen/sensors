@@ -31,3 +31,6 @@ battery_warning = 365
 # if the battery has not been changed for this period of time in days, this will trigger a 'CRITICAL' state
 battery_critical = 400
 
+# if username and password are required for access to the API
+api_authentication = false
+
