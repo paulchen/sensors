@@ -7,6 +7,7 @@ import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
 import android.preference.PreferenceFragment;
 import android.widget.Toast;
+import at.rueckgr.android.ipwe.data.SensorsException;
 
 public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 	private SharedPreferences preferences;
@@ -30,6 +31,12 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		editor.putBoolean("configured", true);
 		editor.commit();
 		
+		try {
+			CommonData.getInstance().readConfig();
+		} catch (SensorsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
 		CommonData.getInstance().pollService.triggerUpdate();
 	}
 	

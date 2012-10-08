@@ -55,6 +55,20 @@ public class CommonData {
 
 	private List<Handler> callbacks;
 
+	private boolean configured;
+
+	private String settingsURL;
+
+	private boolean settingsRefresh;
+
+	private int settingsRefreshInterval;
+
+	private String settingsUsername;
+
+	private String settingsPassword;
+
+	private boolean settingsAuth;
+
 	private CommonData() {
 		states = new HashMap<String, State>();
 		
@@ -85,29 +99,41 @@ public class CommonData {
 		this.status = status;
 	}
 
-	public void setContext(OverviewActivity context) {
+	public void setContext(OverviewActivity context) throws SensorsException {
 		this.context = context;
+		
+		readConfig();
 	}
 
-	public boolean isConfigured() {
-		return getPreferences().getBoolean("configured", false);
-	}
-
-	public String getSettingsURL() {
-		return getPreferences().getString("settings_url", "");
-	}
-	
-	public boolean getSettingsRefresh() {
-		return getPreferences().getBoolean("settings_refresh", false);
-	}
-	
-	public int getSettingsRefreshInterval() throws SensorsException {
+	public void readConfig() throws SensorsException {
+		configured = getPreferences().getBoolean("configured", false);
+		settingsURL = getPreferences().getString("settings_url", "");
+		settingsRefresh = getPreferences().getBoolean("settings_refresh", false);
 		try {
-			return Integer.parseInt(getPreferences().getString("settings_refresh_interval", "300"));
+			settingsRefreshInterval = Integer.parseInt(getPreferences().getString("settings_refresh_interval", "300"));
 		}
 		catch (NumberFormatException e) {
 			throw new SensorsException(e);
 		}
+		settingsUsername = getPreferences().getString("settings_username", "");
+		settingsPassword = getPreferences().getString("settings_password", "");
+		settingsAuth = getPreferences().getBoolean("settings_auth", false);
+	}
+
+	public boolean isConfigured() {
+		return configured;
+	}
+
+	public String getSettingsURL() {
+		return settingsURL;
+	}
+	
+	public boolean getSettingsRefresh() {
+		return settingsRefresh;
+	}
+	
+	public int getSettingsRefreshInterval() {
+		return settingsRefreshInterval;
 	}
 	
 	private SharedPreferences getPreferences() {
@@ -143,15 +169,12 @@ public class CommonData {
 		}
 		DefaultHttpClient httpClient = new DefaultHttpClient();
 		
-		if(getPreferences().getBoolean("settings_auth", false)) {
+		if(settingsAuth) {
 			HttpRequestInterceptor preemptiveAuth = new HttpRequestInterceptor() {
 			    public void process(final HttpRequest request, final HttpContext context) throws HttpException, IOException {
 			        AuthState authState = (AuthState) context.getAttribute(ClientContext.TARGET_AUTH_STATE);
 		            Credentials credentials =
-		            		new UsernamePasswordCredentials(
-		            				getPreferences().getString("settings_username", ""),
-		            				getPreferences().getString("settings_password", "")
-		            		);
+		            		new UsernamePasswordCredentials(settingsUsername, settingsPassword);
 	                authState.setAuthScheme(new BasicScheme());
 	                authState.setCredentials(credentials);
 			    }    
@@ -187,5 +210,9 @@ public class CommonData {
 
 	public List<Measurement> getMeasurements() {
 		return status.getMeasurements();
+	}
+
+	public void removeCallback(OverviewHandler overviewHandler) {
+		callbacks.remove(overviewHandler);
 	}
 }

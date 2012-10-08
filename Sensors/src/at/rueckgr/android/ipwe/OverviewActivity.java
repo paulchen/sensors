@@ -18,25 +18,35 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
+import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
 
 public class OverviewActivity extends Activity implements Notifyable {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
     private OverviewActivity _this;
+    private OverviewHandler overviewHandler;
     
     public OverviewActivity() {
-        commonData = CommonData.getInstance();
-        commonData.setContext(this);
         _this = this;
     }
     
 	@Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        
+        commonData = CommonData.getInstance();
+        try {
+			commonData.setContext(this);
+		} catch (SensorsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+        
         setContentView(R.layout.activity_overview);
         
-        commonData.addCallback(new OverviewHandler(this));
+        overviewHandler = new OverviewHandler(this);
+        commonData.addCallback(overviewHandler);
 
         if(!commonData.isConfigured()) {
         	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
@@ -65,6 +75,27 @@ public class OverviewActivity extends Activity implements Notifyable {
         }
     }
 
+	@Override
+	public void onPause() {
+		super.onPause();
+		
+		commonData.removeCallback(overviewHandler);
+	}
+	
+	@Override
+	public void onResume() {
+		super.onResume();
+		
+        commonData = CommonData.getInstance();
+        try {
+			commonData.setContext(this);
+		} catch (SensorsException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}        
+		commonData.addCallback(overviewHandler);
+	}
+	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_overview, menu);
