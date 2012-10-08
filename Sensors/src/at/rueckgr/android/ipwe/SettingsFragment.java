@@ -1,13 +1,20 @@
 package at.rueckgr.android.ipwe;
 
 
+import android.content.ComponentName;
+import android.content.Context;
+import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.content.SharedPreferences.OnSharedPreferenceChangeListener;
 import android.os.Bundle;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.preference.PreferenceFragment;
 import android.widget.Toast;
-import at.rueckgr.android.ipwe.data.SensorsException;
 
 public class SettingsFragment extends PreferenceFragment implements OnSharedPreferenceChangeListener {
 	private SharedPreferences preferences;
@@ -31,13 +38,25 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		editor.putBoolean("configured", true);
 		editor.commit();
 		
-		try {
-			CommonData.getInstance().readConfig();
-		} catch (SensorsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		CommonData.getInstance().pollService.triggerUpdate();
+		Intent intent = new Intent(getActivity(), PollService.class);
+		ServiceConnection serviceConnection = new ServiceConnection() {
+			@Override
+			public void onServiceDisconnected(ComponentName name) {
+				/* do nothing */
+			}
+			
+			@Override
+			public void onServiceConnected(ComponentName name, IBinder service) {
+				try {
+					new Messenger(service).send(Message.obtain());
+				} catch (RemoteException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+				getActivity().unbindService(this);
+			}
+		};
+		getActivity().bindService(intent, serviceConnection , Context.BIND_AUTO_CREATE);
 	}
 	
 	@Override

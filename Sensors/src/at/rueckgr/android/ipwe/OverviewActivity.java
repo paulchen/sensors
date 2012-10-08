@@ -7,81 +7,117 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.IBinder;
+import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
+import at.rueckgr.android.ipwe.data.Status;
 
-public class OverviewActivity extends Activity implements Notifyable {
+public class OverviewActivity extends Activity implements ServiceConnection {
     private static final String TAG = "OverviewActivity";
     private CommonData commonData;
-    private OverviewActivity _this;
-    private OverviewHandler overviewHandler;
+    // TODO really static?
+    private static OverviewHandler overviewHandler;
+    private IBinder serviceBinder;
     
-    public OverviewActivity() {
-        _this = this;
+    private static class OverviewHandler extends Handler {
+//    	private Notifyable callback;
+//    	private CommonData commonData;
+
+    	private OverviewActivity activity;
+
+		public OverviewHandler(OverviewActivity activity) {
+    		super();
+    		this.activity = activity;
+//    		commonData = CommonData.getInstance();
+    	}
+
+    	@Override
+    	public void handleMessage(Message msg) {
+    		switch(msg.what) {
+    			case CommonData.MESSAGE_UPDATE_SUCCESS:
+    				// commonData.setStatus((Status)msg.obj);
+    				activity.notifyUpdate((Status)msg.obj, true);
+    				break;
+    				
+    			case CommonData.MESSAGE_UPDATE_ERROR:
+    				activity.notifyError();
+    				break;
+    			
+    			default:
+    				/* will never happen */
+    		}
+    	}
     }
-    
-	@Override
+
+    @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         
-        commonData = CommonData.getInstance();
-        try {
+		overviewHandler = new OverviewHandler(this);
+        // TODO necessary?
+//        getApplication();
+        
+        commonData = (CommonData)getApplication();
+/*        try {
 			commonData.setContext(this);
 		} catch (SensorsException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
-		}
+		}*/
         
         setContentView(R.layout.activity_overview);
         
-        overviewHandler = new OverviewHandler(this);
-        commonData.addCallback(overviewHandler);
+//        overviewHandler = new OverviewHandler(this);
+//        commonData.addCallback(overviewHandler);
 
         if(!commonData.isConfigured()) {
         	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
     				dialog.dismiss();
-    				Intent intent = new Intent(_this, SettingsActivity.class);
+    				Intent intent = new Intent(OverviewActivity.this, SettingsActivity.class);
     				startActivity(intent);
 				}
 			};
 			
     		// TODO don't hardcode strings
-    		new AlertDialog.Builder(_this).setTitle("Welcome")
+    		new AlertDialog.Builder(OverviewActivity.this).setTitle("Welcome")
     			.setMessage("This is the first time you run this app. You will have to configure it in order to use it.")
     			.setCancelable(false)
     			.setPositiveButton("Ok", dialogClickListener)
     			.show();
     	}
         
-        if(commonData.pollServiceIntent == null) {
-        	commonData.pollServiceIntent = new Intent(this, PollService.class);
-        	startService(commonData.pollServiceIntent);
-        }
-        else {
-        	notifyUpdate(false);
-        }
+    	Intent intent = new Intent(this, PollService.class);
+    	startService(intent);
+    	bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
+	/*
 	@Override
 	public void onPause() {
 		super.onPause();
 		
 		commonData.removeCallback(overviewHandler);
-	}
+	} */
 	
+	/*
 	@Override
 	public void onResume() {
 		super.onResume();
@@ -94,21 +130,15 @@ public class OverviewActivity extends Activity implements Notifyable {
 			e.printStackTrace();
 		}        
 		commonData.addCallback(overviewHandler);
-	}
+	}*/
 	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_overview, menu);
         return true;
     }
-
     
-    @Override
-    public void notifyUpdate() {
-    	notifyUpdate(true);
-    }
-    
-	public void notifyUpdate(boolean showToast) {
+	public void notifyUpdate(Status status, boolean showToast) {
 		if(showToast) {
 			// TODO don't hardcode string
 			Toast toast = Toast.makeText(this, "Sensors updated", Toast.LENGTH_SHORT);
@@ -117,12 +147,8 @@ public class OverviewActivity extends Activity implements Notifyable {
 		
 		Log.d(TAG, "Notification received");
 		
-		// TODO why is this necessary? why is update() called even if nothing has been updated yet?
-		if(commonData.getStatus() == null || commonData.getStatus().getSensors() == null) {
-			return;
-		}
-		
-		Map<String, Integer> stateCounts = commonData.getStateCounts();
+		// TODO move getStateCounts() into status class
+		Map<String, Integer> stateCounts = commonData.getStateCounts(status);
 		int total = 0;
 		int ok = 0;
 		for(String stateName : stateCounts.keySet()) {
@@ -156,7 +182,7 @@ public class OverviewActivity extends Activity implements Notifyable {
 			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
 
-        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, commonData.getMeasurements());
+        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, commonData.getMeasurements(status));
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 
@@ -185,7 +211,15 @@ public class OverviewActivity extends Activity implements Notifyable {
 	}
 	
 	private void shutdown() {
-		stopService(commonData.pollServiceIntent);
+		// TODO call from onStop()
+		try {
+			new Messenger(serviceBinder).send(Message.obtain(null, CommonData.MESSAGE_REMOVE_CLIENT));
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    	stopService(new Intent(this, PollService.class));
+    	unbindService(this);
 		finish();
 	}
 	
@@ -202,17 +236,39 @@ public class OverviewActivity extends Activity implements Notifyable {
 			break;
 			
 		case R.id.menu_update:
-			commonData.pollService.triggerUpdate();
+			try {
+				new Messenger(serviceBinder).send(Message.obtain(null, CommonData.MESSAGE_TRIGGER_UPDATE));
+			} catch (RemoteException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			break;
 		}
 		
 		return true;
 	}
 
-	@Override
 	public void notifyError() {
 		// TODO don't hardcode string
 		Toast toast = Toast.makeText(this, "Error while updating sensors.", Toast.LENGTH_SHORT);
 		toast.show();
+	}
+
+	@Override
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		serviceBinder = service;
+		try {
+			Message message = Message.obtain(null, CommonData.MESSAGE_ADD_CLIENT);
+			message.replyTo = new Messenger(overviewHandler);
+			(new Messenger(service)).send(message);
+		} catch (RemoteException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	@Override
+	public void onServiceDisconnected(ComponentName name) {
+		/* do nothing */
 	}
 }

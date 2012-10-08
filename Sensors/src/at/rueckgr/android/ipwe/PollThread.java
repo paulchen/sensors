@@ -8,12 +8,16 @@ import at.rueckgr.android.ipwe.data.Status;
 public class PollThread extends Thread {
 	private static final String TAG = "PollThread";
 	
-	private Status status;
+//	private Status status;
 	private CommonData commonData;
+	private PollService pollService;
 	
-	public PollThread(Status status) {
+	public PollThread(PollService pollService) {
+		/*
 		this.status = status;
+		*/
 		commonData = CommonData.getInstance();
+		this.pollService = pollService;
 	}
 	
 	@Override
@@ -24,16 +28,18 @@ public class PollThread extends Thread {
 		
 		for(;;) {
 			try {
-				if(commonData.getSettingsRefresh()) {
+				commonData.readConfig(pollService);
+				if(CommonData.getInstance().getSettingsRefresh()) {
 					Log.e(TAG, "Updating...");
+					Status status = new Status();
 					status.update();
-					commonData.notifyUpdate(status);
+					pollService.notifyUpdate(status);
 				}
 				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
 			catch (SensorsException e) {
 				e.printStackTrace();
-				commonData.notifyUpdateError();
+				pollService.notifyUpdateError();
 			}
 			catch (InterruptedException e) {
 				/* do nothing */
