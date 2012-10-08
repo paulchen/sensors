@@ -18,7 +18,6 @@ public class PollService extends Service {
 	private static final String TAG = "PollService";
 	// TODO really static?!
 	private static PollThread pollThread;
-//	private CommonData commonData;
 	private Messenger incomingMessenger;
 	private static List<Messenger> clients;
 	
@@ -27,7 +26,6 @@ public class PollService extends Service {
 	}
 	
 	public PollService() {
-//		commonData = CommonData.getInstance();
 		incomingMessenger = new Messenger(new IncomingHandler());
 	}
 	
@@ -61,8 +59,6 @@ public class PollService extends Service {
 		
 		pollThread = new PollThread(this);
 		pollThread.start();
-		
-//		commonData.pollService = this;
 		
 		return START_STICKY;
 	}

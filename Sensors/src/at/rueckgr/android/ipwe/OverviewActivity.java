@@ -36,22 +36,17 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     private IBinder serviceBinder;
     
     private static class OverviewHandler extends Handler {
-//    	private Notifyable callback;
-//    	private CommonData commonData;
-
     	private OverviewActivity activity;
 
 		public OverviewHandler(OverviewActivity activity) {
     		super();
     		this.activity = activity;
-//    		commonData = CommonData.getInstance();
     	}
 
     	@Override
     	public void handleMessage(Message msg) {
     		switch(msg.what) {
     			case CommonData.MESSAGE_UPDATE_SUCCESS:
-    				// commonData.setStatus((Status)msg.obj);
     				activity.notifyUpdate((Status)msg.obj, true);
     				break;
     				
@@ -70,21 +65,9 @@ public class OverviewActivity extends Activity implements ServiceConnection {
         super.onCreate(savedInstanceState);
         
 		overviewHandler = new OverviewHandler(this);
-        // TODO necessary?
-//        getApplication();
-        
         commonData = (CommonData)getApplication();
-/*        try {
-			commonData.setContext(this);
-		} catch (SensorsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}*/
         
         setContentView(R.layout.activity_overview);
-        
-//        overviewHandler = new OverviewHandler(this);
-//        commonData.addCallback(overviewHandler);
 
         if(!commonData.isConfigured()) {
         	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
@@ -109,29 +92,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     	bindService(intent, this, Context.BIND_AUTO_CREATE);
     }
 
-	/*
-	@Override
-	public void onPause() {
-		super.onPause();
-		
-		commonData.removeCallback(overviewHandler);
-	} */
-	
-	/*
-	@Override
-	public void onResume() {
-		super.onResume();
-		
-        commonData = CommonData.getInstance();
-        try {
-			commonData.setContext(this);
-		} catch (SensorsException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}        
-		commonData.addCallback(overviewHandler);
-	}*/
-	
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_overview, menu);
@@ -147,8 +107,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		
 		Log.d(TAG, "Notification received");
 		
-		// TODO move getStateCounts() into status class
-		Map<String, Integer> stateCounts = commonData.getStateCounts(status);
+		Map<String, Integer> stateCounts = status.getStateCounts();
 		int total = 0;
 		int ok = 0;
 		for(String stateName : stateCounts.keySet()) {
@@ -182,7 +141,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
 		}
 
-        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, commonData.getMeasurements(status));
+        StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, status.getMeasurements());
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
 	}
 

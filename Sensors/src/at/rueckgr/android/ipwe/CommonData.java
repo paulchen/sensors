@@ -5,7 +5,6 @@ import java.io.InputStream;
 import java.net.URI;
 import java.net.URISyntaxException;
 import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.apache.http.HttpException;
@@ -26,10 +25,8 @@ import android.app.Application;
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
-import at.rueckgr.android.ipwe.data.Measurement;
 import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
-import at.rueckgr.android.ipwe.data.Status;
 
 // TODO rename to Common?
 public class CommonData extends Application {
@@ -41,21 +38,8 @@ public class CommonData extends Application {
 	public static final int MESSAGE_REMOVE_CLIENT = 3;
 	public static final int MESSAGE_TRIGGER_UPDATE = 4;
 
-	private static final String TAG = "CommonData";
-	
-//	public Intent pollServiceIntent;
-//	public PollService pollService;
-	
 	private static CommonData commonData;
 	private Map<String, State> states;
-
-//	private Status status;
-
-//	private OverviewActivity context;
-
-//	private SharedPreferences preferences;
-
-//	private List<Handler> callbacks;
 
 	private boolean configured;
 	private String settingsURL;
@@ -65,6 +49,7 @@ public class CommonData extends Application {
 	private String settingsPassword;
 	private boolean settingsAuth;
 
+	// TODO wherever used, use getApplication() instead of CommonData.getInstance()? 
 	public CommonData() {
 		initStates();
 	}
@@ -95,55 +80,24 @@ public class CommonData extends Application {
 		return commonData;
 	}
 	
-	/*
-	public boolean isServiceRunning(Class<? extends Service> serviceClass) {
-		final ActivityManager activityManager = (ActivityManager)context.getSystemService(Context.ACTIVITY_SERVICE);
-		final List<RunningServiceInfo> services = activityManager.getRunningServices(Integer.MAX_VALUE);
-		
-		for (RunningServiceInfo runningServiceInfo : services) {
-			if (runningServiceInfo.service.getClassName().equals(serviceClass.getName())){
-				return true;
-			}
-		}
-		return false;
-	}
-	*/
-
 	public State getState(String name) {
 		return states.get(name);
 	}
 	
-	/*
-	public Status getStatus() {
-		return status;
-	} */
-
-	/*
-	public void setStatus(Status status) {
-		this.status = status;
-	}
-	*/
-
-	/*
-	public void setContext(OverviewActivity context) throws SensorsException {
-		this.context = context;
-		
-		readConfig();
-	}
-*/
 	public void readConfig(Context context) {
-		configured = getPreferences(context).getBoolean("configured", false);
-		settingsURL = getPreferences(context).getString("settings_url", "");
-		settingsRefresh = getPreferences(context).getBoolean("settings_refresh", false);
+		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+		configured = preferences.getBoolean("configured", false);
+		settingsURL = preferences.getString("settings_url", "");
+		settingsRefresh = preferences.getBoolean("settings_refresh", false);
 		try {
-			settingsRefreshInterval = Integer.parseInt(getPreferences(context).getString("settings_refresh_interval", "300"));
+			settingsRefreshInterval = Integer.parseInt(preferences.getString("settings_refresh_interval", "300"));
 		}
 		catch (NumberFormatException e) {
 			settingsRefreshInterval = 300;
 		}
-		settingsUsername = getPreferences(context).getString("settings_username", "");
-		settingsPassword = getPreferences(context).getString("settings_password", "");
-		settingsAuth = getPreferences(context).getBoolean("settings_auth", false);
+		settingsUsername = preferences.getString("settings_username", "");
+		settingsPassword = preferences.getString("settings_password", "");
+		settingsAuth = preferences.getBoolean("settings_auth", false);
 	}
 
 	public boolean isConfigured() {
@@ -162,33 +116,6 @@ public class CommonData extends Application {
 		return settingsRefreshInterval;
 	}
 	
-	private SharedPreferences getPreferences(Context context) {
-		/* if(preferences == null) {
-			if(context != null) {
-				preferences = PreferenceManager.getDefaultSharedPreferences(context);
-			}
-			else {
-				// TODO epic problem
-				return null;
-			}
-		}*/
-		return PreferenceManager.getDefaultSharedPreferences(context);
-	}
-	
-	
-	/*
-	public void notifyUpdate(Status status) {
-		for(Handler callback : callbacks) {
-			Message message = Message.obtain(callback, CommonData.MESSAGE_UPDATE_SUCCESS, status);
-			callback.sendMessage(message);
-		}
-	}
-	
-	public void addCallback(Handler callback) {
-		callbacks.add(callback);
-	}
-	*/
-
 	public InputStream executeHttpGet(String url) throws SensorsException {
 		final URI uri;
 		try {
@@ -222,31 +149,7 @@ public class CommonData extends Application {
 		}
 	}
 
-	/*
-	public void notifyUpdateError() {
-		for(Handler callback : callbacks) {
-			Message message = Message.obtain(callback, CommonData.MESSAGE_UPDATE_ERROR);
-			callback.sendMessage(message);
-		}
+	public Map<String, State> getStates() {
+		return states;
 	}
-	*/
-
-	public Map<String, Integer> getStateCounts(Status status) {
-		Map<String, Integer> stateCounts = new HashMap<String, Integer>();
-		for(String stateName : states.keySet()) {
-			stateCounts.put(stateName, status.getStateCount(states.get(stateName)));
-		}
-		return stateCounts;
-	}
-
-	// TODO move to status
-	public List<Measurement> getMeasurements(Status status) {
-		return status.getMeasurements();
-	}
-
-	/*
-	public void removeCallback(OverviewHandler overviewHandler) {
-		callbacks.remove(overviewHandler);
-	}
-	*/
 }

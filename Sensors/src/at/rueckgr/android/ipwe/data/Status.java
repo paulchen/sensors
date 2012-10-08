@@ -3,7 +3,9 @@ package at.rueckgr.android.ipwe.data;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import javax.xml.parsers.DocumentBuilder;
 import javax.xml.parsers.DocumentBuilderFactory;
@@ -101,5 +103,14 @@ public class Status {
 		}
 		
 		return measurements;
+	}
+
+	public Map<String, Integer> getStateCounts() {
+		Map<String, State> states = commonData.getStates();
+		Map<String, Integer> stateCounts = new HashMap<String, Integer>();
+		for(String stateName : states.keySet()) {
+			stateCounts.put(stateName, getStateCount(states.get(stateName)));
+		}
+		return stateCounts;
 	}
 }

@@ -8,14 +8,10 @@ import at.rueckgr.android.ipwe.data.Status;
 public class PollThread extends Thread {
 	private static final String TAG = "PollThread";
 	
-//	private Status status;
 	private CommonData commonData;
 	private PollService pollService;
 	
 	public PollThread(PollService pollService) {
-		/*
-		this.status = status;
-		*/
 		commonData = CommonData.getInstance();
 		this.pollService = pollService;
 	}
