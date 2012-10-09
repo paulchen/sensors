@@ -16,7 +16,6 @@ import at.rueckgr.android.ipwe.data.Status;
 
 public class PollService extends Service {
 	private static final String TAG = "PollService";
-	// TODO really static?!
 	private static PollThread pollThread;
 	private Messenger incomingMessenger;
 	private static List<Messenger> clients;

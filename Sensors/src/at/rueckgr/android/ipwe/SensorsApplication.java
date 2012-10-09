@@ -37,7 +37,6 @@ public class SensorsApplication extends Application {
 	public static final int MESSAGE_REMOVE_CLIENT = 3;
 	public static final int MESSAGE_TRIGGER_UPDATE = 4;
 
-	// private static SensorsApplication commonData;
 	private Map<String, State> states;
 
 	private boolean configured;
@@ -48,7 +47,6 @@ public class SensorsApplication extends Application {
 	private String settingsPassword;
 	private boolean settingsAuth;
 
-	// TODO wherever used, use getApplication() instead of CommonData.getInstance()? 
 	public SensorsApplication() {
 		initStates();
 	}

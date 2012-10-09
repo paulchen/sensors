@@ -35,7 +35,6 @@ import at.rueckgr.android.ipwe.data.Status;
 public class OverviewActivity extends Activity implements ServiceConnection {
     private static final String TAG = "OverviewActivity";
     private SensorsApplication commonData;
-    // TODO really static?
     private static OverviewHandler overviewHandler;
     private IBinder serviceBinder;
     private Status lastStatus;
@@ -103,11 +102,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 				}
 			};
 			
-    		// TODO don't hardcode strings
-    		new AlertDialog.Builder(OverviewActivity.this).setTitle("Welcome")
-    			.setMessage("This is the first time you run this app. You will have to configure it in order to use it.")
+    		new AlertDialog.Builder(OverviewActivity.this).setTitle(getString(R.string.welcome))
+    			.setMessage(getString(R.string.dialog_first_run))
     			.setCancelable(false)
-    			.setPositiveButton("Ok", dialogClickListener)
+    			.setPositiveButton(android.R.string.ok, dialogClickListener)
     			.show();
     	}
         
@@ -128,8 +126,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     
 	public void notifyUpdate(Status status, boolean showToast) {
 		if(showToast) {
-			// TODO don't hardcode string
-			toast("Sensors updated");
+			toast(getString(R.string.sensors_updated));
 		}
 		
 		lastStatus = status;
@@ -152,10 +149,9 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 				State state = commonData.getState(stateName);
 				statusText += " - " + state.getLetter() + ": " + stateCounts.get(stateName);
 			}
-			// TODO don't hardcode strings here
 			// TODO configurable
 			Notification notification = new Notification.Builder(getApplicationContext())
-						.setContentTitle("Sensor report")
+						.setContentTitle(getString(R.string.sensor_report))
 						.setContentText(statusText)
 						.setSmallIcon(R.drawable.ic_launcher)
 						.setOngoing(true)
@@ -189,11 +185,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		    }
 		};
 
-		// TODO don't hardcode strings here
 		new AlertDialog.Builder(this)
-			.setMessage("Are you sure?")
-			.setPositiveButton("Yes", dialogClickListener)
-		    .setNegativeButton("No", dialogClickListener)
+			.setMessage(R.string.dialog_are_you_sure)
+			.setPositiveButton(android.R.string.yes, dialogClickListener)
+		    .setNegativeButton(android.R.string.no, dialogClickListener)
 		    .show();
 	}
 	
@@ -250,8 +245,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	}
 
 	public void notifyError() {
-		// TODO don't hardcode string
-		toast("Error while updating sensors.");
+		toast(getString(R.string.sensors_update_error));
 		
 		if(lastStatus != null) {
 			notifyUpdate(lastStatus, false);
@@ -291,11 +285,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			}
 		};
 
-		// TODO don't hardcode strings
-		new AlertDialog.Builder(OverviewActivity.this).setTitle("Error")
-			.setMessage("An error occurred while initializing the app. It will now close.")
+		new AlertDialog.Builder(OverviewActivity.this).setTitle(getString(R.string.error))
+			.setMessage(getString(R.string.error_init_close))
 			.setCancelable(false)
-			.setPositiveButton("Ok", dialogClickListener)
+			.setPositiveButton(getString(android.R.string.ok), dialogClickListener)
 			.show();
 	}
 }
