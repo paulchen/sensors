@@ -77,8 +77,8 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 				input = input.substring(1);
 			}
 			if(input.isEmpty()) {
-				// TODO don't hardcode string
-				Toast.makeText(getPreferenceScreen().getContext(), "The value \"" + originalInput + "\" is invalid and will be ignored.", Toast.LENGTH_LONG).show();
+				String text = String.format(getString(R.string.error_invalid_value_ignored), originalInput);
+				Toast.makeText(getPreferenceScreen().getContext(), text, Toast.LENGTH_LONG).show();
 			}
 		}
 	}
