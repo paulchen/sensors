@@ -34,6 +34,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     // TODO really static?
     private static OverviewHandler overviewHandler;
     private IBinder serviceBinder;
+    private Status lastStatus;
     
     private static class OverviewHandler extends Handler {
     	private OverviewActivity activity;
@@ -105,6 +106,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			toast.show();
 		}
 		
+		lastStatus = status;
 		Log.d(TAG, "Notification received");
 		
 		Map<String, Integer> stateCounts = status.getStateCounts();
@@ -170,7 +172,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	}
 	
 	private void shutdown() {
-		// TODO call from onStop()
 		try {
 			new Messenger(serviceBinder).send(Message.obtain(null, CommonData.MESSAGE_REMOVE_CLIENT));
 		} catch (RemoteException e) {
@@ -178,8 +179,14 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			e.printStackTrace();
 		}
     	stopService(new Intent(this, PollService.class));
-    	unbindService(this);
 		finish();
+	}
+	
+	@Override
+	public void onDestroy() {
+		super.onDestroy();
+		
+		unbindService(this);
 	}
 	
 	@Override
@@ -211,6 +218,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		// TODO don't hardcode string
 		Toast toast = Toast.makeText(this, "Error while updating sensors.", Toast.LENGTH_SHORT);
 		toast.show();
+		
+		if(lastStatus != null) {
+			notifyUpdate(lastStatus, false);
+		}
 	}
 
 	@Override

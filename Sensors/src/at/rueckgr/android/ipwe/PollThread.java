@@ -31,11 +31,13 @@ public class PollThread extends Thread {
 					status.update();
 					pollService.notifyUpdate(status);
 				}
-				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
 			catch (SensorsException e) {
 				e.printStackTrace();
 				pollService.notifyUpdateError();
+			}
+			try {
+				Thread.sleep(commonData.getSettingsRefreshInterval() * 1000);
 			}
 			catch (InterruptedException e) {
 				/* do nothing */
