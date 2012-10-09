@@ -6,6 +6,8 @@ import java.util.List;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import at.rueckgr.android.ipwe.SensorsApplication;
+
 public class Sensor {
 	private int id;
 	private String name;
@@ -90,5 +92,9 @@ public class Sensor {
 		}
 		
 		return measurements;
+	}
+
+	public SensorsApplication getApplication() {
+		return status.getApplication();
 	}
 }

@@ -7,8 +7,6 @@ import java.util.Date;
 import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
-import at.rueckgr.android.ipwe.CommonData;
-
 public class Measurement {
 	private float measurement;
 	private Date date;
@@ -17,13 +15,12 @@ public class Measurement {
 	
 	public Measurement(Node node, Value value) throws SensorsException {
 		this.value = value;
-		CommonData commonData = CommonData.getInstance();
 
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
 			date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
-			state = commonData.getState(node.getAttributes().getNamedItem("state").getTextContent());		
+			state = value.getApplication().getState(node.getAttributes().getNamedItem("state").getTextContent());		
 		}
 		catch (NumberFormatException e) {
 			throw new SensorsException(e);

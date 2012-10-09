@@ -34,7 +34,7 @@ import at.rueckgr.android.ipwe.data.Status;
 
 public class OverviewActivity extends Activity implements ServiceConnection {
     private static final String TAG = "OverviewActivity";
-    private CommonData commonData;
+    private SensorsApplication commonData;
     // TODO really static?
     private static OverviewHandler overviewHandler;
     private IBinder serviceBinder;
@@ -53,11 +53,11 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     	@Override
     	public void handleMessage(Message msg) {
     		switch(msg.what) {
-    			case CommonData.MESSAGE_UPDATE_SUCCESS:
+    			case SensorsApplication.MESSAGE_UPDATE_SUCCESS:
     				activity.notifyUpdate((Status)msg.obj, true);
     				break;
     				
-    			case CommonData.MESSAGE_UPDATE_ERROR:
+    			case SensorsApplication.MESSAGE_UPDATE_ERROR:
     				activity.notifyError();
     				break;
     			
@@ -89,7 +89,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
         super.onCreate(savedInstanceState);
         
 		overviewHandler = new OverviewHandler(this);
-        commonData = (CommonData)getApplication();
+        commonData = (SensorsApplication)getApplication();
         
         setContentView(R.layout.activity_overview);
 
@@ -129,8 +129,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	public void notifyUpdate(Status status, boolean showToast) {
 		if(showToast) {
 			// TODO don't hardcode string
-			Toast toast = Toast.makeText(this, "Sensors updated", Toast.LENGTH_SHORT);
-			toast.show();
+			toast("Sensors updated");
 		}
 		
 		lastStatus = status;
@@ -164,10 +163,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 						.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
 						.getNotification();
 			
-			mNotificationManager.notify(CommonData.NOTIFICATION_ID, notification);
+			mNotificationManager.notify(SensorsApplication.NOTIFICATION_ID, notification);
 		}
 		else {
-			mNotificationManager.cancel(CommonData.NOTIFICATION_ID);
+			mNotificationManager.cancel(SensorsApplication.NOTIFICATION_ID);
 		}
 
         StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, status.getMeasurements());
@@ -200,10 +199,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	
 	private void shutdown() {
 		try {
-			new Messenger(serviceBinder).send(Message.obtain(null, CommonData.MESSAGE_REMOVE_CLIENT));
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			new Messenger(serviceBinder).send(Message.obtain(null, SensorsApplication.MESSAGE_REMOVE_CLIENT));
+		}
+		catch (RemoteException e) {
+			/* ignore */
 		}
     	stopService(new Intent(this, PollService.class));
 		finish();
@@ -243,39 +242,60 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		}
 		
 		try {
-			new Messenger(serviceBinder).send(Message.obtain(null, CommonData.MESSAGE_TRIGGER_UPDATE));
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			new Messenger(serviceBinder).send(Message.obtain(null, SensorsApplication.MESSAGE_TRIGGER_UPDATE));
+		}
+		catch (RemoteException e) {
+			toast("A problem occurred while initiating an update.");
 		}
 	}
 
 	public void notifyError() {
 		// TODO don't hardcode string
-		Toast toast = Toast.makeText(this, "Error while updating sensors.", Toast.LENGTH_SHORT);
-		toast.show();
+		toast("Error while updating sensors.");
 		
 		if(lastStatus != null) {
 			notifyUpdate(lastStatus, false);
 		}
 	}
 
+	private void toast(String string) {
+		Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
+		toast.show();
+	}
+
 	@Override
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		serviceBinder = service;
 		try {
-			Message message = Message.obtain(null, CommonData.MESSAGE_ADD_CLIENT);
+			Message message = Message.obtain(null, SensorsApplication.MESSAGE_ADD_CLIENT);
 			message.replyTo = new Messenger(overviewHandler);
 			(new Messenger(service)).send(message);
 			serviceUp = true;
-		} catch (RemoteException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		}
+		catch (RemoteException e) {
+			initError();
 		}
 	}
 
 	@Override
 	public void onServiceDisconnected(ComponentName name) {
 		serviceUp = false;
+	}
+	
+	private void initError() {
+    	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				dialog.dismiss();
+				shutdown();
+			}
+		};
+
+		// TODO don't hardcode strings
+		new AlertDialog.Builder(OverviewActivity.this).setTitle("Error")
+			.setMessage("An error occurred while initializing the app. It will now close.")
+			.setCancelable(false)
+			.setPositiveButton("Ok", dialogClickListener)
+			.show();
 	}
 }

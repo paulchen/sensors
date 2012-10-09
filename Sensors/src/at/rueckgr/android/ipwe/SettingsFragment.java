@@ -38,6 +38,7 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 		editor.putBoolean("configured", true);
 		editor.commit();
 		
+		/* trigger an update */
 		Intent intent = new Intent(getActivity(), PollService.class);
 		ServiceConnection serviceConnection = new ServiceConnection() {
 			@Override
@@ -48,10 +49,10 @@ public class SettingsFragment extends PreferenceFragment implements OnSharedPref
 			@Override
 			public void onServiceConnected(ComponentName name, IBinder service) {
 				try {
-					new Messenger(service).send(Message.obtain());
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					new Messenger(service).send(Message.obtain(null, SensorsApplication.MESSAGE_TRIGGER_UPDATE));
+				}
+				catch (RemoteException e) {
+					/* ignore */
 				}
 				getActivity().unbindService(this);
 			}

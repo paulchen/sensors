@@ -16,23 +16,21 @@ import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
-import at.rueckgr.android.ipwe.CommonData;
+import at.rueckgr.android.ipwe.SensorsApplication;
 
-// TODO rename Status -> state?
 public class Status {
-//	private static final String TAG = "Status";
 	private List<Sensor> sensors;
-	private CommonData commonData;
+	private SensorsApplication application;
 
-	public Status() {
-		commonData = CommonData.getInstance();
+	public Status(SensorsApplication application) {
+		this.application = application;
 	}
 	
 	public void update() throws SensorsException {
 		
-		String url = commonData.getSettingsURL() + "?action=status";
+		String url = application.getSettingsURL() + "?action=status";
 		
-		InputStream inputStream = commonData.executeHttpGet(url);
+		InputStream inputStream = application.executeHttpGet(url);
 		DocumentBuilderFactory documentBuilderFactory = DocumentBuilderFactory.newInstance();
 		DocumentBuilder documentBuilder;
 		try {
@@ -106,11 +104,15 @@ public class Status {
 	}
 
 	public Map<String, Integer> getStateCounts() {
-		Map<String, State> states = commonData.getStates();
+		Map<String, State> states = application.getStates();
 		Map<String, Integer> stateCounts = new HashMap<String, Integer>();
 		for(String stateName : states.keySet()) {
 			stateCounts.put(stateName, getStateCount(states.get(stateName)));
 		}
 		return stateCounts;
+	}
+
+	public SensorsApplication getApplication() {
+		return application;
 	}
 }

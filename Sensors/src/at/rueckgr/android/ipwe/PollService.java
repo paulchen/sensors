@@ -33,15 +33,15 @@ public class PollService extends Service {
 		@Override
 		public void handleMessage(Message msg) {
 			switch(msg.what) {
-				case CommonData.MESSAGE_ADD_CLIENT:
+				case SensorsApplication.MESSAGE_ADD_CLIENT:
 					clients.add(msg.replyTo);
 					break;
 					
-				case CommonData.MESSAGE_REMOVE_CLIENT:
+				case SensorsApplication.MESSAGE_REMOVE_CLIENT:
 					clients.remove(msg.replyTo);
 					break;
 				
-				case CommonData.MESSAGE_TRIGGER_UPDATE:
+				case SensorsApplication.MESSAGE_TRIGGER_UPDATE:
 					pollThread.interrupt();
 					break;
 			}
@@ -57,7 +57,7 @@ public class PollService extends Service {
 	public int onStartCommand(Intent intent, int flags, int startId) {
 		Log.d(TAG, "Service started");
 		
-		pollThread = new PollThread(this);
+		pollThread = new PollThread(this, (SensorsApplication)getApplication());
 		pollThread.start();
 		
 		return START_STICKY;
@@ -67,10 +67,10 @@ public class PollService extends Service {
 		synchronized (clients) {
 			for(Messenger messenger : clients) {
 				try {
-					messenger.send(Message.obtain(null, CommonData.MESSAGE_UPDATE_SUCCESS, status));
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					messenger.send(Message.obtain(null, SensorsApplication.MESSAGE_UPDATE_SUCCESS, status));
+				}
+				catch (RemoteException e) {
+					/* ignore */
 				}
 			}
 		}
@@ -80,10 +80,10 @@ public class PollService extends Service {
 		synchronized (clients) {
 			for(Messenger messenger : clients) {
 				try {
-					messenger.send(Message.obtain(null, CommonData.MESSAGE_UPDATE_ERROR));
-				} catch (RemoteException e) {
-					// TODO Auto-generated catch block
-					e.printStackTrace();
+					messenger.send(Message.obtain(null, SensorsApplication.MESSAGE_UPDATE_ERROR));
+				}
+				catch (RemoteException e) {
+					/* ignore */
 				}
 			}
 		}

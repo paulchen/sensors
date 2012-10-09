@@ -28,8 +28,7 @@ import android.preference.PreferenceManager;
 import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.State;
 
-// TODO rename to Common?
-public class CommonData extends Application {
+public class SensorsApplication extends Application {
 	public static final int NOTIFICATION_ID = 1;
 	
 	public static final int MESSAGE_UPDATE_SUCCESS = 0;
@@ -38,7 +37,7 @@ public class CommonData extends Application {
 	public static final int MESSAGE_REMOVE_CLIENT = 3;
 	public static final int MESSAGE_TRIGGER_UPDATE = 4;
 
-	private static CommonData commonData;
+	// private static SensorsApplication commonData;
 	private Map<String, State> states;
 
 	private boolean configured;
@@ -50,7 +49,7 @@ public class CommonData extends Application {
 	private boolean settingsAuth;
 
 	// TODO wherever used, use getApplication() instead of CommonData.getInstance()? 
-	public CommonData() {
+	public SensorsApplication() {
 		initStates();
 	}
 	
@@ -73,12 +72,13 @@ public class CommonData extends Application {
 		}
 	}
 	
-	public static CommonData getInstance() {
+	/*
+	public static SensorsApplication getInstance() {
 		if(commonData == null) {
-			commonData = new CommonData();
+			commonData = new SensorsApplication();
 		}
 		return commonData;
-	}
+	} */
 	
 	public State getState(String name) {
 		return states.get(name);
@@ -88,7 +88,7 @@ public class CommonData extends Application {
 		SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
 		configured = preferences.getBoolean("configured", false);
 		settingsURL = preferences.getString("settings_url", "");
-		settingsRefresh = preferences.getBoolean("settings_refresh", false);
+		settingsRefresh = preferences.getBoolean("settings_refresh", true);
 		try {
 			settingsRefreshInterval = Integer.parseInt(preferences.getString("settings_refresh_interval", "300"));
 		}

@@ -6,6 +6,8 @@ import java.util.List;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
+import at.rueckgr.android.ipwe.SensorsApplication;
+
 public class Value {
 	
 	// TODO replace by enum/class
@@ -75,5 +77,9 @@ public class Value {
 		}
 		
 		return count;
+	}
+
+	public SensorsApplication getApplication() {
+		return sensor.getApplication();
 	}
 }

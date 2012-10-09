@@ -17,7 +17,6 @@ public class StatusArrayAdapter extends ArrayAdapter<Measurement> {
 
 	private List<Measurement> measurement;
 
-	// TODO remove first and second parameter?
 	public StatusArrayAdapter(Context context, int textViewResourceId,
 			List<Measurement> measurement) {
 		super(context, textViewResourceId, measurement);
