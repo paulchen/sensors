@@ -143,7 +143,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		}
 		
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		if(ok != total+1) {
+		if(ok != total) {
 			String statusDetails = "";
 			for(String stateName : stateCounts.keySet()) {
 				State state = commonData.getState(stateName);
