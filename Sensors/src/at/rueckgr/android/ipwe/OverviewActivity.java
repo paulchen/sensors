@@ -143,12 +143,14 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		}
 		
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		if(ok != total) {
-			String statusText = "Sensors: " + total;
+		if(ok != total+1) {
+			String statusDetails = "";
 			for(String stateName : stateCounts.keySet()) {
 				State state = commonData.getState(stateName);
-				statusText += " - " + state.getLetter() + ": " + stateCounts.get(stateName);
+				statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(stateName));
 			}
+			String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
+			
 			// TODO configurable
 			Notification notification = new Notification.Builder(getApplicationContext())
 						.setContentTitle(getString(R.string.sensor_report))
