@@ -70,14 +70,6 @@ public class SensorsApplication extends Application {
 		}
 	}
 	
-	/*
-	public static SensorsApplication getInstance() {
-		if(commonData == null) {
-			commonData = new SensorsApplication();
-		}
-		return commonData;
-	} */
-	
 	public State getState(String name) {
 		return states.get(name);
 	}
