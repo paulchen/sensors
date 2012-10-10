@@ -13,4 +13,9 @@
     	<CheckBoxPreference android:title="@string/settings_refresh" android:key="settings_refresh" android:defaultValue="true"></CheckBoxPreference>
     	<EditTextPreference android:title="@string/settings_refresh_interval" android:key="settings_refresh_interval" android:dependency="settings_refresh" android:defaultValue="300" android:numeric="integer"></EditTextPreference>
     </PreferenceCategory>
+    <PreferenceCategory android:title="@string/settings_header_notifications" android:key="settings_header_notifications">
+    	<CheckBoxPreference android:title="@string/settings_notifications" android:key="settings_notifications" android:defaultValue="true"></CheckBoxPreference>
+    	<CheckBoxPreference android:title="@string/settings_notification_light" android:key="settings_notification_light" android:defaultValue="true" android:dependency="settings_notifications"></CheckBoxPreference>
+        <yuku.ambilwarna.widget.AmbilWarnaPreference android:key="settings_led_color" android:defaultValue="0xff00ff" android:title="@string/settings_notification_light_color" />
+    </PreferenceCategory>
 </PreferenceScreen>

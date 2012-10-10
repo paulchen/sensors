@@ -48,6 +48,10 @@ public class SensorsApplication extends Application {
 	private String settingsPassword;
 	private boolean settingsAuth;
 
+	private boolean enableNotifications;
+	private boolean enableNotificationLight;
+	private int notificationLightColor;
+
 	public SensorsApplication() {
 		initStates();
 	}
@@ -90,6 +94,10 @@ public class SensorsApplication extends Application {
 		settingsUsername = preferences.getString("settings_username", "");
 		settingsPassword = preferences.getString("settings_password", "");
 		settingsAuth = preferences.getBoolean("settings_auth", false);
+		
+		enableNotifications = preferences.getBoolean("settings_notifications", true);
+		enableNotificationLight = preferences.getBoolean("settings_notification_light", true);
+		notificationLightColor = preferences.getInt("settings_led_color", 0xff00ff);
 	}
 
 	public boolean isConfigured() {
@@ -108,6 +116,18 @@ public class SensorsApplication extends Application {
 		return settingsRefreshInterval;
 	}
 	
+	public boolean isEnableNotifications() {
+		return enableNotifications;
+	}
+
+	public boolean isEnableNotificationLight() {
+		return enableNotificationLight;
+	}
+
+	public int getNotificationLightColor() {
+		return notificationLightColor;
+	}
+
 	public InputStream executeHttpGet(String url) throws SensorsException {
 		final URI uri;
 		try {

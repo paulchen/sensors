@@ -16,6 +16,10 @@
     <string name="settings_header_general">General</string>
     <string name="settings_header_auth">Authentication</string>
     <string name="settings_header_refresh">Updates</string>
+    <string name="settings_header_notifications">Updates</string>
+    <string name="settings_notifications">Enable notifications</string>
+    <string name="settings_notification_light">Enable notification LED</string>
+    <string name="settings_notification_light_color">LED color</string>
     <string name="sensor_report">Sensor report</string>
     <string name="sensors_updated">Sensors updated</string>
     <string name="sensors_update_error">Error while updating sensors</string>

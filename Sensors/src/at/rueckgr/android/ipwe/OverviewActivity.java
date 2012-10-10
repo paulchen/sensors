@@ -16,7 +16,6 @@ import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.graphics.Color;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -35,7 +34,7 @@ import at.rueckgr.android.ipwe.data.Status;
 
 public class OverviewActivity extends Activity implements ServiceConnection {
     private static final String TAG = "OverviewActivity";
-    private SensorsApplication commonData;
+    private SensorsApplication application;
     private static OverviewHandler overviewHandler;
     private IBinder serviceBinder;
     private Status lastStatus;
@@ -94,11 +93,11 @@ public class OverviewActivity extends Activity implements ServiceConnection {
         super.onCreate(savedInstanceState);
         
 		overviewHandler = new OverviewHandler(this);
-        commonData = (SensorsApplication)getApplication();
+        application = (SensorsApplication)getApplication();
         
         setContentView(R.layout.activity_overview);
 
-        if(!commonData.isConfigured()) {
+        if(!application.isConfigured()) {
         	DialogInterface.OnClickListener dialogClickListener = new OnClickListener() {
 				@Override
 				public void onClick(DialogInterface dialog, int which) {
@@ -151,31 +150,37 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		int ok = 0;
 		for(String stateName : stateCounts.keySet()) {
 			total += stateCounts.get(stateName);
-			if(commonData.getState(stateName).isOk()) {
+			if(application.getState(stateName).isOk()) {
 				ok += stateCounts.get(stateName);
 			}
 		}
 		
 		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		if(ok != total) {
-			String statusDetails = "";
-			for(String stateName : stateCounts.keySet()) {
-				State state = commonData.getState(stateName);
-				statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(stateName));
+			if(application.isEnableNotifications()) {
+				String statusDetails = "";
+				for(String stateName : stateCounts.keySet()) {
+					State state = application.getState(stateName);
+					statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(stateName));
+				}
+				String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
+				
+				Notification.Builder notification = new Notification.Builder(getApplicationContext())
+							.setContentTitle(getString(R.string.sensor_report))
+							.setContentText(statusText)
+							.setSmallIcon(R.drawable.ic_launcher)
+							.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
+							.setOngoing(true);
+				if(application.isEnableNotificationLight()) {
+					Log.d(TAG, String.valueOf(application.getNotificationLightColor()));
+					notification.setLights(application.getNotificationLightColor(), 100, 200);
+				}
+				
+				mNotificationManager.notify(SensorsApplication.NOTIFICATION_ID, notification.getNotification());
 			}
-			String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
-			
-			// TODO configurable
-			Notification notification = new Notification.Builder(getApplicationContext())
-						.setContentTitle(getString(R.string.sensor_report))
-						.setContentText(statusText)
-						.setSmallIcon(R.drawable.ic_launcher)
-						.setOngoing(true)
-						.setLights(Color.argb(0, 255, 0, 255), 100, 200)
-						.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
-						.getNotification();
-			
-			mNotificationManager.notify(SensorsApplication.NOTIFICATION_ID, notification);
+			else {
+				mNotificationManager.cancel(SensorsApplication.NOTIFICATION_ID);
+			}
 		}
 		else {
 			mNotificationManager.cancel(SensorsApplication.NOTIFICATION_ID);
