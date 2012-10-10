@@ -1,15 +1,17 @@
 package at.rueckgr.android.ipwe.data;
 
-public final class State {
+public final class State implements Comparable<State> {
 	private final String name;
 	private final String color;
 	private boolean ok;
+	private int pos;
 	
-	public State(String name, String color, boolean ok) {
+	public State(String name, String color, boolean ok, int pos) {
 		super();
 		this.name = name;
 		this.color = color;
 		this.ok = ok;
+		this.pos = pos;
 	}
 
 	public String getName() {
@@ -56,5 +58,16 @@ public final class State {
 
 	public String getLetter() {
 		return name.substring(0, 1).toUpperCase();
+	}
+
+	@Override
+	public int compareTo(State another) {
+		if(another.pos == pos) {
+			return 0;
+		}
+		if(pos < another.pos) {
+			return -1;
+		}
+		return 1;
 	}
 }

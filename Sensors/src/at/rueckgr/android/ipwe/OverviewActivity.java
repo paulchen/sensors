@@ -1,5 +1,8 @@
 package at.rueckgr.android.ipwe;
 
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import android.app.Activity;
@@ -159,9 +162,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		if(ok != total) {
 			if(application.isEnableNotifications()) {
 				String statusDetails = "";
-				for(String stateName : stateCounts.keySet()) {
-					State state = application.getState(stateName);
-					statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(stateName));
+				List<State> states = new ArrayList<State>(application.getStates().values());
+				Collections.sort(states);
+				for(State state : states) {
+					statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(state.getName()));
 				}
 				String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
 				
