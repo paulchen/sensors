@@ -23,8 +23,12 @@ public class PollThread extends Thread {
 		Log.d(TAG, "Thread started");
 		
 		boolean loaded = false;
+		boolean hideProgressDialog = false;
 		for(;;) {
 			try {
+				if(!hideProgressDialog) {
+					pollService.notifyUpdateStart();
+				}
 				application.readConfig(pollService);
 				if(!loaded || application.getSettingsRefresh()) {
 					Log.e(TAG, "Updating...");
@@ -40,7 +44,9 @@ public class PollThread extends Thread {
 				pollService.notifyUpdateError();
 			}
 			try {
+				hideProgressDialog = false;
 				Thread.sleep(application.getSettingsRefreshInterval() * 1000);
+				hideProgressDialog = true;
 			}
 			catch (InterruptedException e) {
 				/* do nothing */

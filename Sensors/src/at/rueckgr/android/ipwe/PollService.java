@@ -87,4 +87,17 @@ public class PollService extends Service {
 			}
 		}
 	}
+
+	public void notifyUpdateStart() {
+		synchronized (clients) {
+			for(Messenger messenger : clients) {
+				try {
+					messenger.send(Message.obtain(null, SensorsApplication.MESSAGE_UPDATE_START));
+				}
+				catch (RemoteException e) {
+					/* ignore */
+				}
+			}
+		}
+	}
 }

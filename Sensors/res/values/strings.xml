@@ -24,4 +24,8 @@
     <string name="dialog_are_you_sure">Are you sure?</string>
 	<string name="dialog_first_run">This is the first time you run this app. You will have to configure it in order to use it.</string>
     <string name="welcome">Welcome</string>
+    <string name="error_invalid_value_ignored">The value \"%1$s\" is invalid and will be ignored.</string>
+    <string name="notification_text">Sensors: %1$d%2$s</string>
+    <string name="notification_details">\u0020- %1$s: %2$d</string>
+    <string name="status_updating">Updating…</string>
 </resources>

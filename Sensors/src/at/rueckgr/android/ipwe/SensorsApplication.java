@@ -36,6 +36,7 @@ public class SensorsApplication extends Application {
 	public static final int MESSAGE_ADD_CLIENT = 2;
 	public static final int MESSAGE_REMOVE_CLIENT = 3;
 	public static final int MESSAGE_TRIGGER_UPDATE = 4;
+	public static final int MESSAGE_UPDATE_START = 5;
 
 	private Map<String, State> states;
 

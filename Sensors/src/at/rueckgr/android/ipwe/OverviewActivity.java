@@ -7,13 +7,14 @@ import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.IntentFilter;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.ServiceConnection;
 import android.graphics.Color;
 import android.net.ConnectivityManager;
@@ -40,6 +41,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     private Status lastStatus;
 	private ConnectionStateReceiver connectionStateReceiver;
 	private boolean serviceUp;
+	private ProgressDialog progressDialog;
     
     private static class OverviewHandler extends Handler {
     	private OverviewActivity activity;
@@ -60,6 +62,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     				activity.notifyError();
     				break;
     			
+    			case SensorsApplication.MESSAGE_UPDATE_START:
+    				activity.notifyUpdateStart();
+    				break;
+    				
     			default:
     				/* will never happen */
     		}
@@ -108,6 +114,9 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     			.setPositiveButton(android.R.string.ok, dialogClickListener)
     			.show();
     	}
+        else {
+        	notifyUpdateStart();
+        }
         
     	Intent intent = new Intent(this, PollService.class);
     	startService(intent);
@@ -118,7 +127,12 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     	registerReceiver(connectionStateReceiver, intentFilter);
     }
 
-    @Override
+    public void notifyUpdateStart() {
+    	Log.d(TAG, "notifyUpdateStart");
+    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+	}
+
+	@Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.activity_overview, menu);
         return true;
@@ -169,6 +183,8 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 
         StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, status.getMeasurements());
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
+		
+		hideProgressDialog();
 	}
 
 	private void askShutdown() {
@@ -252,8 +268,18 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		if(lastStatus != null) {
 			notifyUpdate(lastStatus, false);
 		}
+		
+		hideProgressDialog();
 	}
 
+	private void hideProgressDialog() {
+		if(progressDialog != null) {
+			progressDialog.dismiss();
+		}
+		
+		progressDialog = null;
+	}
+	
 	private void toast(String string) {
 		Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
 		toast.show();
