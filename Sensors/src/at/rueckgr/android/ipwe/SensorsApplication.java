@@ -68,7 +68,6 @@ public class SensorsApplication extends Application {
 		if(states == null) {
 			states = new HashMap<String, State>();
 			
-			// TODO keep this order for notification bar
 			states.put("ok", new State("ok", "#00cc33", true, 1));
 			states.put("warning", new State("warning", "#00cc33", false, 2));
 			states.put("critical", new State("critical", "#00cc33", false, 3));
