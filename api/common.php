@@ -65,7 +65,7 @@ function get_type_data($sensor_data = array()) {
 	$type_data = array();
 	while($stmt->fetch()) {
 		if(in_array($id, $types)) {
-			$type_data[] = array('id' => $id, 'name' => $name, 'format' => $format, 'min' => $min, 'max' => $max, 'decimals' => $decimals);
+			$type_data[] = array('id' => $id, 'name' => $name, 'format' => $format, 'min' => "$min", 'max' => $max, 'decimals' => $decimals);
 		}
 	}
 	$stmt->close();
