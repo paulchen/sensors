@@ -42,6 +42,37 @@ function get_sensors() {
 	return $sensors;
 }
 
+function get_type_data($sensor_data = array()) {
+	global $mysqli;
+
+	if(!is_array($sensor_data)) {
+		// TODO
+		die();
+	}
+
+	$types = array();
+	foreach($sensor_data as $sensor) {
+		foreach($sensor['values'] as $key => $value) {
+			if(!in_array($key, $types)) {
+				$types[] = $key;
+			}
+		}
+	}
+
+	$stmt = $mysqli->prepare('SELECT id, name, format, min, max, decimals FROM sensor_values ORDER BY id ASC');
+	$stmt->execute();
+	$stmt->bind_result($id, $name, $format, $min, $max, $decimals);
+	$type_data = array();
+	while($stmt->fetch()) {
+		if(in_array($id, $types)) {
+			$type_data[] = array('id' => $id, 'name' => $name, 'format' => $format, 'min' => $min, 'max' => $max, 'decimals' => $decimals);
+		}
+	}
+	$stmt->close();
+
+	return $type_data;
+}
+
 function get_limits($sensors = array()) {
 	global $mysqli;
 
@@ -107,6 +138,7 @@ function get_sensors_state($sensors = array()) {
 	$stmt->bind_result($sensor_id, $what, $timestamp, $value);
 	$sensor_data = array();
 	while($stmt->fetch()) {
+		// TODO use data from table sensor_values
 		$value = round($value, 2);
 		if(time()-$timestamp > $config['value_outdated_period']) {
 			$state = 'unknown';
