@@ -112,12 +112,12 @@ function get_sensors_state($sensors = array()) {
 
 	$limits = get_limits($sensors);
 
-	$stmt = $mysqli->prepare('SELECT id, format, name FROM sensor_values');
+	$stmt = $mysqli->prepare('SELECT id, decimals FROM sensor_values');
 	$stmt->execute();
-	$stmt->bind_result($id, $format, $name);
-	$formats = array();
+	$stmt->bind_result($id, $decimals);
+	$type_decimals = array();
 	while($stmt->fetch()) {
-		$formats[$id] = array('format' => $format, 'name' => $name);
+		$type_decimals[$id] = $decimals;
 	}
 	$stmt->close();
 
@@ -138,8 +138,7 @@ function get_sensors_state($sensors = array()) {
 	$stmt->bind_result($sensor_id, $what, $timestamp, $value);
 	$sensor_data = array();
 	while($stmt->fetch()) {
-		// TODO use data from table sensor_values
-		$value = round($value, 2);
+		$value = round($value, $type_decimals[$what]);
 		if(time()-$timestamp > $config['value_outdated_period']) {
 			$state = 'unknown';
 		}
@@ -164,12 +163,12 @@ function get_sensors_state($sensors = array()) {
 			$sensor_data[$sensor_id] = array('values' => array());
 		}
 		if(!isset($sensor_data[$sensor_id]['values'][$what])) {
-			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'description' => $formats[$what]['name'], 'format' => $formats[$what]['format'], 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
+			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
 		}
 		else {
 			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['measurements'][0]['timestamp'];
 			if($old_timestamp < $timestamp) {
-				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'description' => $formats[$what]['name'], 'format' => $formats[$what]['format'], 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
+				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
 			}
 		}
 	}
