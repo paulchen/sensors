@@ -5,7 +5,7 @@ echo '<?xml version="1.0"?>';
 	<?php if(isset($types)): ?>
 		<types>
 			<?php foreach($types as $type): ?>
-				<type id="<?php echo $type['id'] ?>" name="<?php echo htmlentities($type['name'], ENT_QUOTES, 'UTF-8') ?>" unit="<?php echo htmlentities($type['format'], ENT_QUOTES, 'UTF-8') ?>" 
+				<type id="<?php echo $type['id'] ?>" name="<?php echo htmlentities($type['name'], ENT_QUOTES, 'UTF-8') ?>" format="<?php echo htmlentities($type['format'], ENT_QUOTES, 'UTF-8') ?>" 
 					<?php if($type['min'] != ''): ?> min="<?php echo $type['min'] ?>" <?php endif; ?>
 					<?php if($type['max'] != ''): ?> max="<?php echo $type['max'] ?>" <?php endif; ?>
 					decimals="<?php echo $type['decimals'] ?>" />
