@@ -10,19 +10,17 @@ import at.rueckgr.android.ipwe.SensorsApplication;
 
 public class Value {
 	
-	// TODO replace by enum/class
-	private int type;
+	private Type type;
 	private List<Measurement> measurements;
 	private Sensor sensor;
-	private String format;
 	private String description;
 	
 	public Value(Node node, Sensor sensor) throws SensorsException {
 		this.sensor = sensor;
 		
 		try {
-			type = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
-			format = node.getAttributes().getNamedItem("format").getTextContent();
+			int typeId = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
+			type = sensor.getStatus().getType(typeId); 
 			description = node.getAttributes().getNamedItem("description").getTextContent();
 		}
 		catch (NumberFormatException e) {
@@ -45,7 +43,7 @@ public class Value {
 		}
 	}
 
-	public int getType() {
+	public Type getType() {
 		return type;
 	}
 	
@@ -59,10 +57,6 @@ public class Value {
 
 	public Sensor getSensor() {
 		return sensor;
-	}
-	
-	public String getFormat() {
-		return format;
 	}
 	
 	public String getDescription() {

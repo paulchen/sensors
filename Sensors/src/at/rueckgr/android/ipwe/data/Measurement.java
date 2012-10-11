@@ -58,7 +58,7 @@ public class Measurement {
 	}
 
 	public String getFormattedMeasurement() {
-		return value.getFormat().replace("%s", String.valueOf(measurement));
+		return value.getType().getFormat().replace("%s", String.valueOf(measurement));
 	}
 	
 	public CharSequence getTimestampString() {

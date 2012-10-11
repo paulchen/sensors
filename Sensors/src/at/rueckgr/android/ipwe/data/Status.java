@@ -12,18 +12,23 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import javax.xml.parsers.ParserConfigurationException;
 
 import org.w3c.dom.Document;
+import org.w3c.dom.NamedNodeMap;
 import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 import org.xml.sax.SAXException;
 
+import android.util.SparseArray;
 import at.rueckgr.android.ipwe.SensorsApplication;
 
 public class Status {
 	private List<Sensor> sensors;
 	private SensorsApplication application;
+	private SparseArray<Type> types;
 
 	public Status(SensorsApplication application) {
 		this.application = application;
+		
+		types = new SparseArray<Type>();
 	}
 	
 	public void update() throws SensorsException {
@@ -71,9 +76,60 @@ public class Status {
 			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("sensor")) {
 				sensors.add(new Sensor(node, this));
 			}
+			else if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("types")) {
+				processTypes(node);
+			}
 		}
 	}
 
+	private void processTypes(Node parentNode) throws SensorsException {
+		NodeList nodes = parentNode.getChildNodes();
+		for(int a=0; a<nodes.getLength(); a++) {
+			Node node = nodes.item(a);
+			if(node.getNodeName().equals("type")) {
+				NamedNodeMap attributes = node.getAttributes();
+				int id, decimals;
+				String name, format;
+				try {
+					id = Integer.parseInt(attributes.getNamedItem("id").getTextContent());
+					name = attributes.getNamedItem("name").getTextContent();
+					format = attributes.getNamedItem("format").getTextContent();
+					decimals = Integer.parseInt(attributes.getNamedItem("decimals").getTextContent());
+				}
+				catch (NumberFormatException e) {
+					throw new SensorsException(e);
+				}
+				catch (NullPointerException e) {
+					throw new SensorsException(e);
+				}
+				
+				Integer min, max;
+				try {
+					min = Integer.parseInt(attributes.getNamedItem("min").getTextContent());
+				}
+				catch (NullPointerException e) {
+					min = null;
+				}
+				catch (NumberFormatException e) {
+					throw new SensorsException(e);
+				}
+				
+				
+				try {
+					max = Integer.parseInt(attributes.getNamedItem("max").getTextContent());
+				}
+				catch (NullPointerException e) {
+					max = null;
+				}
+				catch (NumberFormatException e) {
+					throw new SensorsException(e);
+				}
+				
+				Type type = new Type(id, name, format, min, max, decimals);
+				types.put(id, type);
+			}
+		}
+	}
 	public List<Sensor> getSensors() {
 		return sensors;
 	}
@@ -114,5 +170,9 @@ public class Status {
 
 	public SensorsApplication getApplication() {
 		return application;
+	}
+	
+	public Type getType(int id) {
+		return types.get(id);
 	}
 }
