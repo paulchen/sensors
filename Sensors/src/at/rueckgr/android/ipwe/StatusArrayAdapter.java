@@ -47,7 +47,7 @@ public class StatusArrayAdapter extends ArrayAdapter<Measurement> {
 		}
 		
 		((TextView) row.findViewById(R.id.sensor_name))
-				.setText(sensor.getName() + " - " + value.getDescription());
+				.setText(sensor.getName() + " - " + value.getType().getName());
 		((TextView) row.findViewById(R.id.value_timestamp))
 				.setText(measurement.getTimestampString());
 		((TextView) row.findViewById(R.id.sensor_value))

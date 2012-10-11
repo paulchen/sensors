@@ -13,7 +13,6 @@ public class Value {
 	private Type type;
 	private List<Measurement> measurements;
 	private Sensor sensor;
-	private String description;
 	
 	public Value(Node node, Sensor sensor) throws SensorsException {
 		this.sensor = sensor;
@@ -21,7 +20,6 @@ public class Value {
 		try {
 			int typeId = Integer.parseInt(node.getAttributes().getNamedItem("type").getTextContent());
 			type = sensor.getStatus().getType(typeId); 
-			description = node.getAttributes().getNamedItem("description").getTextContent();
 		}
 		catch (NumberFormatException e) {
 			throw new SensorsException(e);
@@ -59,10 +57,6 @@ public class Value {
 		return sensor;
 	}
 	
-	public String getDescription() {
-		return description;
-	}
-
 	public int getStateCount(State state) {
 		int count = 0;
 		
