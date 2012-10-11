@@ -155,7 +155,6 @@ function get_sensors_state($sensors = array()) {
 			$state = 'warning';
 		}
 		else {
-			// TODO state unknown?
 			$state = 'ok';
 		}
 
