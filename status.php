@@ -21,6 +21,7 @@ $stmt->bind_result($sensor, $what, $timestamp, $value);
 $first_values = array();
 $max_values = array();
 $min_values = array();
+$avg_valuess = array();
 $current_values = array();
 $keys = array();
 while($stmt->fetch()) {
@@ -33,6 +34,7 @@ while($stmt->fetch()) {
 	if(!isset($max_values[$key])) {
 		$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 		$max_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
+		$avg_values[$key] = array('value' => $value, 'count' => 1);
 	}
 	else {
 		if($value > $max_values[$key]['value']) {
@@ -41,6 +43,8 @@ while($stmt->fetch()) {
 		else if($value < $min_values[$key]['value']) {
 			$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 		}
+		$avg_values[$key]['value'] = $avg_values[$key]['sum'] + $value;
+		$avg_values[$key]['count'] = $avg_values[$key]['count'] + 1;
 	}
 	
 	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
@@ -91,6 +95,8 @@ foreach($keys as $index => $key) {
 	else {
 		$tendencies[$index] = 'increasing';
 	};
+
+	$avg_values[$key]['value'] = $avg_values[$key]['value'] / $avg_values[$key]['count'];
 }
 
 $stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
@@ -194,6 +200,8 @@ foreach($keys as $index => $key) {
 
 	$max_values[$index]['formatted_value'] = str_replace('%s', round($max_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 	$max_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $max_values[$index]['timestamp']);
+
+	$avg_values[$index]['formatted_value'] = str_replace('%s', round($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 }
 
 $stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1');
@@ -226,6 +234,7 @@ if(php_sapi_name() == 'cli') {
 		echo "Current value: " . $current_values[$index]['formatted_value'] . " (" . $current_values[$index]['formatted_timestamp'] . ")\n";
 		echo "Maximum value (24 hours): " . $max_values[$index]['formatted_value'] . " (" . $max_values[$index]['formatted_timestamp'] . ")\n";
 		echo "Minimum value (24 hours): " . $min_values[$index]['formatted_value'] . " (" . $min_values[$index]['formatted_timestamp'] . ")\n";
+		echo "Average value (24 hours): " . $avg_values[$index]['formatted_value'] . "\n";
 		echo "Current tendency: " . $tendencies[$index] . "\n";
 		echo "\n\n";
 	}
@@ -281,7 +290,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 </div>
 <table>
 <thead>
-<tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Current tendency</th></tr>
+<tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Average value (24 hours)</th><th>Current tendency</th></tr>
 </thead>
 <tbody>
 <?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
@@ -292,6 +301,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <td<?php echo $oddstring ?>><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
 <td<?php echo $oddstring ?>><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
 <td<?php echo $oddstring ?>><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td<?php echo $oddstring ?>><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
 <td<?php echo $oddstring ?>><?php echo $tendencies[$index] ?></td>
 </tr>
 <?php endforeach; ?>
