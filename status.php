@@ -43,8 +43,8 @@ while($stmt->fetch()) {
 		else if($value < $min_values[$key]['value']) {
 			$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 		}
-		$avg_values[$key]['value'] = $avg_values[$key]['sum'] + $value;
-		$avg_values[$key]['count'] = $avg_values[$key]['count'] + 1;
+		$avg_values[$key]['value'] += $value;
+		$avg_values[$key]['count']++;
 	}
 	
 	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
@@ -94,9 +94,9 @@ foreach($keys as $index => $key) {
 	}
 	else {
 		$tendencies[$index] = 'increasing';
-	};
+	}
 
-	$avg_values[$key]['value'] = $avg_values[$key]['value'] / $avg_values[$key]['count'];
+	$avg_values[$index]['value'] /= $avg_values[$index]['count'];
 }
 
 $stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
