@@ -2,8 +2,10 @@ package at.rueckgr.android.ipwe;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -31,12 +33,12 @@ public class PollService extends Service {
 	private SensorsApplication application;
 	private AlarmManager alarmManager;
 	private PendingIntent pendingIntent;
-	private static List<Messenger> clients;
+	private static Set<Messenger> clients;
 	private ExecutorService threadPool;
 	private BroadcastReceiver timerReceiver;
 	
 	static {
-		clients = Collections.synchronizedList(new ArrayList<Messenger>());
+		clients = Collections.synchronizedSet(new HashSet<Messenger>());
 	}
 	
 	public PollService() {
