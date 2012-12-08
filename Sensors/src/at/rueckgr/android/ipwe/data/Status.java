@@ -79,6 +79,9 @@ public class Status {
 			else if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("types")) {
 				processTypes(node);
 			}
+			else if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("states")) {
+				application.initStates(node);
+			}
 		}
 	}
 
