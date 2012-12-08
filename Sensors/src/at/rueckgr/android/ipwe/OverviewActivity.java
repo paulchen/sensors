@@ -1,15 +1,7 @@
 package at.rueckgr.android.ipwe;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import java.util.Map;
-
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.app.ProgressDialog;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -32,7 +24,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.ListView;
 import android.widget.Toast;
-import at.rueckgr.android.ipwe.data.State;
 import at.rueckgr.android.ipwe.data.Status;
 
 public class OverviewActivity extends Activity implements ServiceConnection {
@@ -148,47 +139,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		lastStatus = status;
 		Log.d(TAG, "Notification received");
 		
-		Map<String, Integer> stateCounts = status.getStateCounts();
-		int total = 0;
-		int ok = 0;
-		for(String stateName : stateCounts.keySet()) {
-			total += stateCounts.get(stateName);
-			if(application.getState(stateName).isOk()) {
-				ok += stateCounts.get(stateName);
-			}
-		}
-		
-		NotificationManager mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		if(ok != total) {
-			if(application.isEnableNotifications()) {
-				String statusDetails = "";
-				List<State> states = new ArrayList<State>(application.getStates().values());
-				Collections.sort(states);
-				for(State state : states) {
-					statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(state.getName()));
-				}
-				String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
-				
-				Notification.Builder notification = new Notification.Builder(getApplicationContext())
-							.setContentTitle(getString(R.string.sensor_report))
-							.setContentText(statusText)
-							.setSmallIcon(R.drawable.ic_launcher)
-							.setContentIntent(PendingIntent.getActivity(this, 0, new Intent(this, OverviewActivity.class), 0))
-							.setOngoing(true);
-				if(application.isEnableNotificationLight()) {
-					Log.d(TAG, String.valueOf(application.getNotificationLightColor()));
-					notification.setLights(application.getNotificationLightColor(), 100, 200);
-				}
-				
-				mNotificationManager.notify(SensorsApplication.NOTIFICATION_ID, notification.getNotification());
-			}
-			else {
-				mNotificationManager.cancel(SensorsApplication.NOTIFICATION_ID);
-			}
-		}
-		else {
-			mNotificationManager.cancel(SensorsApplication.NOTIFICATION_ID);
-		}
 
         StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, status.getMeasurements());
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
