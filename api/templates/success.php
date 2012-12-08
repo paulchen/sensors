@@ -2,6 +2,13 @@
 echo '<?xml version="1.0"?>';
 ?>
 <sensors>
+	<?php if(isset($states)): ?>
+		<states>
+			<?php foreach($states as $state): ?>
+				<state name="<?php echo htmlentities($state['name'], ENT_QUOTES, 'UTF-8') ?>" color="<?php echo htmlentities($state['color'], ENT_QUOTES, 'UTF-8') ?>" />
+			<?php endforeach; ?>
+		</states>
+	<?php endif; ?>
 	<?php if(isset($types)): ?>
 		<types>
 			<?php foreach($types as $type): ?>

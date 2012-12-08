@@ -73,6 +73,15 @@ function get_type_data($sensor_data = array()) {
 	return $type_data;
 }
 
+function get_states() {
+	return array(
+			array('name' => 'ok', 'color' => '#00cc33'),
+			array('name' => 'warning', 'color' => '#ffa500'),
+			array('name' => 'critical', 'color' => '#ff3300'),
+			array('name' => 'unknown', 'color' => '#ff3300')
+		);
+}
+
 function get_limits($sensors = array()) {
 	global $mysqli;
 

@@ -8,6 +8,7 @@ $sensors = get_sensors();
 $sensor_ids = array_map(function($value) { return $value['id']; }, $sensors);
 $sensor_data = get_sensors_state($sensor_ids);
 $types = get_type_data($sensor_data);
+$states = get_states();
 
 $success = true;
 
