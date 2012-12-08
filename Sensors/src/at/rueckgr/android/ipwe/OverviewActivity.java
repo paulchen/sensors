@@ -138,7 +138,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		
 		lastStatus = status;
 		Log.d(TAG, "Notification received");
-		
 
         StatusArrayAdapter statusArrayAdapter = new StatusArrayAdapter(this, R.layout.overview_list_item, status.getMeasurements());
 	    ((ListView)findViewById(R.id.overviewList)).setAdapter(statusArrayAdapter);
