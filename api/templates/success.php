@@ -5,7 +5,7 @@ echo '<?xml version="1.0"?>';
 	<?php if(isset($states)): ?>
 		<states>
 			<?php foreach($states as $state): ?>
-			<state name="<?php echo htmlentities($state['name'], ENT_QUOTES, 'UTF-8') ?>" color="<?php echo htmlentities($state['color'], ENT_QUOTES, 'UTF-8') ?>" pos="<?php echo $state['pos'] ?>" />
+			<state name="<?php echo htmlentities($state['name'], ENT_QUOTES, 'UTF-8') ?>" color="<?php echo htmlentities($state['color'], ENT_QUOTES, 'UTF-8') ?>" pos="<?php echo $state['pos'] ?>" ok="<?php echo $state['ok'] ?>" />
 			<?php endforeach; ?>
 		</states>
 	<?php endif; ?>
