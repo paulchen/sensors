@@ -35,6 +35,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	private ConnectionStateReceiver connectionStateReceiver;
 	private boolean serviceUp;
 	private ProgressDialog progressDialog;
+	private boolean showToasts;
     
     private static class OverviewHandler extends Handler {
     	private OverviewActivity activity;
@@ -120,7 +121,28 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     	registerReceiver(connectionStateReceiver, intentFilter);
     }
 
-    public void notifyUpdateStart() {
+    @Override
+	protected void onRestart() {
+		super.onRestart();
+		
+		showToasts = true;
+	}
+
+	@Override
+	protected void onStart() {
+		super.onStart();
+		
+		showToasts = true;
+	}
+
+	@Override
+	protected void onStop() {
+		super.onStop();
+		
+		showToasts = false;
+	}
+
+	public void notifyUpdateStart() {
     	Log.d(TAG, "notifyUpdateStart");
     	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
 	}
@@ -239,8 +261,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	}
 	
 	private void toast(String string) {
-		Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
-		toast.show();
+		if(showToasts) {
+			Toast toast = Toast.makeText(this, string, Toast.LENGTH_SHORT);
+			toast.show();
+		}
 	}
 
 	@Override
