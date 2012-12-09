@@ -2,6 +2,7 @@ package at.rueckgr.android.ipwe;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +19,17 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.util.Pair;
 import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.Status;
 
@@ -121,14 +127,28 @@ public class PollService extends Service {
 					String statusDetails = "";
 					List<at.rueckgr.android.ipwe.data.State> states = new ArrayList<at.rueckgr.android.ipwe.data.State>(application.getStates().values());
 					Collections.sort(states);
+					Map<at.rueckgr.android.ipwe.data.State, Pair<Integer, Integer>> spanPositions = new HashMap<at.rueckgr.android.ipwe.data.State, Pair<Integer, Integer>>();
 					for(at.rueckgr.android.ipwe.data.State state : states) {
 						statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(state.getName()));
+						if(stateCounts.get(state.getName()) > 0 || state.isOk()) {
+							int pos1 = statusDetails.indexOf("[");
+							int pos2 = statusDetails.indexOf("]")-1;
+							spanPositions.put(state, new Pair<Integer, Integer>(pos1, pos2));
+						}
+						statusDetails = statusDetails.replaceAll("[\\[\\]]", "");
 					}
 					String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
+					int offset = statusText.indexOf("|");
+					statusText = statusText.replaceAll("\\|", "");
+					SpannableString statusSpannable = new SpannableString(statusText);
+					for(at.rueckgr.android.ipwe.data.State state : spanPositions.keySet()) {
+						Pair<Integer, Integer> pos = spanPositions.get(state);
+						statusSpannable.setSpan(new ForegroundColorSpan(Color.parseColor(state.getColor())), pos.first+offset, pos.second+offset, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+					}
 					
 					Notification.Builder notification = new Notification.Builder(getApplicationContext())
 								.setContentTitle(getString(R.string.sensor_report))
-								.setContentText(statusText)
+								.setContentText(statusSpannable)
 								.setSmallIcon(R.drawable.ic_launcher)
 								.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), OverviewActivity.class), 0))
 								.setOngoing(true);
