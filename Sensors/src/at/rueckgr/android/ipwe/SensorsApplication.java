@@ -68,26 +68,24 @@ public class SensorsApplication extends Application {
 	}
 
 	public void initStates(Node parentNode) {
-		if(states == null) {
-			states = new HashMap<String, State>();
-			
-			NodeList nodes = parentNode.getChildNodes();
-			for(int a=0; a<nodes.getLength(); a++) {
-				Node node = nodes.item(a);
-				if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("state")) {
-					NamedNodeMap attributes = node.getAttributes();
-					if(attributes.getNamedItem("name") != null && attributes.getNamedItem("pos") != null && attributes.getNamedItem("color") != null && attributes.getNamedItem("ok") != null) {
-						try {
-							String name = attributes.getNamedItem("name").getTextContent();
-							int pos = Integer.parseInt(attributes.getNamedItem("pos").getTextContent());
-							boolean ok = (Integer.parseInt(attributes.getNamedItem("pos").getTextContent()) == 1);
-							String color = attributes.getNamedItem("color").getTextContent();
-							
-							states.put(name, new State(name, color, ok, pos));
-						}
-						catch (NumberFormatException e) {
-							/* do nothing, just ignore that error */
-						}
+		states = new HashMap<String, State>();
+		
+		NodeList nodes = parentNode.getChildNodes();
+		for(int a=0; a<nodes.getLength(); a++) {
+			Node node = nodes.item(a);
+			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("state")) {
+				NamedNodeMap attributes = node.getAttributes();
+				if(attributes.getNamedItem("name") != null && attributes.getNamedItem("pos") != null && attributes.getNamedItem("color") != null && attributes.getNamedItem("ok") != null) {
+					try {
+						String name = attributes.getNamedItem("name").getTextContent();
+						int pos = Integer.parseInt(attributes.getNamedItem("pos").getTextContent());
+						boolean ok = (Integer.parseInt(attributes.getNamedItem("pos").getTextContent()) == 1);
+						String color = attributes.getNamedItem("color").getTextContent();
+						
+						states.put(name, new State(name, color, ok, pos));
+					}
+					catch (NumberFormatException e) {
+						/* do nothing, just ignore that error */
 					}
 				}
 			}
