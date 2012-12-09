@@ -75,10 +75,10 @@ function get_type_data($sensor_data = array()) {
 
 function get_states() {
 	return array(
-			array('name' => 'ok', 'color' => '#00cc33'),
-			array('name' => 'warning', 'color' => '#ffa500'),
-			array('name' => 'critical', 'color' => '#ff3300'),
-			array('name' => 'unknown', 'color' => '#ff3300')
+			array('name' => 'ok', 'color' => '#00cc33', 'pos' => 1, 'ok' => 1),
+			array('name' => 'warning', 'color' => '#ffa500', 'pos' => 2, 'ok' => 0),
+			array('name' => 'critical', 'color' => '#ff3300', 'pos' => 3, 'ok' => 0),
+			array('name' => 'unknown', 'color' => '#e066ff', 'pos' => 4, 'ok' => 0)
 		);
 }
 
