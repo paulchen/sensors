@@ -20,6 +20,9 @@ import org.apache.http.client.protocol.ClientContext;
 import org.apache.http.impl.auth.BasicScheme;
 import org.apache.http.impl.client.DefaultHttpClient;
 import org.apache.http.protocol.HttpContext;
+import org.w3c.dom.NamedNodeMap;
+import org.w3c.dom.Node;
+import org.w3c.dom.NodeList;
 
 import android.app.Application;
 import android.content.Context;
@@ -55,25 +58,39 @@ public class SensorsApplication extends Application {
 	private int notificationLightColor;
 
 	public SensorsApplication() {
-		initStates();
 	}
 	
 	@Override
 	public void onCreate() {
 		super.onCreate();
 		
-		initStates();		
 		readConfig(this);
 	}
 
-	private void initStates() {
+	public void initStates(Node parentNode) {
 		if(states == null) {
 			states = new HashMap<String, State>();
 			
-			states.put("ok", new State("ok", "#00cc33", true, 1));
-			states.put("warning", new State("warning", "#00cc33", false, 2));
-			states.put("critical", new State("critical", "#00cc33", false, 3));
-			states.put("unknown", new State("unknown", "#00cc33", false, 4));
+			NodeList nodes = parentNode.getChildNodes();
+			for(int a=0; a<nodes.getLength(); a++) {
+				Node node = nodes.item(a);
+				if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("state")) {
+					NamedNodeMap attributes = node.getAttributes();
+					if(attributes.getNamedItem("name") != null && attributes.getNamedItem("pos") != null && attributes.getNamedItem("color") != null && attributes.getNamedItem("ok") != null) {
+						try {
+							String name = attributes.getNamedItem("name").getTextContent();
+							int pos = Integer.parseInt(attributes.getNamedItem("pos").getTextContent());
+							boolean ok = (Integer.parseInt(attributes.getNamedItem("pos").getTextContent()) == 1);
+							String color = attributes.getNamedItem("color").getTextContent();
+							
+							states.put(name, new State(name, color, ok, pos));
+						}
+						catch (NumberFormatException e) {
+							/* do nothing, just ignore that error */
+						}
+					}
+				}
+			}
 		}
 	}
 	
