@@ -36,6 +36,7 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	private boolean serviceUp;
 	private ProgressDialog progressDialog;
 	private boolean showToasts;
+	private Intent serviceIntent;
     
     private static class OverviewHandler extends Handler {
     	private OverviewActivity activity;
@@ -112,9 +113,8 @@ public class OverviewActivity extends Activity implements ServiceConnection {
         	notifyUpdateStart();
         }
         
-    	Intent intent = new Intent(this, PollService.class);
-    	startService(intent);
-    	bindService(intent, this, Context.BIND_AUTO_CREATE);
+    	serviceIntent = new Intent(this, PollService.class);
+    	bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
     	
     	connectionStateReceiver = new ConnectionStateReceiver();
     	IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
@@ -143,8 +143,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	}
 
 	public void notifyUpdateStart() {
-    	Log.d(TAG, "notifyUpdateStart");
-    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+		if(progressDialog == null) {
+	    	Log.d(TAG, "notifyUpdateStart");
+	    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+		}
 	}
 
 	@Override
@@ -275,6 +277,8 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			message.replyTo = new Messenger(overviewHandler);
 			(new Messenger(service)).send(message);
 			serviceUp = true;
+			
+			startService(serviceIntent);
 		}
 		catch (RemoteException e) {
 			initError();

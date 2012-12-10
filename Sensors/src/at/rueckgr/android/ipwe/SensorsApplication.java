@@ -172,6 +172,8 @@ public class SensorsApplication extends Application {
 			throw new SensorsException(e);
 		} catch (IOException e) {
 			throw new SensorsException(e);
+		} catch (IllegalArgumentException e) {
+			throw new SensorsException(e);
 		} catch (IllegalStateException e) {
 			throw new SensorsException(e);
 		}
