@@ -126,7 +126,9 @@ my $time_margin = $config->getProperty('time_margin');
 my $db_host = $config->getProperty('db_host');
 my $db_username = $config->getProperty('db_username');
 my $db_password = $config->getProperty('db_password');
-my $db_database = $config->getProperty('db_database');;
+my $db_database = $config->getProperty('db_database');
+
+my $bullshit_threshold = 95;
 
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
@@ -194,13 +196,15 @@ for($a=0; $a<=$#data; $a++) {
 			if($result[0] == 0) {
 				$stmt = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
-				$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $data[$a]->{'Temperatur'}));
-				$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $data[$a]->{'Luftfeuchtigkeit'}));
-				if($value->{'Windgeschwindigkeit'} > -1) {
-					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $data[$a]->{'Windgeschwindigkeit'}));
-				}
-				if($value->{'Regenmenge'} > -1) {
-					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $data[$a]->{'Regenmenge'}));
+				if($value->{'Temperatur'} < $bullshit_threshold || $value->{'Luftfeuchtigkeit'} < $bullshit_threshold) {
+					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
+					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
+					if($value->{'Windgeschwindigkeit'} > -1) {
+						$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
+					}
+					if($value->{'Regenmenge'} > -1) {
+						$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
+					}
 				}
 				$stmt->finish();
 			}

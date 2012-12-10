@@ -34,3 +34,6 @@ battery_critical = 400
 # if username and password are required for access to the API
 api_authentication = false
 
+# if temperature and humidity are above this value, current data for that sensor will be ignored
+bullshit_threshold = 95
+
