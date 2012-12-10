@@ -3,16 +3,12 @@ package at.rueckgr.android.ipwe;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
-import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.ServiceConnection;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
@@ -32,10 +28,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     private static OverviewHandler overviewHandler;
     private IBinder serviceBinder;
     private Status lastStatus;
-	private ConnectionStateReceiver connectionStateReceiver;
 	private boolean serviceUp;
 	private ProgressDialog progressDialog;
 	private boolean showToasts;
+	private Intent serviceIntent;
     
     private static class OverviewHandler extends Handler {
     	private OverviewActivity activity;
@@ -62,23 +58,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
     				
     			default:
     				/* will never happen */
-    		}
-    	}
-    }
-
-    private class ConnectionStateReceiver extends BroadcastReceiver {
-    	private static final String TAG = "ConnectionStateReceiver";
-    	
-    	@Override
-    	public void onReceive(Context context, Intent intent) {
-    		Log.d(TAG, "receiver called");
-    		
-        	ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
-        	 
-        	NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
-        	if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
-    			Log.d(TAG, "Forcing update");
-    			triggerUpdate();
     		}
     	}
     }
@@ -112,13 +91,8 @@ public class OverviewActivity extends Activity implements ServiceConnection {
         	notifyUpdateStart();
         }
         
-    	Intent intent = new Intent(this, PollService.class);
-    	startService(intent);
-    	bindService(intent, this, Context.BIND_AUTO_CREATE);
-    	
-    	connectionStateReceiver = new ConnectionStateReceiver();
-    	IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
-    	registerReceiver(connectionStateReceiver, intentFilter);
+    	serviceIntent = new Intent(this, PollService.class);
+    	bindService(serviceIntent, this, Context.BIND_AUTO_CREATE);
     }
 
     @Override
@@ -143,8 +117,10 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	}
 
 	public void notifyUpdateStart() {
-    	Log.d(TAG, "notifyUpdateStart");
-    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+		if(progressDialog == null) {
+	    	Log.d(TAG, "notifyUpdateStart");
+	    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+		}
 	}
 
 	@Override
@@ -206,7 +182,6 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 		super.onDestroy();
 		
 		unbindService(this);
-		unregisterReceiver(connectionStateReceiver);
 	}
 	
 	@Override
@@ -275,6 +250,8 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 			message.replyTo = new Messenger(overviewHandler);
 			(new Messenger(service)).send(message);
 			serviceUp = true;
+			
+			startService(serviceIntent);
 		}
 		catch (RemoteException e) {
 			initError();

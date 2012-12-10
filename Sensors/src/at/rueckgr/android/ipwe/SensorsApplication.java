@@ -2,8 +2,11 @@ package at.rueckgr.android.ipwe;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.IDN;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -68,26 +71,24 @@ public class SensorsApplication extends Application {
 	}
 
 	public void initStates(Node parentNode) {
-		if(states == null) {
-			states = new HashMap<String, State>();
-			
-			NodeList nodes = parentNode.getChildNodes();
-			for(int a=0; a<nodes.getLength(); a++) {
-				Node node = nodes.item(a);
-				if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("state")) {
-					NamedNodeMap attributes = node.getAttributes();
-					if(attributes.getNamedItem("name") != null && attributes.getNamedItem("pos") != null && attributes.getNamedItem("color") != null && attributes.getNamedItem("ok") != null) {
-						try {
-							String name = attributes.getNamedItem("name").getTextContent();
-							int pos = Integer.parseInt(attributes.getNamedItem("pos").getTextContent());
-							boolean ok = (Integer.parseInt(attributes.getNamedItem("pos").getTextContent()) == 1);
-							String color = attributes.getNamedItem("color").getTextContent();
-							
-							states.put(name, new State(name, color, ok, pos));
-						}
-						catch (NumberFormatException e) {
-							/* do nothing, just ignore that error */
-						}
+		states = new HashMap<String, State>();
+		
+		NodeList nodes = parentNode.getChildNodes();
+		for(int a=0; a<nodes.getLength(); a++) {
+			Node node = nodes.item(a);
+			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("state")) {
+				NamedNodeMap attributes = node.getAttributes();
+				if(attributes.getNamedItem("name") != null && attributes.getNamedItem("pos") != null && attributes.getNamedItem("color") != null && attributes.getNamedItem("ok") != null) {
+					try {
+						String name = attributes.getNamedItem("name").getTextContent();
+						int pos = Integer.parseInt(attributes.getNamedItem("pos").getTextContent());
+						boolean ok = (Integer.parseInt(attributes.getNamedItem("pos").getTextContent()) == 1);
+						String color = attributes.getNamedItem("color").getTextContent();
+						
+						states.put(name, new State(name, color, ok, pos));
+					}
+					catch (NumberFormatException e) {
+						/* do nothing, just ignore that error */
 					}
 				}
 			}
@@ -146,10 +147,16 @@ public class SensorsApplication extends Application {
 		return notificationLightColor;
 	}
 
-	public InputStream executeHttpGet(String url) throws SensorsException {
+	public InputStream executeHttpGet(String urlString) throws SensorsException {
+		URL url;
+		try {
+			url = new URL(urlString);
+		} catch (MalformedURLException e) {
+			throw new SensorsException(e);
+		}
 		final URI uri;
 		try {
-			uri = new URI(url);
+			uri = new URI(url.getProtocol(), url.getUserInfo(), IDN.toASCII(url.getHost()), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
 		} catch (URISyntaxException e) {
 			throw new SensorsException(e);
 		}
@@ -173,6 +180,8 @@ public class SensorsApplication extends Application {
 		} catch (ClientProtocolException e) {
 			throw new SensorsException(e);
 		} catch (IOException e) {
+			throw new SensorsException(e);
+		} catch (IllegalArgumentException e) {
 			throw new SensorsException(e);
 		} catch (IllegalStateException e) {
 			throw new SensorsException(e);

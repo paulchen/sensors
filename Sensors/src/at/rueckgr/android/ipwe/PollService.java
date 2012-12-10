@@ -2,6 +2,7 @@ package at.rueckgr.android.ipwe;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
@@ -18,12 +19,19 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
+import android.text.Spannable;
+import android.text.SpannableString;
+import android.text.style.ForegroundColorSpan;
 import android.util.Log;
+import android.util.Pair;
 import at.rueckgr.android.ipwe.data.SensorsException;
 import at.rueckgr.android.ipwe.data.Status;
 
@@ -36,6 +44,7 @@ public class PollService extends Service {
 	private static Set<Messenger> clients;
 	private ExecutorService threadPool;
 	private BroadcastReceiver timerReceiver;
+	private ConnectionStateReceiver connectionStateReceiver;
 	
 	static {
 		clients = Collections.synchronizedSet(new HashSet<Messenger>());
@@ -45,6 +54,29 @@ public class PollService extends Service {
 		incomingMessenger = new Messenger(new IncomingHandler(this));
 	}
 	
+    private class ConnectionStateReceiver extends BroadcastReceiver {
+    	private static final String TAG = "ConnectionStateReceiver";    	
+		private PollService service;
+		
+		public ConnectionStateReceiver(PollService service) {
+			this.service = service;
+		}
+		
+    	@Override
+    	public void onReceive(Context context, Intent intent) {
+    		Log.d(TAG, "receiver called");
+    		
+        	ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        	 
+        	NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        	if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+    			Log.d(TAG, "Forcing update");
+				service.cancelPendingUpdate();
+				service.update(true, false);
+    		}
+    	}
+    }
+
 	private static class IncomingHandler extends Handler {
 		private PollService service;
 		
@@ -121,14 +153,28 @@ public class PollService extends Service {
 					String statusDetails = "";
 					List<at.rueckgr.android.ipwe.data.State> states = new ArrayList<at.rueckgr.android.ipwe.data.State>(application.getStates().values());
 					Collections.sort(states);
+					Map<at.rueckgr.android.ipwe.data.State, Pair<Integer, Integer>> spanPositions = new HashMap<at.rueckgr.android.ipwe.data.State, Pair<Integer, Integer>>();
 					for(at.rueckgr.android.ipwe.data.State state : states) {
 						statusDetails += String.format(getString(R.string.notification_details), state.getLetter(), stateCounts.get(state.getName()));
+						if(stateCounts.get(state.getName()) > 0 || state.isOk()) {
+							int pos1 = statusDetails.indexOf("[");
+							int pos2 = statusDetails.indexOf("]")-1;
+							spanPositions.put(state, new Pair<Integer, Integer>(pos1, pos2));
+						}
+						statusDetails = statusDetails.replaceAll("[\\[\\]]", "");
 					}
 					String statusText = String.format(getString(R.string.notification_text), total, statusDetails);
+					int offset = statusText.indexOf("|");
+					statusText = statusText.replaceAll("\\|", "");
+					SpannableString statusSpannable = new SpannableString(statusText);
+					for(at.rueckgr.android.ipwe.data.State state : spanPositions.keySet()) {
+						Pair<Integer, Integer> pos = spanPositions.get(state);
+						statusSpannable.setSpan(new ForegroundColorSpan(Color.parseColor(state.getColor())), pos.first+offset, pos.second+offset, Spannable.SPAN_INCLUSIVE_INCLUSIVE);
+					}
 					
 					Notification.Builder notification = new Notification.Builder(getApplicationContext())
 								.setContentTitle(getString(R.string.sensor_report))
-								.setContentText(statusText)
+								.setContentText(statusSpannable)
 								.setSmallIcon(R.drawable.ic_launcher)
 								.setContentIntent(PendingIntent.getActivity(getApplicationContext(), 0, new Intent(getApplicationContext(), OverviewActivity.class), 0))
 								.setOngoing(true);
@@ -183,8 +229,10 @@ public class PollService extends Service {
 		Intent timerIntent = new Intent(SensorsApplication.TIMER_INTENT_NAME);
 		pendingIntent = PendingIntent.getBroadcast(application, 0, timerIntent, 0);
 		
-		update(true, false);
-	
+    	connectionStateReceiver = new ConnectionStateReceiver(this);
+    	IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+    	registerReceiver(connectionStateReceiver, intentFilter);
+    	
 		return START_STICKY;
 	}
 	
@@ -193,6 +241,7 @@ public class PollService extends Service {
 		super.onDestroy();
 		alarmManager.cancel(pendingIntent);
 		unregisterReceiver(timerReceiver);
+		unregisterReceiver(connectionStateReceiver);
 	}
 
 	private void scheduleUpdate() {
