@@ -2,8 +2,11 @@ package at.rueckgr.android.ipwe;
 
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.IDN;
+import java.net.MalformedURLException;
 import java.net.URI;
 import java.net.URISyntaxException;
+import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -144,10 +147,16 @@ public class SensorsApplication extends Application {
 		return notificationLightColor;
 	}
 
-	public InputStream executeHttpGet(String url) throws SensorsException {
+	public InputStream executeHttpGet(String urlString) throws SensorsException {
+		URL url;
+		try {
+			url = new URL(urlString);
+		} catch (MalformedURLException e) {
+			throw new SensorsException(e);
+		}
 		final URI uri;
 		try {
-			uri = new URI(url);
+			uri = new URI(url.getProtocol(), url.getUserInfo(), IDN.toASCII(url.getHost()), url.getPort(), url.getPath(), url.getQuery(), url.getRef());
 		} catch (URISyntaxException e) {
 			throw new SensorsException(e);
 		}
