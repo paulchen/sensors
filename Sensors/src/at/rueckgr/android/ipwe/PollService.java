@@ -20,6 +20,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.graphics.Color;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -42,6 +44,7 @@ public class PollService extends Service {
 	private static Set<Messenger> clients;
 	private ExecutorService threadPool;
 	private BroadcastReceiver timerReceiver;
+	private ConnectionStateReceiver connectionStateReceiver;
 	
 	static {
 		clients = Collections.synchronizedSet(new HashSet<Messenger>());
@@ -51,6 +54,29 @@ public class PollService extends Service {
 		incomingMessenger = new Messenger(new IncomingHandler(this));
 	}
 	
+    private class ConnectionStateReceiver extends BroadcastReceiver {
+    	private static final String TAG = "ConnectionStateReceiver";    	
+		private PollService service;
+		
+		public ConnectionStateReceiver(PollService service) {
+			this.service = service;
+		}
+		
+    	@Override
+    	public void onReceive(Context context, Intent intent) {
+    		Log.d(TAG, "receiver called");
+    		
+        	ConnectivityManager connectivityManager = (ConnectivityManager)context.getSystemService(Context.CONNECTIVITY_SERVICE);
+        	 
+        	NetworkInfo activeNetwork = connectivityManager.getActiveNetworkInfo();
+        	if(activeNetwork != null && activeNetwork.isConnectedOrConnecting()) {
+    			Log.d(TAG, "Forcing update");
+				service.cancelPendingUpdate();
+				service.update(true, false);
+    		}
+    	}
+    }
+
 	private static class IncomingHandler extends Handler {
 		private PollService service;
 		
@@ -204,7 +230,11 @@ public class PollService extends Service {
 		pendingIntent = PendingIntent.getBroadcast(application, 0, timerIntent, 0);
 		
 		update(true, false);
-	
+	    	
+    	connectionStateReceiver = new ConnectionStateReceiver(this);
+    	IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
+    	registerReceiver(connectionStateReceiver, intentFilter);
+    	
 		return START_STICKY;
 	}
 	
@@ -213,6 +243,7 @@ public class PollService extends Service {
 		super.onDestroy();
 		alarmManager.cancel(pendingIntent);
 		unregisterReceiver(timerReceiver);
+		unregisterReceiver(connectionStateReceiver);
 	}
 
 	private void scheduleUpdate() {
