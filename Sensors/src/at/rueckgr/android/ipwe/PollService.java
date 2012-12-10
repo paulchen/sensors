@@ -229,8 +229,6 @@ public class PollService extends Service {
 		Intent timerIntent = new Intent(SensorsApplication.TIMER_INTENT_NAME);
 		pendingIntent = PendingIntent.getBroadcast(application, 0, timerIntent, 0);
 		
-		update(true, false);
-	    	
     	connectionStateReceiver = new ConnectionStateReceiver(this);
     	IntentFilter intentFilter = new IntentFilter("android.net.conn.CONNECTIVITY_CHANGE");
     	registerReceiver(connectionStateReceiver, intentFilter);
