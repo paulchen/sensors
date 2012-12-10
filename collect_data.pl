@@ -8,10 +8,13 @@ use DBI;
 use Config::Properties;
 use File::Basename;
 use Time::Format;
+use Time::Piece;
 
 sub log_status{
 	my ($msg) = @_;
-	print "$time{'yyyy/mm/dd hh:mm:ss'} $msg\n";
+
+	print Time::Piece::localtime->strftime('%Y/%m/%d %H:%M:%S');
+	print " $msg\n";
 }
 
 sub telnet_command {
