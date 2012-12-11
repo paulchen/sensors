@@ -70,7 +70,7 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	else if($value_max != '') {
 		echo "graph_args --upper-limit $value_max\n";
 	}
-
+	echo "graph_scale no\n";
 	echo "graph_category sensor_data\n";
 	$stmt = $mysqli->prepare('SELECT low_crit, low_warn, high_warn, high_crit FROM sensor_limits WHERE sensor = ? AND value = ?');
 	foreach($sensor_info as $index => $sensor) {
