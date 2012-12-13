@@ -180,7 +180,7 @@ public class PollService extends Service {
 								.setOngoing(true);
 					if(application.isEnableNotificationLight()) {
 						Log.d(TAG, String.valueOf(application.getNotificationLightColor()));
-						notification.setLights(application.getNotificationLightColor(), 100, 200);
+						notification.setLights(application.getNotificationLightColor(), 2000, 2000);
 					}
 					
 					mNotificationManager.notify(SensorsApplication.NOTIFICATION_ID, notification.getNotification());
