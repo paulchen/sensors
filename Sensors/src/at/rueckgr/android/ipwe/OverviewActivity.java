@@ -18,6 +18,7 @@ import android.os.RemoteException;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.WindowManager.BadTokenException;
 import android.widget.ListView;
 import android.widget.Toast;
 import at.rueckgr.android.ipwe.data.Status;
@@ -119,7 +120,12 @@ public class OverviewActivity extends Activity implements ServiceConnection {
 	public void notifyUpdateStart() {
 		if(progressDialog == null) {
 	    	Log.d(TAG, "notifyUpdateStart");
-	    	progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+	    	try {
+	    		progressDialog = ProgressDialog.show(this, "", getString(R.string.status_updating), true);
+	    	}
+	    	catch (BadTokenException e) {
+	    		/* ignore */
+	    	}
 		}
 	}
 
