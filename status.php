@@ -1,15 +1,16 @@
 <?php
 
 chdir(dirname(__FILE__));
-$config = parse_ini_file('config.properties');
-if(!$config) {
-	echo "Could not read configuration file.\n";
-	die(3);
-}
+require_once('common.php');
 
-$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
-if($mysqli->connect_errno) {
-	echo "Could not connect to database.\n";
+if($config['api_authentication'] == 0) {
+	/* do nothing */
+}
+else if($config['api_authentication'] == 1) {
+	http_auth();
+}
+else {
+	echo "Wrong value for configuration setting 'api_authentication'.\n";
 	die(3);
 }
 
