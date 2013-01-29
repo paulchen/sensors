@@ -22,7 +22,7 @@ foreach($sensors as $sensor) {
 	}
 }
 
-$config_file = dirname(__FILE__) . '/config.properties';
+$config_file = 'config.properties';
 
 if($argc == 5 && $argv[3] != '--config-file' && $argv[3] != '-c') {
 	usage();
@@ -31,17 +31,8 @@ else if($argc == 5) {
 	$config_file = $argv[4] . '/config.properties';
 }
 
-$config = parse_ini_file($config_file);
-if(!$config) {
-	echo "Could not read configuration file.\n";
-	die(3);
-}
-
-$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
-if($mysqli->connect_errno) {
-	echo "Could not connect to database.\n";
-	die(3);
-}
+chdir(dirname(__FILE__));
+require_once('common.php');
 
 $stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
 $stmt->execute();

@@ -2,17 +2,7 @@
 <?php
 
 chdir(dirname(__FILE__));
-$config = parse_ini_file('config.properties');
-if(!$config) {
-	echo "Could not read configuration file.\n";
-	die(3);
-}
-
-$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
-if($mysqli->connect_errno) {
-	echo "Could not connect to database.\n";
-	die(3);
-}
+require_once('common.php');
 
 $stmt = $mysqli->prepare('SELECT id, name FROM sensor_values');
 $stmt->execute();
