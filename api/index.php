@@ -6,19 +6,11 @@ if(!isset($_GET['action'])) {
 }
 $action = $_GET['action'];
 
+$http_auth = true;
+
 chdir(dirname(__FILE__));
 require_once('common.php');
-
-if($config['api_authentication'] == 0) {
-	/* do nothing */
-}
-else if($config['api_authentication'] == 1) {
-	http_auth();
-}
-else {
-	echo "Wrong value for configuration setting 'api_authentication'.\n";
-	die(3);
-}
+chdir(dirname(__FILE__));
 
 $stmt = $mysqli->prepare('SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC');
 $start_timestamp = date('Y-m-d H:i', time()-86400);

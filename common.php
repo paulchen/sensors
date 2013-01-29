@@ -19,6 +19,19 @@ if($mysqli->connect_errno) {
 	die(3);
 }
 
+if(isset($http_auth) && $http_auth) {
+	if($config['api_authentication'] == 0) {
+		/* do nothing */
+	}
+	else if($config['api_authentication'] == 1) {
+		http_auth();
+	}
+	else {
+		echo "Wrong value for configuration setting 'api_authentication'.\n";
+		die(3);
+	}
+}
+	
 function http_auth() {
 	global $mysqli;
 
