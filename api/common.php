@@ -4,6 +4,11 @@ if(basename($_SERVER['SCRIPT_FILENAME']) != 'index.php') {
 	die();
 }
 
+chdir(dirname(__FILE__));
+chdir('..');
+require_once('common.php');
+chdir('api');
+
 function get_sensors() {
 	global $mysqli;
 
