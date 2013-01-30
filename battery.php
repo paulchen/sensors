@@ -10,11 +10,8 @@ if(!isset($_GET['id'])) {
 	die(3);
 }
 
-$stmt = $mysqli->prepare('INSERT INTO battery_changes (sensor) VALUES (?)');
-$start_timestamp = date('Y-m-d H:i', time()-86400);
-$stmt->bind_param('i', $_GET['id']);
-$stmt->execute();
-$stmt->close();
+$query = 'INSERT INTO battery_changes (sensor) VALUES (?)';
+db_query($query, array($_GET['id']));
 
 header('Location: ' . dirname($_SERVER['REQUEST_URI']) . '/#battery');
 
