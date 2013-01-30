@@ -5,18 +5,23 @@ chdir(dirname(__FILE__));
 $http_auth = true;
 require_once('common.php');
 
-$stmt = $mysqli->prepare('SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC');
+$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
-$stmt->bind_param('s', $start_timestamp);
-$stmt->execute();
-$stmt->bind_result($sensor, $what, $timestamp, $value);
+$data = db_query($query, array($start_timestamp));
+
 $first_values = array();
 $max_values = array();
 $min_values = array();
 $avg_valuess = array();
 $current_values = array();
 $keys = array();
-while($stmt->fetch()) {
+
+foreach($data as $row) {
+	$sensor = $row['sensor'];
+	$what = $row['what'];
+	$timestamp = $row['timestamp'];
+	$value = $row['value'];
+
 	$key = "$sensor-$what";
 	if(!isset($keys[$key])) {
 		$keys[$key] = array('sensor' => $sensor, 'what' => $what);
@@ -43,16 +48,13 @@ while($stmt->fetch()) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
-$stmt->close();
 
-$stmt = $mysqli->prepare('SELECT pos, id FROM sensors');
-$stmt->execute();
-$stmt->bind_result($pos, $id);
+$query = 'SELECT pos, id FROM sensors';
+$data = db_query($query);
 $position = array();
-while($stmt->fetch()) {
-	$position[$id] = $pos;
+foreach($data as $row) {
+	$position[$row['id']] = $row['pos'];
 }
-$stmt->close();
 
 $keys2 = $keys;
 uksort($keys, function($a, $b) {
@@ -91,33 +93,33 @@ foreach($keys as $index => $key) {
 	$avg_values[$index]['value'] /= $avg_values[$index]['count'];
 }
 
-$stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
-$stmt->execute();
-$stmt->bind_result($id, $name, $format, $decimals);
+$query = 'SELECT id, name, format, decimals FROM sensor_values';
+$data = db_query($query);
 $values = array();
-while($stmt->fetch()) {
-	$values[$id] = array('name' => $name, 'format' => $format, 'decimals' => $decimals);
+foreach($data as $row) {
+	$values[$row['id']] = $row;
 }
-$stmt->close();
 
-$stmt = $mysqli->prepare('SELECT id, sensor, type, description FROM sensors');
-$stmt->execute();
-$stmt->bind_result($id, $sensor, $type, $description);
+$query = 'SELECT id, sensor, type, description FROM sensors';
+$data = db_query($query);
 $sensors = array();
-while($stmt->fetch()) {
-	if($description == '') {
-		$description = "Sensor $sensor";
+foreach($data as $row) {
+	if($row['description'] == '') {
+		$row['description'] = "Sensor $sensor";
 	}
-	$sensors[$id] = array('sensor' => $sensor, 'type' => $type, 'description' => $description, 'battery_date' => 'never', 'battery_days' => '', 'battery_state' => 'unknown');
+	$row['battery_date'] = 'never';
+	$row['battery_days'] = '';
+	$row['battery_state'] = 'unknown';
+
+	$sensors[$row['id']] = $row;
 }
-$stmt->close();
 
 foreach($sensors as $id => $sensor) {
-	$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1');
-	$stmt->bind_param('i', $id);
-	$stmt->execute();
-	$stmt->bind_result($timestamp);
-	while($stmt->fetch()) {
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query, array($id));
+	foreach($data as $row) {
+		$timestamp = $row['timestamp'];
+
 		$sensors[$id]['battery_date'] = date('Y-m-d H:i', $timestamp);
 		$battery_days = floor((time()-$timestamp)/86400);
 		$sensors[$id]['battery_days'] = "$battery_days day(s)";
@@ -131,17 +133,16 @@ foreach($sensors as $id => $sensor) {
 			$sensors[$id]['battery_state'] = 'critical';
 		}
 	}
-	$stmt->close();
 }
 
-$stmt = $mysqli->prepare('SELECT sensor, value, low_crit, low_warn, high_warn, high_crit FROM sensor_limits');
-$stmt->execute();
-$stmt->bind_result($sensor, $value, $low_crit, $low_warn, $high_warn, $high_crit);
+$query = 'SELECT sensor, value, low_crit, low_warn, high_warn, high_crit FROM sensor_limits';
+$data = db_query($query);
 $limits = array();
-while($stmt->fetch()) {
-	$limits["$sensor-$value"] = array('low_crit' => $low_crit, 'low_warn' => $low_warn, 'high_warn' => $high_warn, 'high_crit' => $high_crit);
+foreach($data as $row) {
+	$sensor = $row['sensor'];
+	$value = $row['value'];
+	$limits["$sensor-$value"] = $row;
 }
-$stmt->close();
 
 $states = array();
 $state_class = array();
@@ -196,23 +197,23 @@ foreach($keys as $index => $key) {
 	$avg_values[$index]['formatted_value'] = str_replace('%s', round($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 }
 
-$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1');
-$stmt->execute();
-$stmt->bind_result($timestamp);
-$last_cron_run = 'never';
-if($stmt->fetch()) {
-	$last_cron_run = date('Y-m-d H:i', $timestamp);
+$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
+$data = db_query($query);
+if(count($data) == 0) {
+	$last_cron_run = 'never';
 }
-$stmt->close();
+else {
+	$last_cron_run = date('Y-m-d H:i', $data[0]['timestamp']);
+}
 
-$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) FROM raw_data ORDER BY id DESC LIMIT 0, 1');
-$stmt->execute();
-$stmt->bind_result($timestamp);
-$last_successful_cron_run = 'never';
-if($stmt->fetch()) {
-	$last_successful_cron_run = date('Y-m-d H:i', $timestamp);
+$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM raw_data ORDER BY id DESC LIMIT 0, 1';
+$data = db_query($query);
+if(count($data) == 0) {
+	$last_successful_cron_run = 'never';
 }
-$stmt->close();
+else {
+	$last_successful_cron_run = date('Y-m-d H:i', $data[0]['timestamp']);
+}
 
 if(php_sapi_name() == 'cli') {
 	echo "Last cronjob run: $last_cron_run\n";
@@ -234,12 +235,14 @@ if(php_sapi_name() == 'cli') {
 	exit;
 }
 
-$stmt = $mysqli->prepare('SELECT url, row FROM munin_graphs ORDER BY id ASC');
-$stmt->execute();
-$stmt->bind_result($url, $row);
+$query = 'SELECT url, row FROM munin_graphs ORDER BY id ASC';
+$data = db_query($query);
 $graphs = array();
 $last_row = -1;
-while($stmt->fetch()) {
+foreach($data as $line) {
+	$url = $line['url'];
+	$row = $line['row'];
+
 	$new_row = 0;
 	if($last_row != $row) {
 		$new_row = 1;
@@ -247,7 +250,6 @@ while($stmt->fetch()) {
 	$graphs[] = array('url' => $url, 'new_row' => $new_row);
 	$last_row = $row;
 }
-$stmt->close();
 
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
