@@ -34,40 +34,38 @@ else if($argc == 5) {
 chdir(dirname(__FILE__));
 require_once('common.php');
 
-$stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
-$stmt->execute();
-$stmt->bind_result($id, $name, $format, $decimals);
+$query = 'SELECT id, name, format, decimals FROM sensor_values';
+$data = db_query($query);
 $value_ids = array();
-while($stmt->fetch()) {
-	$value_ids[$id] = array('name' => $name, 'format' => $format, 'decimals' => $decimals);
+foreach($data as $row) {
+	$value_ids[$row['id']] = $row;
 }
-$stmt->close();
 
 $states = array(0);
 $messages = array();
 foreach($sensors as $sensor_id) {
-	$stmt = $mysqli->prepare('SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
-	$stmt->bind_param('i', $sensor_id);
-	$stmt->execute();
-	$stmt->bind_result($sensor, $sensor_description);
-	if(!$stmt->fetch()) {
+	$query = 'SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query, array($sensor_id));
+	if(count($data) == 0) {
 		echo "No data for sensor with ID $sensor\n";
 		die(3);
 	}
+
+	$sensor = $data[0]['sensor'];
+	$sensor_description = $data[0]['description'];
+
 	if($sensor_description == '') {
 		$sensor_description = "Sensor $sensor";
 	}
-	$stmt->close();
 
-	$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1');
-	$stmt->bind_param('i', $sensor_id);
-	$stmt->execute();
-	$timestamp = 0;
-	$stmt->bind_result($value);
-	while($stmt->fetch()) {
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query, array($sensor_id));
+	if(count($data) == 1) {
+		$timestamp = $data[0]['timestamp'];
+	}
+	else {
 		$timestamp = $value;
 	}
-	$stmt->close();
 
 	if($timestamp == 0) {
 		$messages[] = "$sensor_description - no battery change recorded";
