@@ -13,12 +13,6 @@ if(!$config) {
 	die(3);
 }
 
-$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
-if($mysqli->connect_errno) {
-	echo "Could not connect to database.\n";
-	die(3);
-}
-
 $db_name = $config['db_database'];
 $db_host = $config['db_host'];
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $config['db_username'], $config['db_password']);
