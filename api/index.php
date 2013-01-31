@@ -12,17 +12,20 @@ chdir(dirname(__FILE__));
 require_once('common.php');
 chdir(dirname(__FILE__));
 
-$stmt = $mysqli->prepare('SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC');
+$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
-$stmt->bind_param('s', $start_timestamp);
-$stmt->execute();
-$stmt->bind_result($sensor, $what, $timestamp, $value);
+$data = db_query($query, array($start_timestamp));
 $first_values = array();
 $max_values = array();
 $min_values = array();
 $current_values = array();
 $keys = array();
-while($stmt->fetch()) {
+foreach($data as $row) {
+	$sensor = $row['sensor'];
+	$what = $row['what'];
+	$timestamp = $row['timestamp'];
+	$value = $row['value'];
+
 	$key = "$sensor-$what";
 	if(!isset($keys[$key])) {
 		$keys[$key] = array('sensor' => $sensor, 'what' => $what);
@@ -46,7 +49,6 @@ while($stmt->fetch()) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
-$stmt->close();
 
 switch($action) {
 	case 'status':
