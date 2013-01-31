@@ -95,7 +95,7 @@ function get_limits($sensors = array()) {
 }
 
 function get_sensors_state($sensors = array()) {
-	global $mysqli, $config;
+	global $config;
 
 	if(!is_array($sensors)) {
 		// TODO
