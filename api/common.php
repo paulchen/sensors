@@ -10,46 +10,29 @@ require_once('common.php');
 chdir('api');
 
 function get_sensors() {
-	global $mysqli;
-
-	$stmt = $mysqli->prepare('SELECT sensor FROM sensor_data WHERE timestamp > ? ORDER BY id DESC');
+	$query = 'SELECT sensor FROM sensor_data WHERE timestamp > ? ORDER BY id DESC';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
-	$stmt->bind_param('s', $start_timestamp);
-	$stmt->execute();
-	$stmt->bind_result($sensor_id);
+	$data = db_query($query, array($start_timestamp));
+
 	$sensor_ids = array();
 	$question_marks = array();
-	while($stmt->fetch()) {
-		if(!in_array($sensor_id, $sensor_ids)) {
-			$sensor_ids[] = $sensor_id;
+	foreach($data as $row) {
+		if(!in_array($row['sensor'], $sensor_ids)) {
+			$sensor_ids[] = $row['sensor'];
 			$question_marks[] = '?';
 		}
 	}
-	$stmt->close();
 
 	$sensors = array();
 	if(count($question_marks) > 0) {
 		$query = 'SELECT id, description AS name FROM sensors WHERE id IN (' . implode(', ', $question_marks) . ') ORDER BY pos ASC';
-		$stmt = $mysqli->prepare($query);
-		$types = str_repeat('s', count($question_marks));
-		array_unshift($sensor_ids, $types);
-		$ref = new ReflectionClass('mysqli_stmt');
-		$method = $ref->getMethod('bind_param');
-		$method->invokeArgs($stmt, $sensor_ids);
-		$stmt->execute();
-		$stmt->bind_result($id, $name);
-		while($stmt->fetch()) {
-			$sensors[] = array('id' => $id, 'name' => $name);
-		}
-		$stmt->close();
+		$sensors = db_query($query, $sensor_ids);
 	}
 
 	return $sensors;
 }
 
 function get_type_data($sensor_data = array()) {
-	global $mysqli;
-
 	if(!is_array($sensor_data)) {
 		// TODO
 		die();
@@ -64,16 +47,14 @@ function get_type_data($sensor_data = array()) {
 		}
 	}
 
-	$stmt = $mysqli->prepare('SELECT id, name, format, min, max, decimals FROM sensor_values ORDER BY id ASC');
-	$stmt->execute();
-	$stmt->bind_result($id, $name, $format, $min, $max, $decimals);
+	$query = 'SELECT id, name, format, min, max, decimals FROM sensor_values ORDER BY id ASC';
+	$data = db_query($query);
 	$type_data = array();
-	while($stmt->fetch()) {
-		if(in_array($id, $types)) {
-			$type_data[] = array('id' => $id, 'name' => $name, 'format' => $format, 'min' => "$min", 'max' => $max, 'decimals' => $decimals);
+	foreach($data as $row) {
+		if(in_array($row['id'], $types)) {
+			$type_data[] = $row;
 		}
 	}
-	$stmt->close();
 
 	return $type_data;
 }
@@ -88,26 +69,27 @@ function get_states() {
 }
 
 function get_limits($sensors = array()) {
-	global $mysqli;
-
 	if(!is_array($sensors)) {
 		// TODO
 		die();
 	}
 
-	$stmt = $mysqli->prepare('SELECT sensor, value, low_crit, low_warn, high_warn, high_crit FROM sensor_limits ORDER BY sensor ASC, value ASC');
-	$stmt->execute();
-	$stmt->bind_result($sensor, $value, $low_crit, $low_warn, $high_warn, $high_crit);
+	$query = 'SELECT sensor, value, low_crit, low_warn, high_warn, high_crit FROM sensor_limits ORDER BY sensor ASC, value ASC';
+	$data = db_query($query);
 	$limits = array();
-	while($stmt->fetch()) {
+	foreach($data as $row) {
+		$sensor = $row['sensor'];
+		$value = $row['value'];
+
+		unset($row['sensor']);
+		unset($row['value']);
 		if(in_array($sensor, $sensors)) {
 			if(!isset($limits[$sensor])) {
 				$limits[$sensor] = array();
 			}
-			$limits[$sensor][$value] = array('low_crit' => $low_crit, 'low_warn' => $low_warn, 'high_warn' => $high_warn, 'high_crit' => $high_crit);
+			$limits[$sensor][$value] = $row;
 		}
 	}
-	$stmt->close();
 	
 	return $limits;
 }
@@ -126,33 +108,26 @@ function get_sensors_state($sensors = array()) {
 
 	$limits = get_limits($sensors);
 
-	$stmt = $mysqli->prepare('SELECT id, decimals FROM sensor_values');
-	$stmt->execute();
-	$stmt->bind_result($id, $decimals);
+	$query = 'SELECT id, decimals FROM sensor_values';
+	$data = db_query($query);
 	$type_decimals = array();
-	while($stmt->fetch()) {
-		$type_decimals[$id] = $decimals;
+	foreach($data as $row) {
+		$type_decimals[$row['id']] = $row['decimals'];
 	}
-	$stmt->close();
 
 	$question_marks = str_repeat('?, ', count($sensors)-1) . '?';
 	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY sensor ASC, what ASC';
-	$stmt = $mysqli->prepare($query);
-	$args = array(str_repeat('s', count($sensors)+1), &$start_timestamp);
-	foreach($sensors as $sensor) {
-		$var = $sensor;
-		$args[] = &$var;
-		unset($var);
-	}
+	$params = $sensors;
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
-	$ref = new ReflectionClass('mysqli_stmt');
-	$method = $ref->getMethod('bind_param');
-	$method->invokeArgs($stmt, $args);
-	$stmt->execute();
-	$stmt->bind_result($sensor_id, $what, $timestamp, $value);
+	array_unshift($params, $start_timestamp);
+	$data = db_query($query, $params);
 	$sensor_data = array();
-	while($stmt->fetch()) {
-		$value = round($value, $type_decimals[$what]);
+	foreach($data as $row) {
+		$sensor_id = $row['sensor'];
+		$what = $row['what'];
+		$timestamp = $row['timestamp'];
+
+		$value = round($row['value'], $type_decimals[$what]);
 		if(time()-$timestamp > $config['value_outdated_period']) {
 			$state = 'unknown';
 		}
@@ -185,7 +160,6 @@ function get_sensors_state($sensors = array()) {
 			}
 		}
 	}
-	$stmt->close();
 
 	return $sensor_data;
 }
