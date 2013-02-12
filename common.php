@@ -82,7 +82,7 @@ function db_error($error, $stacktrace, $query, $parameters) {
 }
 
 function noauth() {
-	header('WWW-Authenticate: Basic realm="Sensors API"');
+	header('WWW-Authenticate: Basic realm="Sensors"');
 	header('HTTP/1.0 401 Unauthorized');
 	// TODO XML reply
 	die();
