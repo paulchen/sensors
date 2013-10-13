@@ -37,3 +37,8 @@ api_authentication = false
 # if temperature and humidity are above this value, current data for that sensor will be ignored
 bullshit_threshold = 95
 
+# where to send error mails to
+error_mails_rcpt = paulchen@rueckgr.at
+# sender of error mails (From: header of emails)
+error_mails_from = Sensors <sensors@rueckgr.at>
+

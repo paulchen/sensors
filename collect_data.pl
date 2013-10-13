@@ -192,28 +192,38 @@ for($a=0; $a<=$#data; $a++) {
 			}
 			my $sensor_id = $result[0];
 
-			$stmt = $db->prepare('SELECT COUNT(*) `count` FROM sensor_data WHERE sensor = ? AND UNIX_TIMESTAMP(timestamp) > ? AND UNIX_TIMESTAMP(timestamp) < ?');
+			$stmt = $db->prepare('SELECT COUNT(*) `count` FROM sensor_cache WHERE sensor = ? AND UNIX_TIMESTAMP(timestamp) > ? AND UNIX_TIMESTAMP(timestamp) < ?');
 			$stmt->execute(($sensor_id, $timestamp-$time_margin, $timestamp+$time_margin));
 			@result = $stmt->fetchrow_array();
 			$stmt->finish();
 			if($result[0] == 0) {
-				$stmt = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
+				my $stmt1 = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
+				my $stmt2 = $db->prepare('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
 				if($value->{'Temperatur'} < $bullshit_threshold || $value->{'Luftfeuchtigkeit'} < $bullshit_threshold) {
-					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
-					$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
+					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
+					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
+					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
+					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
 					if($value->{'Windgeschwindigkeit'} > -1) {
-						$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
+						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
+						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 					}
 					if($value->{'Regenmenge'} > -1) {
-						$stmt->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
+						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
+						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
 					}
 				}
-				$stmt->finish();
+				$stmt1->finish();
+				$stmt2->finish();
 			}
 		}
 	}
 }
+
+$stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
+$stmt->execute();
+$stmt->finish();
 
 $db->disconnect();
 

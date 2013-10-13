@@ -22,7 +22,7 @@ foreach($sensors as $sensor) {
 	}
 }
 
-$config_file = dirname(__FILE__) . '/config.properties';
+$config_file = 'config.properties';
 
 if($argc == 5 && $argv[3] != '--config-file' && $argv[3] != '-c') {
 	usage();
@@ -31,66 +31,54 @@ else if($argc == 5) {
 	$config_file = $argv[4] . '/config.properties';
 }
 
-$config = parse_ini_file($config_file);
-if(!$config) {
-	echo "Could not read configuration file.\n";
-	die(3);
-}
+chdir(dirname(__FILE__));
+require_once('common.php');
 
-$mysqli = new mysqli($config['db_host'], $config['db_username'], $config['db_password'], $config['db_database']);
-if($mysqli->connect_errno) {
-	echo "Could not connect to database.\n";
-	die(3);
-}
-
-$stmt = $mysqli->prepare('SELECT id, name, format, decimals FROM sensor_values');
-$stmt->execute();
-$stmt->bind_result($id, $name, $format, $decimals);
+$query = 'SELECT id, name, format, decimals FROM sensor_values';
+$data = db_query($query);
 $value_ids = array();
-while($stmt->fetch()) {
-	$value_ids[$id] = array('name' => $name, 'format' => $format, 'decimals' => $decimals);
+foreach($data as $row) {
+	$value_ids[$row['id']] = $row;
 }
-$stmt->close();
 
 $states = array(0);
 $messages = array();
 foreach($sensors as $sensor_id) {
-	$stmt = $mysqli->prepare('SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1');
-	$stmt->bind_param('i', $sensor_id);
-	$stmt->execute();
-	$stmt->bind_result($sensor, $sensor_description);
-	if(!$stmt->fetch()) {
+	$query = 'SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query, array($sensor_id));
+	if(count($data) == 0) {
 		echo "No data for sensor with ID $sensor\n";
 		die(3);
 	}
+
+	$sensor = $data[0]['sensor'];
+	$sensor_description = $data[0]['description'];
+
 	if($sensor_description == '') {
 		$sensor_description = "Sensor $sensor";
 	}
-	$stmt->close();
 
-	$stmt = $mysqli->prepare('SELECT value, low_warn, low_crit, high_warn, high_crit FROM sensor_limits WHERE sensor = ?');
-	$stmt->bind_param('i', $sensor_id);
-	$stmt->execute();
+	$query = 'SELECT value, low_warn, low_crit, high_warn, high_crit FROM sensor_limits WHERE sensor = ?';
+	$data = db_query($query, array($sensor_id));
 	$limits = array();
-	$stmt->bind_result($value, $low_warn, $low_crit, $high_warn, $high_crit);
-	while($stmt->fetch()) {
-		$limits[$value] = array('low_warn' => $low_warn, 'low_crit' => $low_crit, 'high_warn' => $high_warn, 'high_crit' => $high_crit);
+	foreach($data as $row) {
+		$limits[$row['value']] = $row;
 	}
-	$stmt->close();
 
-	$stmt = $mysqli->prepare('SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_data WHERE sensor = ? ORDER BY id DESC LIMIT 0, ' . count($value_ids));
-	$stmt->bind_param('i', $sensor_id);
-	$stmt->execute();
-	$stmt->bind_result($timestamp, $what, $value);
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_data WHERE sensor = ? ORDER BY id DESC LIMIT 0, ?';
+	$db_data = db_query($query, array($sensor_id, count($value_ids)));
 	$data = array();
 	$timestamps = array();
-	while($stmt->fetch()) {
+	foreach($db_data as $row) {
+		$timestamp = $row['timestamp'];
+		$what = $row['what'];
+		$value = $row['value'];
+
 		if(!isset($data[$what])) {
 			$data[$what] = $value;
 			$timestamps[$what] = $timestamp;
 		}
 	}
-	$stmt->close();
 	if(count($data) == 0) {
 		echo "No data for '$sensor_description'.\n";
 		die(3);

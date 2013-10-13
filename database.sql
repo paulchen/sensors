@@ -65,6 +65,28 @@ CREATE TABLE IF NOT EXISTS `sensors` (
 -- --------------------------------------------------------
 
 --
+-- Tabellenstruktur für Tabelle `sensor_cache`
+--
+
+CREATE TABLE IF NOT EXISTS `sensor_cache` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `timestamp` datetime NOT NULL,
+  `sensor` int(11) NOT NULL,
+  `what` int(11) NOT NULL,
+  `value` float NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `sensor` (`sensor`),
+  KEY `what` (`what`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
+
+--
+-- Daten für Tabelle `sensor_cache`
+--
+
+
+-- --------------------------------------------------------
+
+--
 -- Tabellenstruktur für Tabelle `sensor_data`
 --
 
@@ -176,6 +198,13 @@ CREATE TABLE IF NOT EXISTS `munin_graphs` (
 --
 -- Constraints der exportierten Tabellen
 --
+
+--
+-- Constraints der Tabelle `sensor_cache`
+--
+ALTER TABLE `sensor_cache`
+  ADD CONSTRAINT `sensor_cache_ibfk_2` FOREIGN KEY (`what`) REFERENCES `sensor_values` (`id`),
+  ADD CONSTRAINT `sensor_cache_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 
 --
 -- Constraints der Tabelle `sensor_data`
