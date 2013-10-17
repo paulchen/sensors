@@ -60,6 +60,11 @@ public class Status {
 					processNode(node);
 				}
 			}
+			
+			// TODO more checks for validity?
+			if(!nodeProcessed) {
+				throw new SensorsException("Invalid reply from server.");
+			}
 		}
 		catch (SAXException e) {
 			throw new SensorsException(e);
