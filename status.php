@@ -308,7 +308,6 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <?php endforeach; ?>
 <br />
 </p>
-</div>
 <a id="battery"></a>
 <table>
 <thead>
@@ -325,6 +324,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <?php endforeach; ?>
 </tbody>
 </table>
+</div>
 </body>
 </html>
 
