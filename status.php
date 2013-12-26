@@ -270,6 +270,7 @@ td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
 td.odd { background-color: #f1f1f1; }
 div#lastrun { padding-bottom: 2em; }
+div#top_text { padding-bottom: 2em; }
 body > div > p { text-align: center; }
 a { text-decoration: none; }
 </style>
@@ -282,6 +283,11 @@ Last cronjob run: <?php echo $last_cron_run; ?><br />
 Last successful cronjob run: <?php echo $last_successful_cron_run; ?><br />
 Last page load: <?php echo date('Y-m-d H:i'); ?>
 </div>
+<?php if($config['top_text'] != ''): ?>
+<div id="top_text">
+<?php echo $config['top_text']; ?>
+</div>
+<?php endif; ?>
 <table>
 <thead>
 <tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Average value (24 hours)</th><th>Current tendency</th></tr>
