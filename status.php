@@ -182,6 +182,7 @@ foreach($keys as $index => $key) {
 	}
 }
 
+$formatted_limits = array();
 foreach($keys as $index => $key) {
 	$what = $key['what'];
 
@@ -195,6 +196,11 @@ foreach($keys as $index => $key) {
 	$max_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $max_values[$index]['timestamp']);
 
 	$avg_values[$index]['formatted_value'] = str_replace('%s', round($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
+
+	$formatted_limits[$index]['low_crit'] = str_replace('%s', round($limits[$index]['low_crit'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['low_warn'] = str_replace('%s', round($limits[$index]['low_warn'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['high_warn'] = str_replace('%s', round($limits[$index]['high_warn'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['high_crit'] = str_replace('%s', round($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
 }
 
 $query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
@@ -314,7 +320,26 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <?php endforeach; ?>
 <br />
 </p>
+<h3>Sensor limits</h3>
+<table>
+<thead>
+<tr><th>Sensor</th><th>Value</th><th>Critical</th><th>Warning</th><th>Warning</th><th>Critical</th></tr>
+</thead>
+<tbody>
+<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
+<tr>
+<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $values[$what]['name'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['low_crit'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['low_warn'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['high_warn'] ?></td>
+<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['high_crit'] ?></td>
+</tr>
+<?php endforeach; ?>
+</tbody>
+</table>
 <a id="battery"></a>
+<h3>Battery changes</h3>
 <table>
 <thead>
 <tr><th>Sensor</th><th>Last battery change</th><th>Days</th><th></th></tr>
