@@ -280,6 +280,7 @@ div#top_text { padding-bottom: 2em; }
 body > div > p { text-align: center; }
 a { text-decoration: none; }
 </style>
+<script type="text/javascript" src="jquery.min.js"></script>
 </head>
 <body>
 <div>
