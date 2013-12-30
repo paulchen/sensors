@@ -164,3 +164,15 @@ function get_sensors_state($sensors = array()) {
 	return $sensor_data;
 }
 
+function get_image_urls() {
+	$query = 'SELECT id, url, row FROM munin_graphs ORDER BY id ASC';
+	$data = db_query($query);
+	foreach($data as &$row) {
+		$row['url'] .= '?' . time();
+	}
+
+	unset($row);
+
+	return $data;
+}
+

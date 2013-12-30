@@ -34,5 +34,12 @@ echo '<?xml version="1.0"?>';
 			<?php endif; ?>
 		</sensor>
 	<?php endforeach; ?>
+	<?php if(isset($images)): ?>
+		<images>
+			<?php foreach($images as $image): ?>
+				<image id="<?php echo $image['id'] ?>" url="<?php echo htmlentities($image['url'], ENT_QUOTES, 'UTF-8') ?>" />
+			<?php endforeach; ?>
+		</images>
+	<?php endif; ?>
 </sensors>
 
