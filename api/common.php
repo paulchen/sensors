@@ -116,22 +116,24 @@ function get_sensors_state($sensors = array()) {
 	}
 
 	$question_marks = str_repeat('?, ', count($sensors)-1) . '?';
-	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY sensor ASC, what ASC';
+	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY id ASC';
 	$params = $sensors;
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	array_unshift($params, $start_timestamp);
 	$data = db_query($query, $params);
-	$sensor_data = array();
+
+	$cur_values = array();
+	$min_values = array();
+	$max_values = array();
+	$avg_values = array();
+
 	foreach($data as $row) {
 		$sensor_id = $row['sensor'];
 		$what = $row['what'];
 		$timestamp = $row['timestamp'];
 
 		$value = round($row['value'], $type_decimals[$what]);
-		if(time()-$timestamp > $config['value_outdated_period']) {
-			$state = 'unknown';
-		}
-		else if($value <= $limits[$sensor_id][$what]['low_crit']) {
+		if($value <= $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
 		}
 		else if($value <= $limits[$sensor_id][$what]['low_warn']) {
@@ -147,17 +149,45 @@ function get_sensors_state($sensors = array()) {
 			$state = 'ok';
 		}
 
-		if(!isset($sensor_data[$sensor_id])) {
-			$sensor_data[$sensor_id] = array('values' => array());
+		$cur_state = $state;
+		if(time()-$timestamp > $config['value_outdated_period']) {
+			$cur_state = 'unknown';
 		}
-		if(!isset($sensor_data[$sensor_id]['values'][$what])) {
-			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current')));
+
+		if(!isset($cur_values[$sensor_id])) {
+			$cur_values[$sensor_id] = array();
+			$min_values[$sensor_id] = array();
+			$max_values[$sensor_id] = array();
+			$avg_values[$sensor_id] = array();
+		}
+		if(!isset($cur_values[$sensor_id][$what])) {
+			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current');
+			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'minimum');
+			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
+			$avg_values[$sensor_id][$what] = array('value' => $value, 'type' => 'average', 'count' => 1);
 		}
 		else {
-			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['measurements'][0]['timestamp'];
-			if($old_timestamp < $timestamp) {
-				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current')));
+			if($cur_values[$sensor_id][$what]['timestamp'] < $timestamp) {
+				$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current');
 			}
+			if($min_values[$sensor_id][$what]['value'] > $value) {
+				$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'minimum');
+			}
+			if($max_values[$sensor_id][$what]['value'] < $value) {
+				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
+			}
+
+			$avg_values[$sensor_id][$what]['value'] += $value;
+			$avg_values[$sensor_id][$what]['count']++;
+		}
+	}
+
+	$sensor_data = array();
+	foreach($cur_values as $sensor_id => $value1) {
+		foreach($value1 as $what => $value2) {
+			$avg_values[$sensor_id][$what]['value'] = round($avg_values[$sensor_id][$what]['value']/$avg_values[$sensor_id][$what]['count'], $type_decimals[$what]);
+
+			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array($cur_values[$sensor_id][$what], $min_values[$sensor_id][$what], $max_values[$sensor_id][$what], $avg_values[$sensor_id][$what]));
 		}
 	}
 
