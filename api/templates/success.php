@@ -12,7 +12,7 @@ echo '<?xml version="1.0"?>';
 	<?php if(isset($status)): ?>
 		<status>
 			<?php foreach($status as $key => $value): ?>
-				<value name="<?php echo htmlentities($key, ENT_QUOTES, 'UTF-8') ?>" value="<?php echo htmlentities($value, ENT_QUOTES, 'UTF-8') ?>" />
+				<value name="<?php echo htmlentities($key, ENT_QUOTES, 'UTF-8') ?>" value="<?php echo date(DateTime::W3C, $value) ?>" />
 			<?php endforeach; ?>
 		</status>
 	<?php endif; ?>
