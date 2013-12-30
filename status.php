@@ -241,19 +241,20 @@ if(php_sapi_name() == 'cli') {
 	exit;
 }
 
-$query = 'SELECT url, row FROM munin_graphs ORDER BY id ASC';
+$query = 'SELECT id, url, row FROM munin_graphs ORDER BY id ASC';
 $data = db_query($query);
 $graphs = array();
 $last_row = -1;
 foreach($data as $line) {
 	$url = $line['url'];
 	$row = $line['row'];
+	$id = $line['id'];
 
 	$new_row = 0;
 	if($last_row != $row) {
 		$new_row = 1;
 	}
-	$graphs[] = array('url' => $url, 'new_row' => $new_row);
+	$graphs[] = array('url' => $url, 'new_row' => $new_row, 'id' => $id);
 	$last_row = $row;
 }
 
@@ -263,7 +264,6 @@ foreach($data as $line) {
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta http-equiv="refresh" content="60; URL=." />
 <title>Sensor status</title>
 <style type="text/css">
 body { font-family: Verdana,Arial,Helvetica,sans-serif;; }
@@ -281,14 +281,60 @@ body > div > p { text-align: center; }
 a { text-decoration: none; }
 </style>
 <script type="text/javascript" src="jquery.min.js"></script>
+<script type="text/javascript" src="date.js"></script>
+<script type="text/javascript">
+<!--
+function start_refresh_timer() {
+	// window.setTimeout("do_refresh()", 60000);
+	window.setTimeout("do_refresh()", 5000);
+}
+
+function do_refresh() {
+	$.ajax('api/?action=status&format=json', {
+			dataType: 'json',
+			success: function(data, textStatus, xhr) {
+				// 1. update status
+				$.each(data['status']['value'], function(index, element) {
+					$('#status_' + element['name']).html(new Date(element['value']).toString('yyyy-MM-dd HH:mm'));
+				});
+
+				// 2. update values and states
+				$.each(data['sensor'], function(index1, sensor) {
+					$.each(sensor['values']['value'], function(index2, value) {
+						var sensor_id = sensor['id'];
+						var value_id = value['type'];
+						var tr_id = '#data_' + sensor_id + '-' + value_id;
+
+						var td_state = $(tr_id + ' td.state');
+						td_state.html(value['measurement']['state'].toUpperCase());
+						td_state.removeClass().addClass("state").addClass("state_" + value['measurement']['state']);
+					});
+				});
+
+				// 3. update images
+				$.each(data['images']['image'], function(index, element) {
+					$('#image_' + element['id']).attr('src', element['url']);
+				});				
+
+				// 4. set timer
+				start_refresh_timer();
+			}
+		});
+}
+
+$(document).ready(function() {
+	start_refresh_timer();
+});
+// -->
+</script>
 </head>
 <body>
 <div>
 <h1>Current sensor state</h1>
 <div id="lastrun">
-Last cronjob run: <?php echo $last_cron_run; ?><br />
-Last successful cronjob run: <?php echo $last_successful_cron_run; ?><br />
-Last page load: <?php echo date('Y-m-d H:i'); ?>
+Last cronjob run: <span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
+Last successful cronjob run: <span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
+Last page load: <span id="status_last_page_load"><?php echo date('Y-m-d H:i'); ?></span>
 </div>
 <?php if($config['top_text'] != ''): ?>
 <div id="top_text">
@@ -300,16 +346,16 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <tr><th>Sensor</th><th>Value</th><th>Current state</th><th>Current value</th><th>Maximum value (24 hours)</th><th>Minimum value (24 hours)</th><th>Average value (24 hours)</th><th>Current tendency</th></tr>
 </thead>
 <tbody>
-<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
-<tr>
-<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
-<td<?php echo $oddstring ?>><?php echo $values[$what]['name'] ?></td>
-<td class="state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
-<td<?php echo $oddstring ?>><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td<?php echo $oddstring ?>><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td<?php echo $oddstring ?>><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
-<td<?php echo $oddstring ?>><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
-<td<?php echo $oddstring ?>><?php echo $tendencies[$index] ?></td>
+<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? 'odd' : 'even'; ?>
+<tr id="data_<?php echo $index ?>">
+<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
+<td class="<?php echo $oddstring ?>"><?php echo $values[$what]['name'] ?></td>
+<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
+<td class="current <?php echo $oddstring ?>"><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td class="minimum <?php echo $oddstring ?>"><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
+<td class="average <?php echo $oddstring ?>"><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
+<td class="tendency <?php echo $oddstring ?>"><?php echo $tendencies[$index] ?></td>
 </tr>
 <?php endforeach; ?>
 </tbody>
@@ -317,7 +363,7 @@ Last page load: <?php echo date('Y-m-d H:i'); ?>
 <p>
 <?php foreach($graphs as $graph): ?>
 <?php if($graph['new_row']): ?><br /><?php endif; ?>
-<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" />
+<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" id="image_<?php echo $graph['id'] ?>" />
 <?php endforeach; ?>
 <br />
 </p>

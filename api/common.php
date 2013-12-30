@@ -151,12 +151,12 @@ function get_sensors_state($sensors = array()) {
 			$sensor_data[$sensor_id] = array('values' => array());
 		}
 		if(!isset($sensor_data[$sensor_id]['values'][$what])) {
-			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
+			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current')));
 		}
 		else {
 			$old_timestamp = $sensor_data[$sensor_id]['values'][$what]['measurements'][0]['timestamp'];
 			if($old_timestamp < $timestamp) {
-				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state)));
+				$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array(array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current')));
 			}
 		}
 	}
