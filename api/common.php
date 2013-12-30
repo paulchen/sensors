@@ -176,3 +176,29 @@ function get_image_urls() {
 	return $data;
 }
 
+function get_status() {
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query);
+	if(count($data) == 0) {
+		$last_cron_run = '';
+	}
+	else {
+		$last_cron_run = $data[0]['timestamp'];
+	}
+
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM raw_data ORDER BY id DESC LIMIT 0, 1';
+	$data = db_query($query);
+	if(count($data) == 0) {
+		$last_successful_cron_run = '';
+	}
+	else {
+		$last_successful_cron_run = $data[0]['timestamp'];
+	}
+
+	return array(
+		'last_cron_run' => $last_cron_run,
+		'last_successful_cron_run' => $last_successful_cron_run,
+		'last_page_load' => time()
+	);
+}
+

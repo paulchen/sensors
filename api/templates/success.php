@@ -5,9 +5,16 @@ echo '<?xml version="1.0"?>';
 	<?php if(isset($states)): ?>
 		<states>
 			<?php foreach($states as $state): ?>
-			<state name="<?php echo htmlentities($state['name'], ENT_QUOTES, 'UTF-8') ?>" color="<?php echo htmlentities($state['color'], ENT_QUOTES, 'UTF-8') ?>" pos="<?php echo $state['pos'] ?>" ok="<?php echo $state['ok'] ?>" />
+				<state name="<?php echo htmlentities($state['name'], ENT_QUOTES, 'UTF-8') ?>" color="<?php echo htmlentities($state['color'], ENT_QUOTES, 'UTF-8') ?>" pos="<?php echo $state['pos'] ?>" ok="<?php echo $state['ok'] ?>" />
 			<?php endforeach; ?>
 		</states>
+	<?php endif; ?>
+	<?php if(isset($status)): ?>
+		<status>
+			<?php foreach($status as $key => $value): ?>
+				<value name="<?php echo htmlentities($key, ENT_QUOTES, 'UTF-8') ?>" value="<?php echo htmlentities($value, ENT_QUOTES, 'UTF-8') ?>" />
+			<?php endforeach; ?>
+		</status>
 	<?php endif; ?>
 	<?php if(isset($types)): ?>
 		<types>
