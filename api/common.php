@@ -216,7 +216,7 @@ function get_sensors_state($sensors = array()) {
 }
 
 function get_image_urls() {
-	$query = 'SELECT id, url, row FROM munin_graphs ORDER BY id ASC';
+	$query = 'SELECT id, url, row, height, width FROM munin_graphs ORDER BY id ASC';
 	$data = db_query($query);
 	foreach($data as &$row) {
 		$row['url'] .= '?' . time();

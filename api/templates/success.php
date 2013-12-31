@@ -44,7 +44,7 @@ echo '<?xml version="1.0"?>';
 	<?php if(isset($images)): ?>
 		<images>
 			<?php foreach($images as $image): ?>
-				<image id="<?php echo $image['id'] ?>" url="<?php echo htmlentities($image['url'], ENT_QUOTES, 'UTF-8') ?>" />
+				<image id="<?php echo $image['id'] ?>" url="<?php echo htmlentities($image['url'], ENT_QUOTES, 'UTF-8') ?>" height="<?php echo $image['height'] ?>" width="<?php echo $image['width'] ?>" />
 			<?php endforeach; ?>
 		</images>
 	<?php endif; ?>
