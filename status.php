@@ -289,10 +289,22 @@ function start_refresh_timer() {
 	window.setTimeout("do_refresh()", 5000);
 }
 
+function format_value(type, types, value) {
+	var result = value;
+	$.each(types['type'], function(index, item) {
+		if(item['id'] == type) {
+			var format = item['format'];
+			result = format.replace(/%s/g, value);
+		}
+	});
+
+	return result;
+}
+
 function do_refresh() {
 	$.ajax('api/?action=status&format=json', {
 			dataType: 'json',
-			success: function(data, textStatus, xhr) {
+			success: function(data, text_status, xhr) {
 				// 1. update status
 				$.each(data['status']['value'], function(index, element) {
 					$('#status_' + element['name']).html(new Date(element['value']).toString('yyyy-MM-dd HH:mm'));
@@ -306,8 +318,23 @@ function do_refresh() {
 						var tr_id = '#data_' + sensor_id + '-' + value_id;
 
 						var td_state = $(tr_id + ' td.state');
-						td_state.html(value['measurement']['state'].toUpperCase());
-						td_state.removeClass().addClass("state").addClass("state_" + value['measurement']['state']);
+						$.each(value['measurement'], function(index3, measurement) {
+							if(measurement['type'] == 'current') {
+								td_state.html(measurement['state'].toUpperCase());
+								td_state.removeClass().addClass('state').addClass('state_' + measurement['state']);
+							}
+
+							var value_data = '<strong>';
+							value_data += format_value(value['type'], data['types'], measurement['value']); // TODO format
+							value_data += '</strong>';
+							if('timestamp' in measurement) {
+								value_data += ' (';
+								value_data += new Date(measurement['timestamp']).toString('yyyy-MM-dd HH:mm');
+								value_data += ')';
+							}
+
+							$(tr_id + ' td.' + measurement['type']).html(value_data);
+						});
 					});
 				});
 
