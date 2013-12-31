@@ -36,7 +36,10 @@ public class Value {
 		for(int a=0; a<nodes.getLength(); a++) {
 			Node node = nodes.item(a);
 			if(node.getNodeType() == Node.ELEMENT_NODE && node.getNodeName().equals("measurement")) {
-				measurements.add(new Measurement(node, this));
+				Measurement measurement = new Measurement(node, this);
+				if(measurement.getType().equals("current")) {
+					measurements.add(measurement);
+				}
 			}
 		}
 	}
