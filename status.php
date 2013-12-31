@@ -275,9 +275,10 @@ td.state_warning { background-color: #ffa500; }
 td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
 td.odd { background-color: #f1f1f1; }
-div#lastrun { padding-bottom: 2em; }
+div#lastrun { padding-bottom: 1em; }
 div#top_text { padding-bottom: 2em; }
 body > div > p { text-align: center; }
+img#img_loading { visibility: hidden; }
 a { text-decoration: none; }
 </style>
 <script type="text/javascript" src="jquery.min.js"></script>
@@ -287,6 +288,7 @@ a { text-decoration: none; }
 function start_refresh_timer() {
 	// window.setTimeout("do_refresh()", 60000);
 	window.setTimeout("do_refresh()", 5000);
+	$('#img_loading').css('visibility', 'hidden');
 }
 
 function format_value(type, types, value) {
@@ -302,6 +304,8 @@ function format_value(type, types, value) {
 }
 
 function do_refresh() {
+	$('#img_loading').css('visibility', 'visible');
+
 	$.ajax('api/?action=status&format=json', {
 			dataType: 'json',
 			success: function(data, text_status, xhr) {
@@ -325,7 +329,7 @@ function do_refresh() {
 							}
 
 							var value_data = '<strong>';
-							value_data += format_value(value['type'], data['types'], measurement['value']); // TODO format
+							value_data += format_value(value['type'], data['types'], measurement['value']);
 							value_data += '</strong>';
 							if('timestamp' in measurement) {
 								value_data += ' (';
@@ -361,7 +365,8 @@ $(document).ready(function() {
 <div id="lastrun">
 Last cronjob run: <span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
 Last successful cronjob run: <span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
-Last page load: <span id="status_last_page_load"><?php echo date('Y-m-d H:i'); ?></span>
+Last page load: <span id="status_last_page_load"><?php echo date('Y-m-d H:i'); ?></span><br />
+<img id="img_loading" src="ajax-loader.gif" alt="Loading..." title="Loading..." />
 </div>
 <?php if($config['top_text'] != ''): ?>
 <div id="top_text">
