@@ -6,6 +6,20 @@ if(!isset($_GET['action'])) {
 }
 $action = $_GET['action'];
 
+$format = 'xml';
+if(isset($_GET['format'])) {
+	switch($_GET['format']) {
+		case 'xml':
+		case 'json':
+			$format = $_GET['format'];
+			break;
+
+		default:
+			// TODO
+			die();
+	}
+}
+
 $http_auth = true;
 
 chdir(dirname(__FILE__));
@@ -70,10 +84,5 @@ else {
 $data = ob_get_contents();
 ob_end_clean();
 
-$tidy = new tidy();
-$tidy->parseString($data, array('indent' => true, 'input-xml' => true, 'wrap' => 1000), 'utf8');
-$tidy->cleanRepair();
-
-header('Content-Type: application/xml');
-echo $tidy;
+require_once("output/$format.php");
 
