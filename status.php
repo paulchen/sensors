@@ -346,6 +346,8 @@ function do_refresh() {
 				// 3. update images
 				$.each(data['images']['image'], function(index, element) {
 					$('#image_' + element['id']).attr('src', element['url']);
+					$('#image_' + element['id']).css('height', element['height'] + 'px');
+					$('#image_' + element['id']).css('width', element['width'] + 'px');
 				});				
 
 				// 4. set timer
