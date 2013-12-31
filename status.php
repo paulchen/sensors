@@ -241,7 +241,7 @@ if(php_sapi_name() == 'cli') {
 	exit;
 }
 
-$query = 'SELECT id, url, row FROM munin_graphs ORDER BY id ASC';
+$query = 'SELECT id, url, row, height, width FROM munin_graphs ORDER BY id ASC';
 $data = db_query($query);
 $graphs = array();
 $last_row = -1;
@@ -254,7 +254,7 @@ foreach($data as $line) {
 	if($last_row != $row) {
 		$new_row = 1;
 	}
-	$graphs[] = array('url' => $url, 'new_row' => $new_row, 'id' => $id);
+	$graphs[] = array('url' => $url, 'new_row' => $new_row, 'id' => $id, 'height' => $line['height'], 'width' => $line['width']);
 	$last_row = $row;
 }
 
@@ -396,7 +396,7 @@ Last page load: <span id="status_last_page_load"><?php echo date('Y-m-d H:i'); ?
 <p>
 <?php foreach($graphs as $graph): ?>
 <?php if($graph['new_row']): ?><br /><?php endif; ?>
-<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" id="image_<?php echo $graph['id'] ?>" />
+<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" id="image_<?php echo $graph['id'] ?>" style="height: <?php echo $graph['height'] ?>px; width: <?php echo $graph['width'] ?>px;" />
 <?php endforeach; ?>
 <br />
 </p>
