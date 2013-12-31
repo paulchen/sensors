@@ -12,7 +12,7 @@ $data = db_query($query, array($start_timestamp));
 $first_values = array();
 $max_values = array();
 $min_values = array();
-$avg_valuess = array();
+$avg_values = array();
 $current_values = array();
 $keys = array();
 
@@ -286,8 +286,7 @@ a { text-decoration: none; }
 <script type="text/javascript">
 <!--
 function start_refresh_timer() {
-	// window.setTimeout("do_refresh()", 60000);
-	window.setTimeout("do_refresh()", 5000);
+	window.setTimeout("do_refresh()", 30000);
 	$('#img_loading').css('visibility', 'hidden');
 }
 
@@ -326,6 +325,8 @@ function do_refresh() {
 							if(measurement['type'] == 'current') {
 								td_state.html(measurement['state'].toUpperCase());
 								td_state.removeClass().addClass('state').addClass('state_' + measurement['state']);
+
+								$(tr_id + ' td.tendency').html(measurement['tendency']);
 							}
 
 							var value_data = '<strong>';

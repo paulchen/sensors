@@ -126,6 +126,7 @@ function get_sensors_state($sensors = array()) {
 	$min_values = array();
 	$max_values = array();
 	$avg_values = array();
+	$first_values = array();
 
 	foreach($data as $row) {
 		$sensor_id = $row['sensor'];
@@ -159,12 +160,14 @@ function get_sensors_state($sensors = array()) {
 			$min_values[$sensor_id] = array();
 			$max_values[$sensor_id] = array();
 			$avg_values[$sensor_id] = array();
+			$first_values[$sensor_id] = array();
 		}
 		if(!isset($cur_values[$sensor_id][$what])) {
 			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current');
 			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'minimum');
 			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
 			$avg_values[$sensor_id][$what] = array('value' => $value, 'type' => 'average', 'count' => 1);
+			$first_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value);
 		}
 		else {
 			if($cur_values[$sensor_id][$what]['timestamp'] < $timestamp) {
@@ -176,6 +179,10 @@ function get_sensors_state($sensors = array()) {
 			if($max_values[$sensor_id][$what]['value'] < $value) {
 				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
 			}
+	
+			if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$sensor_id][$what])) {
+				$first_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value);
+			}
 
 			$avg_values[$sensor_id][$what]['value'] += $value;
 			$avg_values[$sensor_id][$what]['count']++;
@@ -185,6 +192,20 @@ function get_sensors_state($sensors = array()) {
 	$sensor_data = array();
 	foreach($cur_values as $sensor_id => $value1) {
 		foreach($value1 as $what => $value2) {
+			$old = $first_values[$sensor_id][$what]['value'];
+			$new = $cur_values[$sensor_id][$what]['value'];
+
+			if(abs(1-$old/$new) < $config['stable_margin']) {
+				$tendency = 'stable';
+			}
+			else if($old > $new) {
+				$tendency = 'decreasing';
+			}
+			else {
+				$tendency = 'increasing';
+			}
+			$cur_values[$sensor_id][$what]['tendency'] = $tendency;
+
 			$avg_values[$sensor_id][$what]['value'] = round($avg_values[$sensor_id][$what]['value']/$avg_values[$sensor_id][$what]['count'], $type_decimals[$what]);
 
 			$sensor_data[$sensor_id]['values'][$what] = array('type' => $what, 'measurements' => array($cur_values[$sensor_id][$what], $min_values[$sensor_id][$what], $max_values[$sensor_id][$what], $avg_values[$sensor_id][$what]));

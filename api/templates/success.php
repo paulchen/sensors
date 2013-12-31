@@ -33,7 +33,7 @@ echo '<?xml version="1.0"?>';
 					<?php foreach($sensor_data[$sensor['id']]['values'] as $value): ?>
 						<value type="<?php echo $value['type']; ?>">
 							<?php foreach($value['measurements'] as $measurement): ?>
-								<measurement value="<?php echo $measurement['value']; ?>" <?php if(isset($measurement['timestamp'])): ?>timestamp="<?php echo date(DateTime::W3C, $measurement['timestamp']) ?>" <?php endif; if(isset($measurement['state'])): ?>state = "<?php echo htmlentities($measurement['state'], ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>type="<?php echo $measurement['type'] ?>" />
+								<measurement value="<?php echo $measurement['value']; ?>" <?php if(isset($measurement['timestamp'])): ?>timestamp="<?php echo date(DateTime::W3C, $measurement['timestamp']) ?>" <?php endif; if(isset($measurement['state'])): ?>state = "<?php echo htmlentities($measurement['state'], ENT_QUOTES, 'UTF-8') ?>" <?php endif; ?>type="<?php echo $measurement['type'] ?>" <?php if(isset($measurement['tendency'])): ?>tendency = "<?php echo $measurement['tendency'] ?>" <?php endif; ?>/>
 							<?php endforeach; ?>
 						</value>
 					<?php endforeach; ?>
