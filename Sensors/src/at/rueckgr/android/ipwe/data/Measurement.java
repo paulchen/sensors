@@ -8,10 +8,13 @@ import org.w3c.dom.DOMException;
 import org.w3c.dom.Node;
 
 public class Measurement {
-	private float measurement;
-	private Date date;
-	private State state;
-	private Value value;
+	private final float measurement;
+	private final Date date;
+	private final State state;
+	private final Value value;
+	
+	// TODO use an enum type for this
+	private final String type;
 	
 	public Measurement(Node node, Value value) throws SensorsException {
 		this.value = value;
@@ -19,8 +22,20 @@ public class Measurement {
 		SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss");
 		try {
 			measurement = Float.parseFloat(node.getAttributes().getNamedItem("value").getTextContent());
-			date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
-			state = value.getApplication().getState(node.getAttributes().getNamedItem("state").getTextContent());		
+			type = node.getAttributes().getNamedItem("type").getTextContent();
+			
+			if(node.getAttributes().getNamedItem("timestamp") != null) {
+				date = sdf.parse(node.getAttributes().getNamedItem("timestamp").getTextContent());
+			}
+			else {
+				date = null;
+			}
+			if(node.getAttributes().getNamedItem("state") != null) {
+				state = value.getApplication().getState(node.getAttributes().getNamedItem("state").getTextContent());
+			}
+			else {
+				state = null;
+			}
 		}
 		catch (NumberFormatException e) {
 			throw new SensorsException(e);
@@ -68,5 +83,9 @@ public class Measurement {
 
 	public int getStateCount(State state) {
 		return state.equals(this.state) ? 1 : 0;
+	}
+
+	public String getType() {
+		return type;
 	}
 }
