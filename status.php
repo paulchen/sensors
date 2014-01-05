@@ -307,6 +307,9 @@ function do_refresh() {
 
 	$.ajax('api/?action=status&format=json', {
 			dataType: 'json',
+			error: function(xhr, text_status, error_thrown) {
+				start_refresh_timer();
+			},
 			success: function(data, text_status, xhr) {
 				// 1. update status
 				$.each(data['status']['value'], function(index, element) {
