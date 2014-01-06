@@ -42,8 +42,9 @@ error_mails_rcpt = paulchen@rueckgr.at
 # sender of error mails (From: header of emails)
 error_mails_from = Sensors <sensors@rueckgr.at>
 
-# additional HTML to include at the top of the page
-top_text = 
+# additional HTML to include at the top of the page, separately for each language
+top_text.de = 
+top_text.en = 
 
 # default language to be used
 default_language = en
