@@ -161,6 +161,15 @@ function t($input = '', $values = array()) {
 	return $output;
 }
 
+function round_local($value, $decimals) {
+	global $config, $lang;
+
+	$ret = round($value, $decimals);
+	$ret = str_replace('.', $config["decimal_mark.$lang"], $ret);
+
+	return $ret;
+}
+
 // initialize translation data
 t();
 

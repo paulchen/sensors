@@ -122,7 +122,7 @@ foreach($sensors as $id => $sensor) {
 	foreach($data as $row) {
 		$timestamp = $row['timestamp'];
 
-		$sensors[$id]['battery_date'] = date('Y-m-d H:i', $timestamp);
+		$sensors[$id]['battery_date'] = date($config["date_pattern.php.$lang"], $timestamp);
 		$battery_days = floor((time()-$timestamp)/86400);
 		$sensors[$id]['battery_days'] = "$battery_days day(s)";
 		if($battery_days <= $config['battery_warning']) {
@@ -157,19 +157,19 @@ foreach($keys as $index => $key) {
 		else {
 			$value = $current_values[$index]['value'];
 			if($value <= $limits[$index]['low_crit']) {
-				$states[$index] = t('CRITICAL (below limit of %s)', array(str_replace('%s', round($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = t('CRITICAL (below limit of %s)', array(str_replace('%s', round_local($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
 				$state_class[$index] = 'critical';
 			}
 			else if($value <= $limits[$index]['low_warn']) {
-				$states[$index] = t('WARNING (below limit of %s)', array(str_replace('%s', round($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = t('WARNING (below limit of %s)', array(str_replace('%s', round_local($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
 				$state_class[$index] = 'warning';
 			}
 			else if($value >= $limits[$index]['high_crit']) {
-				$states[$index] = t('CRITICAL (above limit of %s)', array(str_replace('%s', round($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = t('CRITICAL (above limit of %s)', array(str_replace('%s', round_local($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
 				$state_class[$index] = 'critical';
 			}
 			else if($value >= $limits[$index]['high_warn']) {
-				$states[$index] = t('WARNING (above limit of %s)', array(str_replace('%s', round($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = t('WARNING (above limit of %s)', array(str_replace('%s', round_local($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
 				$state_class[$index] = 'warning';
 			}
 			else {
@@ -188,21 +188,21 @@ $formatted_limits = array();
 foreach($keys as $index => $key) {
 	$what = $key['what'];
 
-	$current_values[$index]['formatted_value'] = str_replace('%s', round($current_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$current_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $current_values[$index]['timestamp']);
+	$current_values[$index]['formatted_value'] = str_replace('%s', round_local($current_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
+	$current_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $current_values[$index]['timestamp']);
 
-	$min_values[$index]['formatted_value'] = str_replace('%s', round($min_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$min_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $min_values[$index]['timestamp']);
+	$min_values[$index]['formatted_value'] = str_replace('%s', round_local($min_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
+	$min_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $min_values[$index]['timestamp']);
 
-	$max_values[$index]['formatted_value'] = str_replace('%s', round($max_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$max_values[$index]['formatted_timestamp'] = date('Y-m-d H:i', $max_values[$index]['timestamp']);
+	$max_values[$index]['formatted_value'] = str_replace('%s', round_local($max_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
+	$max_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $max_values[$index]['timestamp']);
 
-	$avg_values[$index]['formatted_value'] = str_replace('%s', round($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
+	$avg_values[$index]['formatted_value'] = str_replace('%s', round_local($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 
-	$formatted_limits[$index]['low_crit'] = str_replace('%s', round($limits[$index]['low_crit'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['low_warn'] = str_replace('%s', round($limits[$index]['low_warn'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['high_warn'] = str_replace('%s', round($limits[$index]['high_warn'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['high_crit'] = str_replace('%s', round($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['low_crit'] = str_replace('%s', round_local($limits[$index]['low_crit'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['low_warn'] = str_replace('%s', round_local($limits[$index]['low_warn'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['high_warn'] = str_replace('%s', round_local($limits[$index]['high_warn'], $values[$what]['decimals']), $values[$what]['format']);
+	$formatted_limits[$index]['high_crit'] = str_replace('%s', round_local($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
 }
 
 $query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
@@ -211,7 +211,7 @@ if(count($data) == 0) {
 	$last_cron_run = 'never';
 }
 else {
-	$last_cron_run = date('Y-m-d H:i', $data[0]['timestamp']);
+	$last_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
 }
 
 $query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM raw_data ORDER BY id DESC LIMIT 0, 1';
@@ -220,7 +220,7 @@ if(count($data) == 0) {
 	$last_successful_cron_run = 'never';
 }
 else {
-	$last_successful_cron_run = date('Y-m-d H:i', $data[0]['timestamp']);
+	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
 }
 
 if(php_sapi_name() == 'cli') {
@@ -315,7 +315,7 @@ function do_refresh() {
 			success: function(data, text_status, xhr) {
 				// 1. update status
 				$.each(data['status']['value'], function(index, element) {
-					$('#status_' + element['name']).html(new Date(element['value']).toString('yyyy-MM-dd HH:mm'));
+					$('#status_' + element['name']).html(new Date(element['value']).toString('<?php echo $config["date_pattern.javascript.$lang"] ?>'));
 				});
 
 				// 2. update values and states
@@ -335,11 +335,11 @@ function do_refresh() {
 							}
 
 							var value_data = '<strong>';
-							value_data += format_value(value['type'], data['types'], measurement['value']);
+							value_data += format_value(value['type'], data['types'], measurement['localized_value']);
 							value_data += '</strong>';
 							if('timestamp' in measurement) {
 								value_data += ' (';
-								value_data += new Date(measurement['timestamp']).toString('yyyy-MM-dd HH:mm');
+								value_data += new Date(measurement['timestamp']).toString('<?php echo $config["date_pattern.javascript.$lang"] ?>');
 								value_data += ')';
 							}
 
@@ -373,7 +373,7 @@ $(document).ready(function() {
 	<div id="lastrun">
 		<?php echo t('Last cronjob run: ') ?><span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
 		<?php echo t('Last successful cronjob run: ') ?><span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
-		<?php echo t('Last page load: ') ?><span id="status_last_page_load"><?php echo date('Y-m-d H:i'); ?></span><br />
+		<?php echo t('Last page load: ') ?><span id="status_last_page_load"><?php echo date($config["date_pattern.php.$lang"]); ?></span><br />
 		<img id="img_loading" src="ajax-loader.gif" alt="<?php echo t('Loading...') ?>" title="<?php echo t('Loading...') ?>" />
 	</div>
 	<?php if($config["top_text.$lang"] != ''): ?>
