@@ -198,6 +198,79 @@ CREATE TABLE IF NOT EXISTS `munin_graphs` (
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
+-- Table structure for table `languages`
+--
+
+CREATE TABLE IF NOT EXISTS `languages` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `language` varchar(2) NOT NULL,
+  PRIMARY KEY (`id`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=3 ;
+
+--
+-- Dumping data for table `languages`
+--
+
+INSERT INTO `languages` (`id`, `language`) VALUES
+(1, 'en'),
+(2, 'de');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `translations`
+--
+
+CREATE TABLE IF NOT EXISTS `translations` (
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `source` text NOT NULL,
+  `language` int(11) NOT NULL,
+  `translation` text NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `lang` (`language`)
+) ENGINE=InnoDB  DEFAULT CHARSET=latin1 AUTO_INCREMENT=54 ;
+
+--
+-- Dumping data for table `translations`
+--
+
+INSERT INTO `translations` (`id`, `source`, `language`, `translation`) VALUES
+(1, 'Sensor status', 2, 'Sensorstatus'),
+(2, 'Current sensor state', 2, 'Aktueller Sensorstatus'),
+(3, 'Last cronjob run: ', 2, 'Letze Datenaktualisierung: '),
+(4, 'Last successful cronjob run: ', 2, 'Letzte erfolgreiche Datenaktualisierung:'),
+(5, 'Last page load: ', 2, 'Letzte Seitenaktualisierung: '),
+(6, 'Loading...', 2, 'Laden...'),
+(7, 'Sensor', 2, 'Sensor'),
+(8, 'Value', 2, 'Wert'),
+(9, 'Current state', 2, 'Aktueller Zustand'),
+(10, 'Current value', 2, 'Aktueller Wert'),
+(11, 'Maximum value (24 hours)', 2, 'Höchstwert (24 Stunden)'),
+(12, 'Minimum value (24 hours)', 2, 'Tiefstwert (24 Stunden)'),
+(13, 'Average value (24 hours)', 2, 'Mittelwert (24 Stunden)'),
+(14, 'Current tendency', 2, 'Aktuelle Tendenz'),
+(15, 'Temperature', 2, 'Temperatur'),
+(16, 'OK', 2, 'OK'),
+(17, 'decreasing', 2, 'fallend'),
+(18, 'Humidity', 2, 'Humidity'),
+(19, 'stable', 2, 'stabil'),
+(20, 'Sensor limits', 2, 'Sensorlimits'),
+(21, 'Critical', 2, 'Kritisch'),
+(22, 'Warning', 2, 'Warnung'),
+(23, 'Battery changes', 2, 'Batteriewechsel'),
+(24, 'Last battery change', 2, 'Letzer Batteriewechsel'),
+(25, 'Days', 2, 'Tage'),
+(26, 'Change battery', 2, 'Batterie wechseln'),
+(30, 'increasing', 2, 'steigend'),
+(31, 'UNKNOWN (no limits set)', 2, 'UNBEKANNT (keine Limits festgelegt)'),
+(32, 'UNKNOWN (most recent value is too old)', 2, 'UNBEKANNT (letzter Wert ist zu alt)'),
+(33, 'CRITICAL (below limit of %s)', 2, 'KRITISCH (unter %s)'),
+(34, 'WARNING (below limit of %s)', 2, 'WARNUNG (unter %s)'),
+(35, 'CRITICAL (above limit of %s)', 2, 'KRITISCH (über %s)'),
+(36, 'WARNING (above limit of %s)', 2, 'WARNUNG (über %s)'),
+(50, '%s day(s)', 2, '%s Tag(e)');
+
+--
 -- Constraints der exportierten Tabellen
 --
 
@@ -227,4 +300,10 @@ ALTER TABLE `sensor_limits`
 --
 ALTER TABLE `battery_changes`
   ADD CONSTRAINT `battery_changes_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
+
+--
+-- Constraints for table `translations`
+--
+ALTER TABLE `translations`
+  ADD CONSTRAINT `translations_ibfk_1` FOREIGN KEY (`language`) REFERENCES `languages` (`id`);
 
