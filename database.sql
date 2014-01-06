@@ -270,6 +270,23 @@ INSERT INTO `translations` (`id`, `source`, `language`, `translation`) VALUES
 (36, 'WARNING (above limit of %s)', 2, 'WARNUNG (über %s)'),
 (50, '%s day(s)', 2, '%s Tag(e)');
 
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `sensor_display_names`
+--
+
+CREATE TABLE IF NOT EXISTS `sensor_display_names` (
+  `sensor` int(11) NOT NULL,
+  `language` int(11) NOT NULL,
+  `name` text NOT NULL,
+  PRIMARY KEY (`sensor`,`language`)
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Dumping data for table `sensor_display_names`
+--
+
 --
 -- Constraints der exportierten Tabellen
 --
@@ -306,4 +323,11 @@ ALTER TABLE `battery_changes`
 --
 ALTER TABLE `translations`
   ADD CONSTRAINT `translations_ibfk_1` FOREIGN KEY (`language`) REFERENCES `languages` (`id`);
+
+--
+-- Constraints for table `sensor_display_names`
+--
+ALTER TABLE `sensor_display_names`
+  ADD CONSTRAINT `sensor_display_names_ibfk_2` FOREIGN KEY (`language`) REFERENCES `languages` (`id`),
+  ADD CONSTRAINT `sensor_display_names_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 
