@@ -108,11 +108,13 @@ function get_sensors_state($sensors = array()) {
 
 	$limits = get_limits($sensors);
 
-	$query = 'SELECT id, decimals FROM sensor_values';
+	$query = 'SELECT id, decimals, format FROM sensor_values';
 	$data = db_query($query);
 	$type_decimals = array();
+	$type_formats = array();
 	foreach($data as $row) {
 		$type_decimals[$row['id']] = $row['decimals'];
+		$type_formats[$row['id']] = $row['format'];
 	}
 
 	$question_marks = str_repeat('?, ', count($sensors)-1) . '?';
@@ -136,18 +138,23 @@ function get_sensors_state($sensors = array()) {
 		$value = round($row['value'], $type_decimals[$what]);
 		if($value <= $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
+			$state_description = t('CRITICAL (below limit of %s)', array(str_replace('%s', round($limits[$sensor_id][$what]['low_crit'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
 		}
 		else if($value <= $limits[$sensor_id][$what]['low_warn']) {
 			$state = 'warning';
+			$state_description = t('WARNING (below limit of %s)', array(str_replace('%s', round($limits[$sensor_id][$what]['low_warn'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
 		}
 		else if($value >= $limits[$sensor_id][$what]['high_crit']) {
 			$state = 'critical';
+			$state_description = t('CRITICAL (above limit of %s)', array(str_replace('%s', round($limits[$sensor_id][$what]['high_crit'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
 		}
 		else if($value >= $limits[$sensor_id][$what]['high_warn']) {
 			$state = 'warning';
+			$state_description = t('WARNING (above limit of %s)', array(str_replace('%s', round($limits[$sensor_id][$what]['high_warn'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
 		}
 		else {
 			$state = 'ok';
+			$state_description = 'OK';
 		}
 
 		$cur_state = $state;
@@ -163,21 +170,21 @@ function get_sensors_state($sensors = array()) {
 			$first_values[$sensor_id] = array();
 		}
 		if(!isset($cur_values[$sensor_id][$what])) {
-			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current');
-			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'minimum');
-			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
+			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'current');
+			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'minimum');
+			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'maximum');
 			$avg_values[$sensor_id][$what] = array('value' => $value, 'type' => 'average', 'count' => 1);
 			$first_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value);
 		}
 		else {
 			if($cur_values[$sensor_id][$what]['timestamp'] < $timestamp) {
-				$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'current');
+				$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'current');
 			}
 			if($min_values[$sensor_id][$what]['value'] > $value) {
-				$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'minimum');
+				$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'minimum');
 			}
 			if($max_values[$sensor_id][$what]['value'] < $value) {
-				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'type' => 'maximum');
+				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'state' => $state, 'state_description' => $state_description, 'type' => 'maximum');
 			}
 	
 			if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$sensor_id][$what])) {
@@ -205,6 +212,7 @@ function get_sensors_state($sensors = array()) {
 				$tendency = 'increasing';
 			}
 			$cur_values[$sensor_id][$what]['tendency'] = $tendency;
+			$cur_values[$sensor_id][$what]['localized_tendency'] = t($tendency);
 
 			$avg_values[$sensor_id][$what]['value'] = round($avg_values[$sensor_id][$what]['value']/$avg_values[$sensor_id][$what]['count'], $type_decimals[$what]);
 

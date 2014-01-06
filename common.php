@@ -112,4 +112,55 @@ function http_auth() {
 	noauth();
 }
 
+function t($input = '', $values = array()) {
+	global $translations, $config, $lang_id, $lang;
+
+	if(!isset($lang_id)) {
+		$lang = $config['default_language'];
+		if(isset($_REQUEST['lang'])) {
+			$lang = $_REQUEST['lang'];
+		}
+		$data = db_query('SELECT id FROM languages WHERE language = ?', array($lang));
+		if(count($data) == 0) {
+			$lang = $config['default_language'];
+			$data = db_query('SELECT id FROM languages WHERE language = ?', array($lang));
+		}
+		$lang_id = $data[0]['id'];
+	}
+	if(!isset($translations)) {
+		$data = db_query('SELECT source, translation FROM translations WHERE language = ?', array($lang_id));
+		$translations = array();
+		foreach($data as $row) {
+			$translations[$row['source']] = $row['translation'];
+		}
+	}
+	if($input == '') {
+		return '';
+	}
+	if($lang == 'en') {
+		$output = $input;
+	}
+	else {
+		if(!isset($translations[$input])) {
+			// TODO locking
+
+			$data = db_query('SELECT id FROM translations WHERE source = ? AND language = ?', array($input, $lang_id));
+			if(count($data) < 1) {
+				db_query('INSERT INTO translations (source, language, translation) VALUES (?, ?, ?) ON DUPLICATE KEY UPDATE language = ?', array($input, $lang_id, $input, $lang_id));
+			}
+			$output = $input;
+		}
+		else {
+			$output = $translations[$input];
+		}
+	}
+	foreach($values as $value) {
+		$output = preg_replace('/%s/', $value, $output, 1);
+	}
+
+	return $output;
+}
+
+// initialize translation data
+t();
 
