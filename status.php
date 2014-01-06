@@ -124,7 +124,7 @@ foreach($sensors as $id => $sensor) {
 
 		$sensors[$id]['battery_date'] = date($config["date_pattern.php.$lang"], $timestamp);
 		$battery_days = floor((time()-$timestamp)/86400);
-		$sensors[$id]['battery_days'] = "$battery_days day(s)";
+		$sensors[$id]['battery_days'] = t('%s day(s)', array($battery_days));
 		if($battery_days <= $config['battery_warning']) {
 			$sensors[$id]['battery_state'] = 'ok';
 		}
@@ -173,7 +173,7 @@ foreach($keys as $index => $key) {
 				$state_class[$index] = 'warning';
 			}
 			else {
-				$states[$index] = 'OK';
+				$states[$index] = t('OK');
 				$state_class[$index] = 'ok';
 			}
 		}
@@ -288,7 +288,7 @@ a { text-decoration: none; }
 <script type="text/javascript">
 <!--
 function start_refresh_timer() {
-	window.setTimeout("do_refresh()", 3000);
+	window.setTimeout("do_refresh()", 30000);
 	$('#img_loading').css('visibility', 'hidden');
 }
 
@@ -399,7 +399,7 @@ $(document).ready(function() {
 				<tr id="data_<?php echo $index ?>">
 					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
 					<td class="<?php echo $oddstring ?>"><?php echo $values[$what]['name'] ?></td>
-					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo t($states[$index]) ?></td>
+					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
 					<td class="current <?php echo $oddstring ?>"><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="minimum <?php echo $oddstring ?>"><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
