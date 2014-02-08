@@ -131,7 +131,7 @@ my $db_username = $config->getProperty('db_username');
 my $db_password = $config->getProperty('db_password');
 my $db_database = $config->getProperty('db_database');
 
-my $bullshit_threshold = 95;
+my $bullshit_threshold = 20;
 
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
@@ -197,25 +197,45 @@ for($a=0; $a<=$#data; $a++) {
 			@result = $stmt->fetchrow_array();
 			$stmt->finish();
 			if($result[0] == 0) {
+				$stmt = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1');
+
 				my $stmt1 = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 				my $stmt2 = $db->prepare('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
-				if($value->{'Temperatur'} < $bullshit_threshold || $value->{'Luftfeuchtigkeit'} < $bullshit_threshold) {
+				$stmt->execute(($sensor_id, $value_ids->{'Temperature'}));
+				@result = $stmt->fetchrow_array();
+				if(!@result or abs($value->{'Temperatur'}-$result[0]) < $bullshit_threshold) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
+				}
+
+				$stmt->execute(($sensor_id, $value_ids->{'Humidity'}));
+				@result = $stmt->fetchrow_array();
+				if(!@result or abs($value->{'Luftfeuchtigkeit'}-$result[0]) < $bullshit_threshold) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
-					if($value->{'Windgeschwindigkeit'} > -1) {
+				}
+
+				if($value->{'Windgeschwindigkeit'} > -1) {
+					$stmt->execute(($sensor_id, $value_ids->{'Wind speed'}));
+					@result = $stmt->fetchrow_array();
+					if(!@result or abs($value->{'Windgeschwindigkeit'}-$result[0]) < $bullshit_threshold) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 					}
-					if($value->{'Regenmenge'} > -1) {
+				}
+				if($value->{'Regenmenge'} > -1) {
+					$stmt->execute(($sensor_id, $value_ids->{'Precipitation'}));
+					@result = $stmt->fetchrow_array();
+					if(!@result or abs($value->{'Regenmenge'}-$result[0]) < $bullshit_threshold) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
 						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
 					}
 				}
+
 				$stmt1->finish();
 				$stmt2->finish();
+				$stmt->finish();
 			}
 		}
 	}
