@@ -139,19 +139,19 @@ function get_sensors_state($sensors = array()) {
 		$localized_value = round_local($row['value'], $type_decimals[$what]);
 		if($value <= $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
-			$state_description = t('CRITICAL (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
+			$state_description = t('CRITICAL (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$what]), $type_formats[$what])));
 		}
 		else if($value <= $limits[$sensor_id][$what]['low_warn']) {
 			$state = 'warning';
-			$state_description = t('WARNING (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_warn'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
+			$state_description = t('WARNING (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_warn'], $type_decimals[$what]), $type_formats[$what])));
 		}
 		else if($value >= $limits[$sensor_id][$what]['high_crit']) {
 			$state = 'critical';
-			$state_description = t('CRITICAL (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_crit'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
+			$state_description = t('CRITICAL (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_crit'], $type_decimals[$what]), $type_formats[$what])));
 		}
 		else if($value >= $limits[$sensor_id][$what]['high_warn']) {
 			$state = 'warning';
-			$state_description = t('WARNING (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_warn'], $type_decimals[$sensor_id]), $type_formats[$sensor_id])));
+			$state_description = t('WARNING (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_warn'], $type_decimals[$what]), $type_formats[$what])));
 		}
 		else {
 			$state = 'ok';
