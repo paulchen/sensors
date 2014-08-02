@@ -86,7 +86,12 @@ sub get_values {
 
 	log_status("Querying status for sensor $sensor");
 
-	telnet_command($t, "sensor $sensor");
+	if($sensor eq 8) {
+		telnet_command($t, "kombi");
+	}
+	else {
+		telnet_command($t, "sensor $sensor");
+	}
 	my ($prematch, $match) = $t->waitfor('/IPWE1> /');
 	log_raw_data($db, $prematch);
 	my @data = parse_table($prematch);
@@ -172,7 +177,13 @@ for($a=0; $a<=$#data; $a++) {
 	if($data[$a]{'Typ'} ne '') {
 		@values = get_values($t, $a, $db);
 		for my $value (@values) {
-			my $sensor = $data[$a]{'Adresse'};
+			my $sensor;
+			if($a eq 8) { # Kombisensor
+				$sensor = 8;
+			}
+			else {
+			       	$sensor = $data[$a]{'Adresse'};
+			}
 			my $timestamp = $value->{'Zeitstempel'};
 			my $type = $data[$a]{'Typ'};
 			my $description = $data[$a]{'Beschreibung'};
