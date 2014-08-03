@@ -219,12 +219,18 @@ for($a=0; $a<=$#data; $a++) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
 				}
+				else {
+					log_status('Value of temperature (' . $value->{'Temperatur'} . ') ignored due to bullshit threshold');
+				}
 
 				$stmt->execute(($sensor_id, $value_ids->{'Humidity'}));
 				@result = $stmt->fetchrow_array();
 				if(!@result or abs($value->{'Luftfeuchtigkeit'}-$result[0]) < $bullshit_threshold) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
+				}
+				else {
+					log_status('Value of humidity (' . $value->{'Luftfeuchtigkeit'} . ') ignored due to bullshit threshold');
 				}
 
 				if($value->{'Windgeschwindigkeit'} > -1) {
@@ -234,14 +240,20 @@ for($a=0; $a<=$#data; $a++) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 					}
+					else {
+						log_status('Value of wind speed (' . $value->{'Windgeschwindigkeit'} . ') ignored due to bullshit threshold');
+					}
 				}
 				if($value->{'Regenmenge'} > -1) {
 					$stmt->execute(($sensor_id, $value_ids->{'Precipitation'}));
 					@result = $stmt->fetchrow_array();
-					if(!@result or abs($value->{'Regenmenge'}-$result[0]) < $bullshit_threshold) {
+#					if(!@result or abs($value->{'Regenmenge'}-$result[0]) < $bullshit_threshold) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
 						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
-					}
+#					}
+#					else {
+#						log_status('Value of precipitation (' . $value->{'Regenmenge'} . ') ignored due to bullshit threshold');
+#					}
 				}
 
 				$stmt1->finish();
