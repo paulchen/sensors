@@ -64,7 +64,7 @@ foreach($sensors as $sensor_id) {
 		$timestamp = $data[0]['timestamp'];
 	}
 	else {
-		$timestamp = $value;
+		$timestamp = $value; // TODO wtf, what is $value?
 	}
 
 	if($timestamp == 0) {
