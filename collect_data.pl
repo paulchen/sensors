@@ -10,6 +10,9 @@ use File::Basename;
 use Time::Format;
 use Time::Piece;
 
+our $debug = 0;
+our @debug_ids = ();
+
 sub log_status{
 	my ($msg) = @_;
 
@@ -45,6 +48,7 @@ sub parse_table {
 					$value =~ s/ *$//g;
 					push(@rownames, $value);
 				}
+				push(@rownames, 'Regen');
 			}
 			else {
 				my %row = ();
@@ -54,6 +58,11 @@ sub parse_table {
 					$value =~ s/^ *//g;
 					$value =~ s/ *$//g;
 					$row{$rownames[$a]} = $value;
+				}
+
+				$row{'Regen'} = 0;
+				if($cells[-1] =~ m/#/) {
+					$row{'Regen'} = 1;
 				}
 
 				push(@rows, \%row);
@@ -79,6 +88,12 @@ sub log_raw_data {
 
 	my $stmt = $db->prepare('INSERT INTO raw_data (data) VALUES (?)');
 	$stmt->execute(($data, ));
+	$stmt->finish();
+
+	if($debug) {
+		log_status("Raw data:");
+		log_status("$data\n");
+	}
 }
 
 sub get_values {
@@ -86,14 +101,21 @@ sub get_values {
 
 	log_status("Querying status for sensor $sensor");
 
-	if($sensor eq 8) {
-		telnet_command($t, "kombi");
+	my ($prematch, $match);
+	if(not $debug or $#debug_ids lt 0) {
+		if($sensor eq 8) {
+			telnet_command($t, "kombi");
+		}
+		else {
+			telnet_command($t, "sensor $sensor");
+		}
+		($prematch, $match) = $t->waitfor('/IPWE1> /');
+		log_raw_data($db, $prematch);
 	}
 	else {
-		telnet_command($t, "sensor $sensor");
+		$prematch = fetch_raw_from_db($db);
 	}
-	my ($prematch, $match) = $t->waitfor('/IPWE1> /');
-	log_raw_data($db, $prematch);
+
 	my @data = parse_table($prematch);
 	for my $a (0 .. $#data) {
 		$data[$a]{'Zeitstempel'} = format_timestamp($data[$a]{'Zeitstempel'});
@@ -114,6 +136,24 @@ sub get_values {
 	}
 
 	return reverse(@data);
+}
+
+sub fetch_raw_from_db {
+	my ($db) = @_;
+
+	my $id = shift(@debug_ids);
+	log_status("Fetching raw data from database with id $id");
+
+	my $stmt = $db->prepare("SELECT data FROM raw_data WHERE id = ?");
+	$stmt->execute(($id));
+	if($stmt->rows == 0) {
+		log_status("Unknown id: $id");
+		die();
+	}
+	my @result = $stmt->fetchrow_array();
+	$stmt->finish();
+
+	return $result[0];
 }
 
 log_status("Cronjob started");
@@ -140,9 +180,28 @@ my $bullshit_threshold = 20;
 
 my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
-my $stmt = $db->prepare('INSERT INTO cronjob_executions () VALUES ()');
-$stmt->execute();
-$stmt->finish();
+my $argc = @ARGV;
+if($argc gt 0 and $ARGV[0] eq '--test') {
+	log_status("Initiating debug mode...");
+
+	$debug = 1;
+	if($argc gt 2 and $ARGV[1] eq '--ids') {
+		for my $a (2 .. $#ARGV) {
+			push(@debug_ids, $ARGV[$a]);
+		}
+
+		log_status("Using entries from database table raw_data with IDs: ");
+		print(Dumper(@debug_ids));
+	}
+}
+
+my $stmt;
+
+if(!$debug) {
+	$stmt = $db->prepare('INSERT INTO cronjob_executions () VALUES ()');
+	$stmt->execute();
+	$stmt->finish();
+}
 
 $stmt = $db->prepare('SELECT id, name FROM sensor_values');
 $stmt->execute();
@@ -154,28 +213,51 @@ $stmt->finish();
 
 log_status("Connecting");
 
-my $t = new Net::Telnet(Timeout => 10);
-$t->open(Host => $host, Port => $port);
+my ($t, $prematch, $match);
 
-log_status("Logging in");
+if(not $debug or $#debug_ids lt 0) {
+	$t = new Net::Telnet(Timeout => 10);
+	$t->open(Host => $host, Port => $port);
 
-$t->waitfor('/Username: /');
-telnet_command($t, $username);
-$t->waitfor('/Password: /');
-telnet_command($t, $password);
-$t->waitfor('/IPWE1> /');
+	log_status("Logging in");
 
-log_status("Querying status");
+	$t->waitfor('/Username: /');
+	telnet_command($t, $username);
+	$t->waitfor('/Password: /');
+	telnet_command($t, $password);
+	$t->waitfor('/IPWE1> /');
 
-telnet_command($t, 'status');
-my ($prematch, $match) = $t->waitfor('/IPWE1> /');
-log_raw_data($db, $prematch);
+	log_status("Querying status");
+
+	telnet_command($t, 'status');
+	($prematch, $match) = $t->waitfor('/IPWE1> /');
+	log_raw_data($db, $prematch);
+}
+else {
+	$prematch = fetch_raw_from_db($db);
+}
 my @data = parse_table($prematch);
+if($debug) {
+	log_status("Values parsed from table:");
+	print(Dumper(@data));
+}
 
 for($a=0; $a<=$#data; $a++) {
 	my @values;
 	if($data[$a]{'Typ'} ne '') {
+		if(not $debug and $data[$a]{'Regen'} eq '1') {
+			log_status('Recording rain');
+			$stmt = $db->prepare('INSERT INTO precipitation () VALUES ()');
+			$stmt->execute();
+			$stmt->finish();
+		}
+
 		@values = get_values($t, $a, $db);
+		if($debug) {
+			log_status("Values parsed from table:");
+			print(Dumper(@values));
+			next;
+		}
 		for my $value (@values) {
 			my $sensor;
 			if($a eq 8) { # Kombisensor
@@ -264,9 +346,11 @@ for($a=0; $a<=$#data; $a++) {
 	}
 }
 
-$stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
-$stmt->execute();
-$stmt->finish();
+if($debug) {
+	$stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
+	$stmt->execute();
+	$stmt->finish();
+}
 
 $db->disconnect();
 
