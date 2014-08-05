@@ -336,6 +336,7 @@ for($a=0; $a<=$#data; $a++) {
 					$stmt3->finish();
 
 					$stmt3 = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW() ORDER BY id ASC LIMIT 0, 1');
+					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
 					@result = $stmt->fetchrow_array();
 					my $first = $result[0]; # first value in the last hour
 
