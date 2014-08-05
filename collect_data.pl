@@ -327,15 +327,30 @@ for($a=0; $a<=$#data; $a++) {
 					}
 				}
 				if($value->{'Regenmenge'} > -1) {
-					$stmt->execute(($sensor_id, $value_ids->{'Precipitation'}));
+					my $cur = $value->{'Regenmenge'};
+					my $stmt3 = $db->prepare('SELECT ROUND(MIN(value), 7) min, ROUND(MAX(value), 7) max FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW()');
+					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
 					@result = $stmt->fetchrow_array();
-#					if(!@result or abs($value->{'Regenmenge'}-$result[0]) < $bullshit_threshold) {
-						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
-						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
-#					}
-#					else {
-#						log_status('Value of precipitation (' . $value->{'Regenmenge'} . ') ignored due to bullshit threshold');
-#					}
+					my $min = $result[0]; # minimum value in the last hour
+					my $max = $result[1]; # maximum value in the last hour
+					$stmt3->finish();
+
+					$stmt3 = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW() ORDER BY id ASC LIMIT 0, 1');
+					@result = $stmt->fetchrow_array();
+					my $first = $result[0]; # first value in the last hour
+
+					my $rain_value;
+					if($min < $first) { # value of precipitation has been reset in the last hour
+						# the amount of precipitation before the reset (that's $max-$first as $max was the last value before the reset)
+						# and the amount after the reset (that's $cur-$min as $min was the first value after the reset)
+						$rain_value = $cur+$max-$first-$min;
+					}
+					else {
+						$rain_value = $max-$min;
+					}
+
+					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $rain_value));
+					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
 				}
 
 				$stmt1->finish();
