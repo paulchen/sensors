@@ -240,6 +240,8 @@ if(php_sapi_name() == 'cli') {
 		echo "\n\n";
 	}
 
+	// TODO battery status
+
 	exit;
 }
 
