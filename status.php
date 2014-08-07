@@ -223,6 +223,20 @@ else {
 	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
 }
 
+// TODO hard-coded constants
+$query = 'SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1';
+$data = db_query($query, array(9, 4));
+if(count($data) == 0) {
+	$rain = 'unknown';
+}
+else {
+	$rain = $data[0]['value'];
+	if($rain == '0.1') {
+		$rain = 0;
+	}
+	$rain .= ' mm';
+}
+
 if(php_sapi_name() == 'cli') {
 	echo "Last cronjob run: $last_cron_run\n";
 	echo "Last successful cronjob run: $last_successful_cron_run\n\n\n";
@@ -411,6 +425,9 @@ $(document).ready(function() {
 			<?php endforeach; ?>
 		</tbody>
 	</table>
+	<p style="text-align: left;">
+		<?php echo t('Precipitation (last 24 hours): %s', array($rain)); ?> 
+	</p>
 	<p>
 		<?php foreach($graphs as $graph): ?>
 			<?php if($graph['new_row']): ?><br /><?php endif; ?>
