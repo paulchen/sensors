@@ -191,7 +191,7 @@ if($argc gt 0 and $ARGV[0] eq '--test') {
 		}
 
 		log_status("Using entries from database table raw_data with IDs: ");
-		print(Dumper(@debug_ids));
+		log_status(Dumper(@debug_ids));
 	}
 }
 
@@ -329,10 +329,12 @@ for($a=0; $a<=$#data; $a++) {
 				if($value->{'Regenmenge'} > -1) {
 					my $cur = $value->{'Regenmenge'};
 					my $stmt3 = $db->prepare('SELECT ROUND(MIN(value), 7) min, ROUND(MAX(value), 7) max FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW()');
+					log_status($sensor_id . " " . $value_ids->{'Precipitation'});
 					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
-					@result = $stmt->fetchrow_array();
-					my $min = $result[0]; # minimum value in the last hour
-					my $max = $result[1]; # maximum value in the last hour
+					@result = $stmt3->fetchrow_array();
+					log_status(Dumper(@result));
+					my $min = $result[0]<$cur ? $result[0] : $cur; # minimum value in the last hour
+					my $max = $result[1]<$cur ? $cur : $result[0]; # maximum value in the last hour
 					$stmt3->finish();
 
 					$stmt3 = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW() ORDER BY id ASC LIMIT 0, 1');
@@ -340,6 +342,7 @@ for($a=0; $a<=$#data; $a++) {
 					@result = $stmt3->fetchrow_array();
 					my $first = $result[0]; # first value in the last hour
 
+					log_status("$first - $cur - $min - $max");
 					my $rain_value;
 					if($min < $first) { # value of precipitation has been reset in the last hour
 						# the amount of precipitation before the reset (that's $max-$first as $max was the last value before the reset)
