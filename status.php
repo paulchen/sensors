@@ -414,7 +414,7 @@ $(document).ready(function() {
 			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? 'odd' : 'even'; ?>
 				<tr id="data_<?php echo $index ?>">
 					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
-					<td class="<?php echo $oddstring ?>"><?php echo $values[$what]['name'] ?></td>
+					<td class="<?php echo $oddstring ?>"><?php echo t($values[$what]['name']) ?></td>
 					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
 					<td class="current <?php echo $oddstring ?>"><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
