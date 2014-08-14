@@ -318,13 +318,13 @@ for($a=0; $a<=$#data; $a++) {
 				if($value->{'Windgeschwindigkeit'} > -1) {
 					$stmt->execute(($sensor_id, $value_ids->{'Wind speed'}));
 					@result = $stmt->fetchrow_array();
-					if(!@result or abs($value->{'Windgeschwindigkeit'}-$result[0]) < $bullshit_threshold) {
+#					if(!@result or abs($value->{'Windgeschwindigkeit'}-$result[0]) < $bullshit_threshold) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
 						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
-					}
-					else {
-						log_status('Value of wind speed (' . $value->{'Windgeschwindigkeit'} . ') ignored due to bullshit threshold');
-					}
+#					}
+#					else {
+#						log_status('Value of wind speed (' . $value->{'Windgeschwindigkeit'} . ') ignored due to bullshit threshold');
+#					}
 				}
 				if($value->{'Regenmenge'} > -1) {
 					my $cur = $value->{'Regenmenge'};
