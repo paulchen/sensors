@@ -2,16 +2,23 @@
 use strict;
 use warnings;
 
-use Net::Telnet;
 use Data::Dumper;
 use DBI;
 use Config::Properties;
 use File::Basename;
 use Time::Format;
 use Time::Piece;
+use LWP::UserAgent;
+use HTML::TreeBuilder::XPath;
 
 our $debug = 0;
 our @debug_ids = ();
+
+our $host;
+our $port;
+our $username;
+our $password;
+our $db;
 
 sub log_status{
 	my ($msg) = @_;
@@ -20,53 +27,60 @@ sub log_status{
 	print " $msg\n";
 }
 
-sub telnet_command {
-	my ($t, $cmd) = @_;
-	for(my $a=0; $a<length($cmd); $a++) {
-		$t->put(substr($cmd, $a, 1));
-		select(undef, undef, undef, .1);
+sub fetch {
+	my ($url) = @_;
+
+	my $browser = LWP::UserAgent->new;
+	my $req = HTTP::Request->new(GET => $url);
+	$req->authorization_basic($username, $password);
+	my $response = $browser->request($req);
+	if(!$response->is_success) {
+		die "fail for $url!";
 	}
-	$t->print('');
+	return $response->decoded_content;
 }
 
 sub parse_table {
-	my ($input) = @_;
-	my @lines = split("\n", $input);
+	my ($index, $input) = @_;
+
+	my $tree = HTML::TreeBuilder::XPath->new;
+	$tree->parse_content($input);
+
 	my @rownames = ();
 	my @rows = ();
 
-	foreach my $line (@lines) {
-		if($line =~ m/^ \|[^-].*[^-]\|[^\|]*/) {
-			my @cells = split(/\|/, $line);
-			shift @cells;
-
-			if($#rownames == -1) {
-				for my $a (0 .. $#cells) {
-					my $value = $cells[$a];
-					$value =~ s/[^a-z0-9\.A-Z\/\%\- ]//g;
-					$value =~ s/^ *//g;
-					$value =~ s/ *$//g;
-					push(@rownames, $value);
-				}
-				push(@rownames, 'Regen');
+	my $tables = $tree->findnodes("//table");
+	my $table = $tables->get_node($index);
+	my $nodes = $table->findnodes(".//tr");
+	foreach my $line ($nodes->get_nodelist) {
+		my $subnodes = $line->findnodes('.//td');
+		if($#rownames == -1) {
+			for my $a (1 .. $subnodes->size()) {
+				my $value = $subnodes->get_node($a)->string_value;
+				$value =~ s/[^a-z0-9\.A-Z\/\%\- ]//g;
+				$value =~ s/^ *//g;
+				$value =~ s/ *$//g;
+				push(@rownames, $value);
 			}
-			else {
-				my %row = ();
-				for my $a (0 .. $#cells) {
-					my $value = $cells[$a];
-					$value =~ s/[^a-z0-9\.A-Z\/\%\- ]//g;
-					$value =~ s/^ *//g;
-					$value =~ s/ *$//g;
-					$row{$rownames[$a]} = $value;
-				}
-
-				$row{'Regen'} = 0;
-				if($cells[-1] =~ m/#/) {
-					$row{'Regen'} = 1;
-				}
-
-				push(@rows, \%row);
+			push(@rownames, 'Regen')
+		}
+		else {
+			my %row = ();
+			for my $a (1 .. $subnodes->size()) {
+				my $value = $subnodes->get_node($a)->string_value;
+				$value =~ s/[^a-z0-9\.A-Z\/\%\- ]//g;
+				$value =~ s/^ *//g;
+				$value =~ s/ *$//g;
+				$row{$rownames[$a-1]} = $value;
+				$a++;
 			}
+
+			$row{'Regen'} = 0;
+			if($subnodes->get_node($subnodes->size())->string_value =~ m/#/) {
+				$row{'Regen'} = 1;
+			}
+
+			push(@rows, \%row);
 		}
 	}
 
@@ -97,26 +111,20 @@ sub log_raw_data {
 }
 
 sub get_values {
-	my ($t, $sensor, $db) = @_;
+	my ($sensor) = @_;
 
 	log_status("Querying status for sensor $sensor");
 
 	my ($prematch, $match);
 	if(not $debug or $#debug_ids lt 0) {
-		if($sensor eq 8) {
-			telnet_command($t, "kombi");
-		}
-		else {
-			telnet_command($t, "sensor $sensor");
-		}
-		($prematch, $match) = $t->waitfor('/IPWE1> /');
+		$prematch = fetch("http://$host:$port/history$sensor.cgi");
 		log_raw_data($db, $prematch);
 	}
 	else {
 		$prematch = fetch_raw_from_db($db);
 	}
 
-	my @data = parse_table($prematch);
+	my @data = parse_table(1, $prematch);
 	for my $a (0 .. $#data) {
 		$data[$a]{'Zeitstempel'} = format_timestamp($data[$a]{'Zeitstempel'});
 		$data[$a]{'Temperatur'} =~ s/[^0-9\.\-]//g;
@@ -164,10 +172,10 @@ open my $fh, '<', 'config.properties' or die "Can't read properties file";
 my $config = Config::Properties->new();
 $config->load($fh);
 
-my $username = $config->getProperty('username');
-my $password = $config->getProperty('password');
-my $host = $config->getProperty('host');
-my $port = $config->getProperty('port');
+$username = $config->getProperty('username');
+$password = $config->getProperty('password');
+$host = $config->getProperty('host');
+$port = $config->getProperty('port');
 
 my $time_margin = $config->getProperty('time_margin');
 
@@ -178,7 +186,7 @@ my $db_database = $config->getProperty('db_database');
 
 my $bullshit_threshold = 20;
 
-my $db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
+$db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
 
 my $argc = @ARGV;
 if($argc gt 0 and $ARGV[0] eq '--test') {
@@ -216,27 +224,13 @@ log_status("Connecting");
 my ($t, $prematch, $match);
 
 if(not $debug or $#debug_ids lt 0) {
-	$t = new Net::Telnet(Timeout => 10);
-	$t->open(Host => $host, Port => $port);
-
-	log_status("Logging in");
-
-	$t->waitfor('/Username: /');
-	telnet_command($t, $username);
-	$t->waitfor('/Password: /');
-	telnet_command($t, $password);
-	$t->waitfor('/IPWE1> /');
-
-	log_status("Querying status");
-
-	telnet_command($t, 'status');
-	($prematch, $match) = $t->waitfor('/IPWE1> /');
+	$prematch = fetch("http://$host:$port/ipwe.cgi");
 	log_raw_data($db, $prematch);
 }
 else {
 	$prematch = fetch_raw_from_db($db);
 }
-my @data = parse_table($prematch);
+my @data = parse_table(2, $prematch);
 if($debug) {
 	log_status("Values parsed from table:");
 	print(Dumper(@data));
@@ -244,7 +238,7 @@ if($debug) {
 
 for($a=0; $a<=$#data; $a++) {
 	my @values;
-	if($data[$a]{'Typ'} ne '') {
+	if($data[$a]{'Sensortyp'} ne '') {
 		if(not $debug and $data[$a]{'Regen'} eq '1') {
 			log_status('Recording rain');
 			$stmt = $db->prepare('INSERT INTO precipitation () VALUES ()');
@@ -252,7 +246,7 @@ for($a=0; $a<=$#data; $a++) {
 			$stmt->finish();
 		}
 
-		@values = get_values($t, $a, $db);
+		@values = get_values($a);
 		if($debug) {
 			log_status("Values parsed from table:");
 			print(Dumper(@values));
@@ -267,7 +261,7 @@ for($a=0; $a<=$#data; $a++) {
 			       	$sensor = $data[$a]{'Adresse'};
 			}
 			my $timestamp = $value->{'Zeitstempel'};
-			my $type = $data[$a]{'Typ'};
+			my $type = $data[$a]{'Sensortyp'};
 			my $description = $data[$a]{'Beschreibung'};
 
 			$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
