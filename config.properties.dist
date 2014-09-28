@@ -1,11 +1,11 @@
-# username for Telnet login on IPWE1 device
+# username for login on IPWE1 device
 username = admin
-# password for Telnet login
+# password for login
 password =
 # hostname or IP address of IPWE1 device
 host = paulchen.homelinux.org
 # port where IPWE1 is listening
-port = 10023
+port = 10080
 
 # MySQL host
 db_host = localhost
@@ -58,4 +58,9 @@ date_pattern.javascript.de = dd.MM.yyyy HH:mm
 # decimal marks, separately for each language
 decimal_mark.en = .
 decimal_mark.de = ,
+
+# directory containing Munin's RRD files
+munin_data_directory = /var/lib/munin/domain/
+# prefix of filenames of Munin's RRD files used for IPWE data
+munin_prefix = host
 
