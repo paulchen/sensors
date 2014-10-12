@@ -203,7 +203,7 @@ function get_sensors_state($sensors = array()) {
 			$old = $first_values[$sensor_id][$what]['value'];
 			$new = $cur_values[$sensor_id][$what]['value'];
 
-			if(abs(1-$old/$new) < $config['stable_margin']) {
+			if($new != 0 && abs(1-$old/$new) < $config['stable_margin']) {
 				$tendency = 'stable';
 			}
 			else if($old > $new) {
