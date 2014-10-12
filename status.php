@@ -80,7 +80,7 @@ foreach($keys as $index => $key) {
 	$old = $first_values[$index]['value'];
 	$new = $current_values[$index]['value'];
 
-	if(abs(1-$old/$new) < $config['stable_margin']) {
+	if($new != 0 && abs(1-$old/$new) < $config['stable_margin']) {
 		$tendencies[$index] = 'stable';
 	}
 	else if($old > $new) {
