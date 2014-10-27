@@ -347,6 +347,9 @@ for($a=0; $a<=$#data; $a++) {
 					else {
 						$rain_value = $max-$min;
 					}
+					if($rain_value < 0) {
+						$rain_value = 0;
+					}
 
 					if($rain_value < 100) {
 						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $rain_value));
