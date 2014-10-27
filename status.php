@@ -224,14 +224,14 @@ else {
 }
 
 // TODO hard-coded constants
-$query = 'SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1';
+$query = 'SELECT SUM(value) FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id ASC) a';
 $data = db_query($query, array(9, 4));
 if(count($data) == 0) {
 	$rain = 'unknown';
 }
 else {
 	$rain = $data[0]['value'];
-	if($rain == '0.1') {
+	if($rain <= '0.1') {
 		$rain = 0;
 	}
 	$rain .= ' mm';
