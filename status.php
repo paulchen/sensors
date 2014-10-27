@@ -224,7 +224,8 @@ else {
 }
 
 // TODO hard-coded constants
-$query = 'SELECT SUM(value) FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id ASC) a';
+// TODO number formatting
+$query = 'SELECT SUM(value) FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
 $data = db_query($query, array(9, 4));
 if(count($data) == 0) {
 	$rain = 'unknown';
