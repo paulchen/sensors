@@ -21,7 +21,7 @@ db_query('SET NAMES utf8');
 unset($db_name);
 unset($db_host);
 
-if(isset($http_auth) && $http_auth) {
+if(isset($http_auth) && $http_auth && !is_cli()) {
 	if($config['api_authentication'] == 0) {
 		/* do nothing */
 	}
@@ -168,6 +168,10 @@ function round_local($value, $decimals) {
 	$ret = str_replace('.', $config["decimal_mark.$lang"], $ret);
 
 	return $ret;
+}
+
+function is_cli() {
+	return (php_sapi_name() == 'cli');
 }
 
 // initialize translation data

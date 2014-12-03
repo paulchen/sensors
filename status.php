@@ -225,20 +225,20 @@ else {
 
 // TODO hard-coded constants
 // TODO number formatting
-$query = 'SELECT SUM(value) FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
+$query = 'SELECT SUM(value) value FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
 $data = db_query($query, array(9, 4));
 if(count($data) == 0) {
 	$rain = 'unknown';
 }
 else {
-	$rain = $data[0]['value'];
+	$rain = round($data[0]['value'], 2);
 	if($rain <= '0.1') {
 		$rain = 0;
 	}
 	$rain .= ' mm';
 }
 
-if(php_sapi_name() == 'cli') {
+if(is_cli()) {
 	echo "Last cronjob run: $last_cron_run\n";
 	echo "Last successful cronjob run: $last_successful_cron_run\n\n\n";
 	foreach($keys as $index => $key) {
