@@ -255,6 +255,8 @@ if(is_cli()) {
 		echo "\n\n";
 	}
 
+	echo "Precipitation (last 24 hours): $rain\n";
+
 	// TODO battery status
 
 	exit;
