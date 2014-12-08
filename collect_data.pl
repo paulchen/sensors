@@ -328,14 +328,14 @@ for($a=0; $a<=$#data; $a++) {
 					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
 					@result = $stmt3->fetchrow_array();
 					log_status(Dumper(@result));
-					my $min = $result[0]<$cur ? $result[0] : $cur; # minimum value in the last hour
-					my $max = $result[1]<$cur ? $cur : $result[1]; # maximum value in the last hour
+					my $min = (defined($result[0]) and $result[0]<$cur) ? $result[0] : $cur; # minimum value in the last hour
+					my $max = (not defined($result[1]) or $result[1]<$cur) ? $cur : $result[1]; # maximum value in the last hour
 					$stmt3->finish();
 
 					$stmt3 = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW() ORDER BY id ASC LIMIT 0, 1');
 					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
 					@result = $stmt3->fetchrow_array();
-					my $first = $result[0]; # first value in the last hour
+					my $first = defined($result[0]) ? $result[0] : $cur; # first value in the last hour
 
 					log_status("$first - $cur - $min - $max");
 					my $rain_value;
