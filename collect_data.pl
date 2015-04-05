@@ -369,11 +369,9 @@ for($a=0; $a<=$#data; $a++) {
 	}
 }
 
-if($debug) {
-	$stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
-	$stmt->execute();
-	$stmt->finish();
-}
+$stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
+$stmt->execute();
+$stmt->finish();
 
 $db->disconnect();
 
