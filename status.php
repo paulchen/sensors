@@ -294,8 +294,7 @@ a { text-decoration: none; }
 <script type="text/javascript">
 <!--
 function start_refresh_timer() {
-	// window.setTimeout("do_refresh()", 30000);
-	window.setTimeout("do_refresh()", 3000);
+	window.setTimeout("do_refresh()", 30000);
 	$('#img_loading').css('visibility', 'hidden');
 }
 
