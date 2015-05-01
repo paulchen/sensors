@@ -48,5 +48,8 @@ echo '<?xml version="1.0"?>';
 			<?php endforeach; ?>
 		</images>
 	<?php endif; ?>
+	<?php if(isset($rain)): ?>
+		<rain><?php echo htmlentities($rain, ENT_QUOTES, 'UTF-8'); ?></rain>
+	<?php endif; ?>
 </sensors>
 

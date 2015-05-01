@@ -35,6 +35,11 @@ function rewrite_xml($xml) {
 		}
 	}
 
+	$value = (string) $xml;
+	if(trim($value) != '') {
+		$new_xml['value'] = $value;
+	}
+
 	return $new_xml;
 }
 

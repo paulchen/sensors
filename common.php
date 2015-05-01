@@ -174,6 +174,24 @@ function is_cli() {
 	return (php_sapi_name() == 'cli');
 }
 
+function get_rain() {
+	// TODO hard-coded constants
+	// TODO number formatting
+	$query = 'SELECT SUM(value) value FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
+	$data = db_query($query, array(9, 4));
+	if(count($data) == 0) {
+		return 'unknown';
+	}
+	else {
+		$rain = round($data[0]['value'], 2);
+		if($rain <= '0.1') {
+			$rain = 0;
+		}
+		$rain .= ' mm';
+		return $rain;
+	}
+}
+
 // initialize translation data
 t();
 

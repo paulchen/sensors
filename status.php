@@ -223,20 +223,7 @@ else {
 	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
 }
 
-// TODO hard-coded constants
-// TODO number formatting
-$query = 'SELECT SUM(value) value FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
-$data = db_query($query, array(9, 4));
-if(count($data) == 0) {
-	$rain = 'unknown';
-}
-else {
-	$rain = round($data[0]['value'], 2);
-	if($rain <= '0.1') {
-		$rain = 0;
-	}
-	$rain .= ' mm';
-}
+$rain = get_rain();
 
 if(is_cli()) {
 	echo "Last cronjob run: $last_cron_run\n";
@@ -307,7 +294,8 @@ a { text-decoration: none; }
 <script type="text/javascript">
 <!--
 function start_refresh_timer() {
-	window.setTimeout("do_refresh()", 30000);
+	// window.setTimeout("do_refresh()", 30000);
+	window.setTimeout("do_refresh()", 3000);
 	$('#img_loading').css('visibility', 'hidden');
 }
 
@@ -374,7 +362,10 @@ function do_refresh() {
 					$('#image_' + element['id']).css('width', element['width'] + 'px');
 				});				
 
-				// 4. set timer
+				// 4. update rain
+				$('#rain').html(data['rain']['value']);
+
+				// 5. set timer
 				start_refresh_timer();
 			}
 		});
@@ -429,7 +420,8 @@ $(document).ready(function() {
 		</tbody>
 	</table>
 	<p style="text-align: left;">
-		<?php echo t('Precipitation (last 24 hours): %s', array($rain)); ?> 
+		<?php echo t('Precipitation (last 24 hours): %s', array('')); ?> 
+		<span id="rain"><?php echo $rain; ?></span>
 	</p>
 	<p>
 		<?php foreach($graphs as $graph): ?>

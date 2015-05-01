@@ -11,6 +11,7 @@ $types = get_type_data($sensor_data);
 $states = get_states();
 $images = get_image_urls();
 $status = get_status();
+$rain = get_rain();
 
 $success = true;
 
