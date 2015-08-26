@@ -34,7 +34,7 @@ $value_decimals = $data[0]['decimals'];
 $sensors = explode('.', $sensor_list);
 $sensor_info = array();
 
-$query = 'SELECT sensor, type, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
+$query = 'SELECT sensor, type, description, color FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
 foreach($sensors as $sensor_id) {
 	$data = db_query($query, array($sensor_id));
 	if(count($data) != 1) {
@@ -81,6 +81,11 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 
 			echo 'sensor' . $sensor['id'] . ".warning $low_warn:$high_warn\n";
 			echo 'sensor' . $sensor['id'] . ".critical $low_crit:$high_crit\n";
+			if($sensor['color'] != '') {
+				$color = $sensor['color'];
+
+				echo 'sensor' . $sensor['id'] . ".colour $color\n";
+			}
 		}
 	}
 
