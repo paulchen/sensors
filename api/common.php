@@ -161,6 +161,7 @@ function get_sensors_state($sensors = array()) {
 		$cur_state = $state;
 		if(time()-$timestamp > $config['value_outdated_period']) {
 			$cur_state = 'unknown';
+			$state_description = t('UNKNOWN (most recent value is too old)');
 		}
 
 		if(!isset($cur_values[$sensor_id])) {
@@ -171,21 +172,21 @@ function get_sensors_state($sensors = array()) {
 			$first_values[$sensor_id] = array();
 		}
 		if(!isset($cur_values[$sensor_id][$what])) {
-			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'current');
-			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'minimum');
-			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'maximum');
+			$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'current');
+			$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'minimum');
+			$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'maximum');
 			$avg_values[$sensor_id][$what] = array('value' => $value, 'type' => 'average', 'count' => 1);
 			$first_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value);
 		}
 		else {
 			if($cur_values[$sensor_id][$what]['timestamp'] < $timestamp) {
-				$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'current');
+				$cur_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'current');
 			}
 			if($min_values[$sensor_id][$what]['value'] > $value) {
-				$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'minimum');
+				$min_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'minimum');
 			}
 			if($max_values[$sensor_id][$what]['value'] < $value) {
-				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $state, 'state_description' => $state_description, 'type' => 'maximum');
+				$max_values[$sensor_id][$what] = array('timestamp' => $timestamp, 'value' => $value, 'localized_value' => $localized_value, 'state' => $cur_state, 'state_description' => $state_description, 'type' => 'maximum');
 			}
 	
 			if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$sensor_id][$what])) {
