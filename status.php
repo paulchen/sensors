@@ -205,22 +205,20 @@ foreach($keys as $index => $key) {
 	$formatted_limits[$index]['high_crit'] = str_replace('%s', round_local($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
 }
 
-$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
-$data = db_query($query);
-if(count($data) == 0) {
+$timestamp = get_last_cron_run();
+if($timestamp == '') {
 	$last_cron_run = 'never';
 }
 else {
-	$last_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
+	$last_cron_run = date($config["date_pattern.php.$lang"], $timestamp);
 }
 
-$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM raw_data ORDER BY id DESC LIMIT 0, 1';
-$data = db_query($query);
-if(count($data) == 0) {
+$timestamp = get_last_successful_cron_run();
+if($timestamp == '') {
 	$last_successful_cron_run = 'never';
 }
 else {
-	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $data[0]['timestamp']);
+	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $timestamp);
 }
 
 $rain = get_rain();

@@ -240,23 +240,8 @@ function get_image_urls() {
 }
 
 function get_status() {
-	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
-	$data = db_query($query);
-	if(count($data) == 0) {
-		$last_cron_run = '';
-	}
-	else {
-		$last_cron_run = $data[0]['timestamp'];
-	}
-
-	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM raw_data ORDER BY id DESC LIMIT 0, 1';
-	$data = db_query($query);
-	if(count($data) == 0) {
-		$last_successful_cron_run = '';
-	}
-	else {
-		$last_successful_cron_run = $data[0]['timestamp'];
-	}
+	$last_cron_run = get_last_cron_run();
+	$last_successful_cron_run = get_last_successful_cron_run();
 
 	return array(
 		'last_cron_run' => $last_cron_run,
