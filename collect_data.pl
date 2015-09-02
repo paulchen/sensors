@@ -284,14 +284,15 @@ for($a=0; $a<=$#data; $a++) {
 			@result = $stmt->fetchrow_array();
 			$stmt->finish();
 			if($result[0] == 0) {
-				$stmt = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1');
+				$stmt = $db->prepare('SELECT value, UNIX_TIMESTAMP(timestamp) timestamp FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1');
 
 				my $stmt1 = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 				my $stmt2 = $db->prepare('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
 				$stmt->execute(($sensor_id, $value_ids->{'Temperature'}));
 				@result = $stmt->fetchrow_array();
-				if(!@result or abs($value->{'Temperatur'}-$result[0]) < $bullshit_threshold) {
+				my $value_outdated = (time() - $result[1]) > 3600; # TODO magic number
+				if(!@result or abs($value->{'Temperatur'}-$result[0]) < $bullshit_threshold or $value_outdated) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
 				}
@@ -301,7 +302,7 @@ for($a=0; $a<=$#data; $a++) {
 
 				$stmt->execute(($sensor_id, $value_ids->{'Humidity'}));
 				@result = $stmt->fetchrow_array();
-				if(!@result or abs($value->{'Luftfeuchtigkeit'}-$result[0]) < $bullshit_threshold) {
+				if(!@result or abs($value->{'Luftfeuchtigkeit'}-$result[0]) < $bullshit_threshold or $value_outdated) {
 					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
 					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
 				}
