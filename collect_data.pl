@@ -98,10 +98,10 @@ sub format_timestamp {
 }
 
 sub log_raw_data {
-	my ($db, $data) = @_;
+	my ($db, $data, $url) = @_;
 
-	my $stmt = $db->prepare('INSERT INTO raw_data (data) VALUES (?)');
-	$stmt->execute(($data, ));
+	my $stmt = $db->prepare('INSERT INTO raw_data (data, url) VALUES (?, ?)');
+	$stmt->execute(($data, $url));
 	$stmt->finish();
 
 	if($debug) {
@@ -117,8 +117,9 @@ sub get_values {
 
 	my ($prematch, $match);
 	if(not $debug or $#debug_ids lt 0) {
-		$prematch = fetch("http://$host:$port/history$sensor.cgi");
-		log_raw_data($db, $prematch);
+		my $url = "http://$host:$port/history$sensor.cgi";
+		$prematch = fetch($url);
+		log_raw_data($db, $prematch, $url);
 	}
 	else {
 		$prematch = fetch_raw_from_db($db);
@@ -224,8 +225,9 @@ log_status("Connecting");
 my ($t, $prematch, $match);
 
 if(not $debug or $#debug_ids lt 0) {
-	$prematch = fetch("http://$host:$port/ipwe.cgi");
-	log_raw_data($db, $prematch);
+	my $url = "http://$host:$port/ipwe.cgi";
+	$prematch = fetch($url);
+	log_raw_data($db, $prematch, $url);
 }
 else {
 	$prematch = fetch_raw_from_db($db);
