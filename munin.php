@@ -54,6 +54,7 @@ foreach($sensors as $sensor_id) {
 
 	$row = $data[0];
 	$row['id'] = $sensor_id;
+	$row['description'] = iconv('UTF-8', 'ISO-8859-15', $row['description']);
 	$sensor_info[$row['sensor']] = $row;
 }
 
