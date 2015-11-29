@@ -275,6 +275,7 @@ foreach($data as $line) {
 body { font-family: Verdana,Arial,Helvetica,sans-serif; }
 body > div { margin: auto; }
 td, th { white-space: nowrap; text-align: left; background-color: #e0e0e0; width: 800px; }
+tr.spacer td { height: 5px; background-color: transparent; }
 td.state_ok, td.state_warning, td.state_critical, td.state_unknown { text-align: center; }
 td.state_ok { background-color: #00cc33; }
 td.state_warning { background-color: #ffa500; }
@@ -403,7 +404,12 @@ $(document).ready(function() {
 		</thead>
 		<tbody>
 			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? 'odd' : 'even'; ?>
-				<tr id="data_<?php echo $index ?>">
+				<?php if(!isset($previous_sensor) || $sensor != $previous_sensor): ?>
+					<tr class="spacer">
+						<td></td>
+					</tr>
+				<?php endif ?>
+				<tr id="data_<?php echo $index ?>" >
 					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
 					<td class="<?php echo $oddstring ?>"><?php echo t($values[$what]['name']) ?></td>
 					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
@@ -413,7 +419,7 @@ $(document).ready(function() {
 					<td class="average <?php echo $oddstring ?>"><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
 					<td class="tendency <?php echo $oddstring ?>"><?php echo t($tendencies[$index]) ?></td>
 				</tr>
-			<?php endforeach; ?>
+			<?php $previous_sensor = $sensor; endforeach; ?>
 		</tbody>
 	</table>
 	<p style="text-align: left;">
