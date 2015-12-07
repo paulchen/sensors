@@ -33,7 +33,18 @@ if(isset($http_auth) && $http_auth && !is_cli()) {
 		die(3);
 	}
 }
-	
+
+function db_query_single($query, $parameters = array()) {
+	$data = db_query($query, $parameters);
+	if(count($data) == 0) {
+		return null;
+	}
+	if(count($data) > 1) {
+		// TODO
+	}
+	return $data[0];
+}
+
 function db_query($query, $parameters = array()) {
 	$stmt = db_query_resultset($query, $parameters);
 	$data = $stmt->fetchAll(PDO::FETCH_ASSOC);

@@ -66,6 +66,7 @@ foreach($data as $row) {
 
 switch($action) {
 	case 'status':
+	case 'submit':
 		require_once("actions/$action.php");
 		break;
 
