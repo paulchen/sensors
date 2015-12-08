@@ -24,7 +24,7 @@ function rewrite_xml($xml) {
 		}
 	}
 	foreach($xml->children() as $element) {
-		if($element_counts[$element->getName()] > 1) {
+		if($element_counts[$element->getName()] > 1 || $element->getName() == 'value') {
 			if(!isset($new_xml[$element->getName()])) {
 				$new_xml[$element->getName()] = array();
 			}
