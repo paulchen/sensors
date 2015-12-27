@@ -2,8 +2,8 @@
 <?php
 
 function usage() {
-	echo "Usage: check_sensors.php --sensors <sensor>,<sensor>,... --config-file <directory>\n";
-	echo "--sensors and --config-file can be abbreviated to -s and -c, respectively.\n";
+	echo "Usage: check_sensors.php --sensors <sensor>,<sensor>,... --outdated <seconds>\n";
+	echo "--sensors and --outdated can be abbreviated to -s and -o respectively.\n";
 	die(3);
 }
 
@@ -24,15 +24,25 @@ foreach($sensors as $sensor) {
 
 $config_file = 'config.properties';
 
-if($argc == 5 && $argv[3] != '--config-file' && $argv[3] != '-c') {
+if($argc > 3 && $argv[3] != '--outdated' && $argv[3] != '-o') {
 	usage();
 }
-else if($argc == 5) {
-	$config_file = $argv[4] . '/config.properties';
+else if($argc > 3) {
+	$outdated = $argv[4];
+	if(!preg_match('/^[0-9]+$/', $outdated)) {
+		usage();
+	}
+}
+else {
+	$outdated = -1;
 }
 
 chdir(dirname(__FILE__));
 require_once('common.php');
+
+if($outdated == -1) {
+	$outdated = $config['value_outdated_period'];
+}
 
 $query = 'SELECT id, name, format, decimals FROM sensor_values';
 $data = db_query($query);
@@ -85,7 +95,7 @@ foreach($sensors as $sensor_id) {
 	}
 	$timestamp_warning = false;
 	foreach($timestamps as $timestamp) {
-		if(time()-$timestamp > $config['value_outdated_period'] && !$timestamp_warning) {
+		if(time()-$timestamp > $outdated && !$timestamp_warning) {
 			$timestamp_warning = true;
 			$messages[] = "$sensor_description - no recent data";
 			$states[] = 3;
