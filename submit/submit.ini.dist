@@ -1,0 +1,26 @@
+[servers]
+server1:	alpha
+server2:	gamma
+
+[alpha]
+username:	username
+password:	password
+url:		https://rueckgr.at/sensors
+
+[gamma]
+username:	username
+password:	password
+url:		https://gamma.rueckgr.at/sensors
+
+[sensors]
+sensor12:	sensor12
+sensor16:	sensor16
+
+[sensor12]
+id:		12
+path:		/sys/bus/w1/devices/28-00000764d69d/w1_slave
+
+[sensor16]
+id:		16
+external:	/home/paulchen/temperv14/temperv14 -c 2> /dev/null
+
