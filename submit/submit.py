@@ -64,10 +64,14 @@ def submit_value(sensor, value, server):
     url = server['url'] + '/api/'
     s = requests.session()
     s.auth = (server['username'], server['password'])
-    resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': 'temp', 'value': value}, timeout=30)
-    content = resp.text
-    if content != 'ok':
-        logger.error('Error while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
+    try:
+        resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': 'temp', 'value': value}, timeout=30)
+        content = resp.text
+        if content != 'ok':
+            logger.error('Error while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
+            return
+    except ReadTimeout:
+        logger.error('Timeout while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
         return
 
     end_time = time.time()
