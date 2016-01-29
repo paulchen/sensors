@@ -99,15 +99,31 @@ def process_sensor(sensor, servers):
     value = get_sensor_value(sensor)
     if not is_value_valid(value):
         return
+
+    threads = []
     for server in servers:
         t = threading.Thread(target = submit_value, args = (sensor, value, server))
         t.start()
+        threads.append(t)
+    
+    for t in threads:
+        t.join()
+
+    logger.debug('Processing sensor %s completed', sensor['id'])
 
 
 logger.debug('Program startup')
 
+threads = []
 for sensor in sensors:
     t = threading.Thread(target = process_sensor, args = (sensor, servers))
     t.start()
+    threads.append(t)
+
+for t in threads:
+    t.join()
+
+logger.debug('Execution completed')
+
 
 
