@@ -68,10 +68,9 @@ def submit_value(sensor, value, server):
         resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': 'temp', 'value': value}, timeout=30)
         content = resp.text
         if content != 'ok':
-            logger.error('Error while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
-            return
-    except ReadTimeout:
-        logger.error('Timeout while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
+            raise requests.exceptions.RequestException
+    except requests.exceptions.RequestException:
+        logger.error('Error while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
         return
 
     end_time = time.time()
