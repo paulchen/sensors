@@ -187,7 +187,9 @@ my $db_database = $config->getProperty('db_database');
 
 my $bullshit_threshold = 20;
 
-$db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
+my %attributes = (RaiseError => 1,
+	AutoCommit => 0);
+$db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password, \%attributes) || die('Could not connect to database');
 
 my $argc = @ARGV;
 if($argc gt 0 and $ARGV[0] eq '--test') {
@@ -375,6 +377,8 @@ for($a=0; $a<=$#data; $a++) {
 $stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
 $stmt->execute();
 $stmt->finish();
+
+$db->commit();
 
 $db->disconnect();
 
