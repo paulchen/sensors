@@ -14,13 +14,21 @@ url:		https://gamma.rueckgr.at/sensors
 
 [sensors]
 sensor12:	sensor12
+sensor13:	sensor13
 sensor16:	sensor16
 
 [sensor12]
 id:		12
 path:		/sys/bus/w1/devices/28-00000764d69d/w1_slave
+values:		temp
+
+[sensor13]
+id:             13
+external:       /home/paulchen/lol_dht22/loldht 12
+values:         temp,humid
 
 [sensor16]
 id:		16
 external:	/home/paulchen/temperv14/temperv14 -c 2> /dev/null
+values:		temp
 
