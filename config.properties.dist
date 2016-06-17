@@ -6,6 +6,8 @@ password =
 host = paulchen.homelinux.org
 # port where IPWE1 is listening
 port = 10080
+# use HTTPS
+https = 0
 
 # MySQL host
 db_host = localhost

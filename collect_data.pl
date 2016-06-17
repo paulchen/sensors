@@ -19,6 +19,7 @@ our $port;
 our $username;
 our $password;
 our $db;
+our $https;
 
 sub log_status{
 	my ($msg) = @_;
@@ -35,6 +36,7 @@ sub fetch {
 	$req->authorization_basic($username, $password);
 	my $response = $browser->request($req);
 	if(!$response->is_success) {
+		print(Dumper($response));
 		die "fail for $url!";
 	}
 	return $response->decoded_content;
@@ -117,7 +119,8 @@ sub get_values {
 
 	my ($prematch, $match);
 	if(not $debug or $#debug_ids lt 0) {
-		my $url = "http://$host:$port/history$sensor.cgi";
+		my $schema = ($https == '1') ? 'https' : 'http';
+		my $url = "$schema://$host:$port/history$sensor.cgi";
 		$prematch = fetch($url);
 		log_raw_data($db, $prematch, $url);
 	}
@@ -177,6 +180,7 @@ $username = $config->getProperty('username');
 $password = $config->getProperty('password');
 $host = $config->getProperty('host');
 $port = $config->getProperty('port');
+$https = $config->getProperty('https');
 
 my $time_margin = $config->getProperty('time_margin');
 
@@ -187,7 +191,9 @@ my $db_database = $config->getProperty('db_database');
 
 my $bullshit_threshold = 20;
 
-$db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password) || die('Could not connect to database');
+my %attributes = (RaiseError => 1,
+	AutoCommit => 0);
+$db = DBI->connect("DBI:mysql:$db_database;host=$db_host", $db_username, $db_password, \%attributes) || die('Could not connect to database');
 
 my $argc = @ARGV;
 if($argc gt 0 and $ARGV[0] eq '--test') {
@@ -225,7 +231,8 @@ log_status("Connecting");
 my ($t, $prematch, $match);
 
 if(not $debug or $#debug_ids lt 0) {
-	my $url = "http://$host:$port/ipwe.cgi";
+	my $schema = ($https == '1') ? 'https' : 'http';
+	my $url = "$schema://$host:$port/ipwe.cgi";
 	$prematch = fetch($url);
 	log_raw_data($db, $prematch, $url);
 }
@@ -375,6 +382,8 @@ for($a=0; $a<=$#data; $a++) {
 $stmt = $db->prepare('DELETE FROM sensor_cache WHERE DATE_SUB(NOW(), INTERVAL 1 DAY) > timestamp');
 $stmt->execute();
 $stmt->finish();
+
+$db->commit();
 
 $db->disconnect();
 
