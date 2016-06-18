@@ -5,7 +5,7 @@ import os, requests, logging, time, subprocess, threading, configparser
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
 settings = configparser.ConfigParser()
-settings.read(path + 'submit_new.ini')
+settings.read(path + 'submit.ini')
 
 servers = []
 for key in settings['servers']:
