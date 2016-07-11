@@ -40,32 +40,37 @@ def get_sensor_value_w1(path):
         if 't=' in line:
             f.close()
             pos = line.find('t=')
-            return float(line[pos+2:]) / 1000
+            return str(float(line[pos+2:]) / 1000)
     f.close()
     return None
 
 
 def get_sensor_value_external(external):
-    return subprocess.Popen(external, shell=True, stdout=subprocess.PIPE).stdout.read().strip()
+    return subprocess.Popen(external, shell=True, stdout=subprocess.PIPE).stdout.read().decode('UTF-8').strip()
+
+
+def split_values(data):
+    # TODO what about None?
+    return data.splitlines()
 
 
 def get_sensor_value(sensor):
     logger.debug('Querying sensor %s', sensor['id'])
     if 'path' in sensor:
-        return get_sensor_value_w1(sensor['path'])
+        return split_values(get_sensor_value_w1(sensor['path']))
     if 'external' in sensor:
-        return get_sensor_value_external(sensor['external'])
+        return split_values(get_sensor_value_external(sensor['external']))
     return None
 
 
-def submit_value(sensor, value, server):
+def submit_value(sensor, value, server, what):
     start_time = time.time()
 
     url = server['url'] + '/api/'
     s = requests.session()
     s.auth = (server['username'], server['password'])
     try:
-        resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': 'temp', 'value': value}, timeout=30)
+        resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': what, 'value': value}, timeout=30)
         content = resp.text
         if content != 'ok':
             raise requests.exceptions.RequestException
@@ -74,7 +79,7 @@ def submit_value(sensor, value, server):
         return
 
     end_time = time.time()
-    logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', 'temp', value, sensor['id'], url, end_time-start_time)
+    logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
 
 
 def is_float(value):
@@ -95,15 +100,23 @@ def is_value_valid(value):
 
 def process_sensor(sensor, servers):
     logger.debug('Processing sensor %s', sensor['id'])
-    value = get_sensor_value(sensor)
-    if not is_value_valid(value):
-        return
+    values = get_sensor_value(sensor)
+    for value in values:
+        if not is_value_valid(value):
+            return
+
+    whats = sensor['values'].split(',')
 
     threads = []
     for server in servers:
-        t = threading.Thread(target = submit_value, args = (sensor, value, server))
-        t.start()
-        threads.append(t)
+        index = 0
+        # TODO multithreading
+        for value in values:
+            what = whats[index]
+            t = threading.Thread(target = submit_value, args = (sensor, value, server, what))
+            t.start()
+            threads.append(t)
+            index = index + 1
     
     for t in threads:
         t.join()
