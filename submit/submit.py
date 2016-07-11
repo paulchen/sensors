@@ -63,23 +63,30 @@ def get_sensor_value(sensor):
     return None
 
 
-def submit_value(sensor, value, server, what):
+def submit_value(sensor, values, server, whats):
     start_time = time.time()
 
     url = server['url'] + '/api/'
     s = requests.session()
     s.auth = (server['username'], server['password'])
+
+    sensors = ';'.join([sensor['id']] * len(values))
     try:
-        resp = s.get(url, params={'action': 'submit', 'sensor': sensor['id'], 'what': what, 'value': value}, timeout=30)
+        resp = s.get(url, params={'action': 'submit', 'sensors': sensors, 'whats': ';'.join(whats), 'values': ';'.join(values)}, timeout=30)
         content = resp.text
         if content != 'ok':
             raise requests.exceptions.RequestException
     except requests.exceptions.RequestException:
-        logger.error('Error while updating %s %s of sensor %s to %s', 'temp', value, sensor['id'], url)
+        logger.error('Error during update')
         return
 
     end_time = time.time()
-    logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
+
+    index = 0
+    for what in whats:
+        value = values[index]
+        logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
+        index = index + 1
 
 
 def is_float(value):
@@ -109,14 +116,10 @@ def process_sensor(sensor, servers):
 
     threads = []
     for server in servers:
-        index = 0
         # TODO multithreading
-        for value in values:
-            what = whats[index]
-            t = threading.Thread(target = submit_value, args = (sensor, value, server, what))
-            t.start()
-            threads.append(t)
-            index = index + 1
+        t = threading.Thread(target = submit_value, args = (sensor, values, server, whats))
+        t.start()
+        threads.append(t)
     
     for t in threads:
         t.join()
