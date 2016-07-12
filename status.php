@@ -471,7 +471,7 @@ $(document).ready(function() {
 			</tr>
 		</thead>
 		<tbody>
-			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
+			<?php $previous_id = null; $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; if($sensors[$sensor]['battery_days'] == null) continue; if($sensors[$sensor]['id'] == $previous_id) continue; $previous_id = $sensors[$sensor]['id']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
 				<tr>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_date'] ?></td>
