@@ -427,11 +427,12 @@ $(document).ready(function() {
 		<span id="rain"><?php echo $rain; ?></span>
 	</p>
 	<p>
+		<span style="white-space: nowrap;">
 		<?php foreach($graphs as $graph): ?>
-			<?php if($graph['new_row']): ?><br /><?php endif; ?>
+			<?php if($graph['new_row']): ?></span><br /><span style="white-space: nowrap;"><?php endif; ?>
 			<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" id="image_<?php echo $graph['id'] ?>" style="height: <?php echo $graph['height'] ?>px; width: <?php echo $graph['width'] ?>px;" />
 		<?php endforeach; ?>
-		<br />
+		</span><br />
 	</p>
 	<h3><?php echo t('Sensor limits') ?></h3>
 	<table>
