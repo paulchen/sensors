@@ -50,15 +50,40 @@ while True:
 
         values = {}
 
+        # T/F sensors
         for index in range(0,8):
             check_value(parts, index+3, index, 'temp', values)
             check_value(parts, index+11, index, 'humid', values)
 
+        # combination sensor
         check_value(parts, 19, 8, 'temp', values)
         check_value(parts, 20, 8, 'humid', values)
         check_value(parts, 21, 8, 'wind', values)
         check_value(parts, 22, 8, 'rain_idx', values)
+        check_value(parts, 23, 8, 'rain_cur', values)
+
+        sensor_parts = []
+        what_parts = []
+        value_parts = []
 
         print(values)
+
+        for sensor, data in values.items():
+            for what, value in data.items():
+                # TODO sensor mapping?
+                sensor_parts.append(str(sensor))
+                what_parts.append(what)
+                value_parts.append(value)
+
+        if len(sensor_parts) == 0:
+            continue
+
+        sensor_string = ';'.join(sensor_parts)
+        what_string = ';'.join(what_parts)
+        value_string = ';'.join(value_parts)
+
+        print(sensor_string)
+        print(what_string)
+        print(value_string)
 
 
