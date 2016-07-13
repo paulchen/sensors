@@ -30,26 +30,36 @@ if(count($sensor_ids) != count($what_shorts) || count($sensor_ids) != count($val
 
 $inserts = array();
 
+$db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query('SELECT id FROM sensors'));
+
+$data = db_query('SELECT id, short FROM sensor_values');
+$sensor_values = array();
+foreach($data as $row) {
+	$sensor_values[$row['short']] = $row['id'];
+}
+
 for($a=0; $a<count($sensor_ids); $a++) {
 	$value = $values[$a];
 	$sensor_id = $sensor_ids[$a];
 	$what_short = $what_shorts[$a];
 
+	print("$sensor_id $what_short $value\n");
+
 	if(!preg_match('/^[0-9\.]+$/', $value)) {
 		// TODO
 		die('3');
 	}
-	$sensor = db_query_single('SELECT id FROM sensors WHERE id = ?', array($sensor_id));
-	$what = db_query_single('SELECT id FROM sensor_values WHERE short = ?', array($what_short));
-	if($sensor == null || $what == null) {
+
+	if(!in_array($sensor_id, $db_sensor_ids) || !isset($sensor_values[$what_short])) {
 		// TODO
 		die('4');
 	}
 
-	$inserts[] = array($sensor['id'], $what['id'], $value);
+	$inserts[] = array($sensor_id, $sensor_values[$what_short], $value);
 }
 
 foreach($inserts as $insert) {
+	// TODO reduce number of queries
 	db_query('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (NOW(), ?, ?, ?)', $insert);
 	db_query('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), ?, ?, ?)', $insert);
 }
