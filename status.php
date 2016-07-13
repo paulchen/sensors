@@ -5,6 +5,17 @@ chdir(dirname(__FILE__));
 $http_auth = true;
 require_once('common.php');
 
+$query = 'SELECT pos, id, hide FROM sensors';
+$data = db_query($query);
+$position = array();
+$hidden_sensors = array();
+foreach($data as $row) {
+	$position[$row['id']] = $row['pos'];
+	if($row['hide'] == 1) {
+		$hidden_sensors[] = $row['id'];
+	}
+}
+
 $query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $data = db_query($query, array($start_timestamp));
@@ -18,6 +29,10 @@ $keys = array();
 
 foreach($data as $row) {
 	$sensor = $row['sensor'];
+	if(in_array($sensor, $hidden_sensors)) {
+		continue;
+	}
+
 	$what = $row['what'];
 	$timestamp = $row['timestamp'];
 	$value = $row['value'];
@@ -47,13 +62,6 @@ foreach($data as $row) {
 	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
-}
-
-$query = 'SELECT pos, id FROM sensors';
-$data = db_query($query);
-$position = array();
-foreach($data as $row) {
-	$position[$row['id']] = $row['pos'];
 }
 
 $keys2 = $keys;
@@ -427,11 +435,12 @@ $(document).ready(function() {
 		<span id="rain"><?php echo $rain; ?></span>
 	</p>
 	<p>
+		<span style="white-space: nowrap;">
 		<?php foreach($graphs as $graph): ?>
-			<?php if($graph['new_row']): ?><br /><?php endif; ?>
+			<?php if($graph['new_row']): ?></span><br /><span style="white-space: nowrap;"><?php endif; ?>
 			<img src="<?php echo htmlentities($graph['url'], ENT_QUOTES, 'UTF-8') ?>" alt="" id="image_<?php echo $graph['id'] ?>" style="height: <?php echo $graph['height'] ?>px; width: <?php echo $graph['width'] ?>px;" />
 		<?php endforeach; ?>
-		<br />
+		</span><br />
 	</p>
 	<h3><?php echo t('Sensor limits') ?></h3>
 	<table>
@@ -470,7 +479,7 @@ $(document).ready(function() {
 			</tr>
 		</thead>
 		<tbody>
-			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
+			<?php $previous_id = null; $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; if($sensors[$sensor]['battery_days'] == null) continue; if($sensors[$sensor]['id'] == $previous_id) continue; $previous_id = $sensors[$sensor]['id']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
 				<tr>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_date'] ?></td>
