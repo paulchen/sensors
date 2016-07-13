@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading
+import serial, sys, os, configparser, threading, requests, time
 
 
 port = '/dev/ttyUSB0'
@@ -40,6 +40,32 @@ def check_value(parts, index, sensor, what, values):
         values[sensor] = {}
 
     values[sensor][what] = value.replace(',', '.')
+
+
+def submit_value(server, sensor_string, what_string, value_string):
+    start_time = time.time()
+
+    url = server['url'] + '/api/'
+    s = requests.session()
+    s.auth = (server['username'], server['password'])
+
+    try:
+        resp = s.get(url, params={'action': 'submit', 'sensors': sensor_string, 'whats': what_string, 'values': value_string}, timeout=30)
+        content = resp.text
+        if content != 'ok':
+            raise requests.exceptions.RequestException
+    except requests.exceptions.RequestException:
+#        logger.error('Error during update')
+        return
+
+    end_time = time.time()
+
+#    index = 0
+#    for what in whats:
+#        value = values[index]
+#        logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
+#        index = index + 1
+
 
 
 # open serial line
@@ -103,12 +129,12 @@ while True:
     print(what_string)
     print(value_string)
 
-#    threads = []
-#    for server in servers:
-#        t = threading.Thread(target = submit_value, args = (sensor, values, server, whats))
-#        t.start()
-#        threads.append(t)
-#
-#    for t in threads:
-#        t.join()
+    threads = []
+    for server in servers:
+        t = threading.Thread(target = submit_value, args = (server, sensor_string, what_string, value_string))
+        t.start()
+        threads.append(t)
+
+    for t in threads:
+        t.join()
 
