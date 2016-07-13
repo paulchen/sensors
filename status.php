@@ -5,6 +5,17 @@ chdir(dirname(__FILE__));
 $http_auth = true;
 require_once('common.php');
 
+$query = 'SELECT pos, id, hide FROM sensors';
+$data = db_query($query);
+$position = array();
+$hidden_sensors = array();
+foreach($data as $row) {
+	$position[$row['id']] = $row['pos'];
+	if($row['hide'] == 1) {
+		$hidden_sensors[] = $row['id'];
+	}
+}
+
 $query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $data = db_query($query, array($start_timestamp));
@@ -18,6 +29,10 @@ $keys = array();
 
 foreach($data as $row) {
 	$sensor = $row['sensor'];
+	if(in_array($sensor, $hidden_sensors)) {
+		continue;
+	}
+
 	$what = $row['what'];
 	$timestamp = $row['timestamp'];
 	$value = $row['value'];
@@ -47,13 +62,6 @@ foreach($data as $row) {
 	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
-}
-
-$query = 'SELECT pos, id FROM sensors';
-$data = db_query($query);
-$position = array();
-foreach($data as $row) {
-	$position[$row['id']] = $row['pos'];
 }
 
 $keys2 = $keys;

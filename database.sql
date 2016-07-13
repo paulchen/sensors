@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS `sensors` (
   `sensor` int(11) NOT NULL,
   `type` text NOT NULL,
   `description` text NOT NULL,
+  `hide` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`),
   KEY `sensor` (`sensor`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
