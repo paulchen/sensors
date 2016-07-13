@@ -55,14 +55,19 @@ for($a=0; $a<count($sensor_ids); $a++) {
 		die('4');
 	}
 
-	$inserts[] = array($sensor_id, $sensor_values[$what_short], $value);
+	$inserts[] = $sensor_id;
+	$inserts[] = $sensor_values[$what_short];
+	$inserts[] = $value;
 }
 
-foreach($inserts as $insert) {
-	// TODO reduce number of queries
-	db_query('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (NOW(), ?, ?, ?)', $insert);
-	db_query('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), ?, ?, ?)', $insert);
+$parameters = array();
+for($a=0; $a<count($inserts)/3; $a++) {
+	$parameters[] = '(NOW(), ?, ?, ?)';
 }
+$parameter_string = implode(', ', $parameters);
+
+db_query("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
+db_query("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
 
 die('ok');
 
