@@ -69,5 +69,7 @@ $parameter_string = implode(', ', $parameters);
 db_query("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
 db_query("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
 
+// TODO check if rain/rain_idx has been updated => update data
+
 die('ok');
 
