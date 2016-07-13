@@ -116,7 +116,6 @@ def process_sensor(sensor, servers):
 
     threads = []
     for server in servers:
-        # TODO multithreading
         t = threading.Thread(target = submit_value, args = (sensor, values, server, whats))
         t.start()
         threads.append(t)
