@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading, requests, time
+import serial, sys, os, configparser, threading, requests, time, logging
 
 
 port = '/dev/ttyUSB0'
@@ -21,6 +21,14 @@ for key in settings['servers']:
 
 sensor_mapping = settings['sensor_mapping']['mapping'].split(';')
 
+logfile = path + 'usb-wde1.log'
+
+
+logger = logging.getLogger()
+handler = logging.FileHandler(logfile)
+handler.setFormatter(logging.Formatter('%(asctime)s %(name)-12s %(levelname)-8s %(message)s'))
+logger.addHandler(handler)
+logger.setLevel(logging.DEBUG)
 
 
 def expect(parts, index, value):
@@ -50,39 +58,36 @@ def submit_value(server, sensor_string, what_string, value_string):
     s.auth = (server['username'], server['password'])
 
     try:
+        logger.info('Submitting values: sensors=%s, whats=%s, values=%s', sensor_string, what_string, value_string)
         resp = s.get(url, params={'action': 'submit', 'sensors': sensor_string, 'whats': what_string, 'values': value_string}, timeout=30)
         content = resp.text
         if content != 'ok':
             raise requests.exceptions.RequestException
     except requests.exceptions.RequestException:
-#        logger.error('Error during update')
+        logger.error('Error during update')
         return
 
     end_time = time.time()
-
-#    index = 0
-#    for what in whats:
-#        value = values[index]
-#        logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
-#        index = index + 1
 
 
 
 # open serial line
 ser = serial.Serial(port, 9600)
 if not ser.isOpen():
-    print("Unable to open serial port %s" % port)
+    logger.error("Unable to open serial port %s", port)
     sys.exit(1)
+
+logger.info('Program startup completed, waiting for datagram')
 
 while True:
     line = ser.readline()
     line = line.strip()
 
-    print(line)
+    logger.info('Received datagram: %s', line)
 
     parts = str(line).split(';')
     if len(parts) != 25:
-        print('Invalid number of values; expected 25, actual %s' % len(parts))
+        logger.error('Invalid number of values; expected 25, actual %s', len(parts))
         continue
 
     if not expect(parts, 0, "b'$1") or not expect(parts, 1, '1') or not expect(parts, 2, '') or not expect(parts, 24, "0'"):
@@ -106,8 +111,6 @@ while True:
     what_parts = []
     value_parts = []
 
-    print(values)
-
     for sensor, data in values.items():
         if len(sensor_mapping) <= sensor:
             continue
@@ -125,10 +128,6 @@ while True:
     what_string = ';'.join(what_parts)
     value_string = ';'.join(value_parts)
 
-    print(sensor_string)
-    print(what_string)
-    print(value_string)
-
     threads = []
     for server in servers:
         t = threading.Thread(target = submit_value, args = (server, sensor_string, what_string, value_string))
@@ -137,4 +136,6 @@ while True:
 
     for t in threads:
         t.join()
+
+    logger.info('Work done here, waiting for next datagram')
 
