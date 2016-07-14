@@ -21,6 +21,10 @@ db_query('SET NAMES utf8');
 unset($db_name);
 unset($db_host);
 
+$memcached = new Memcached();
+$memcached->addServer('127.0.0.1', '11211');
+$memcached_prefix = 'ipwe';
+
 if(isset($http_auth) && $http_auth && !is_cli()) {
 	if($config['api_authentication'] == 0) {
 		/* do nothing */
@@ -197,21 +201,33 @@ function is_cli() {
 }
 
 function get_rain() {
-	// TODO hard-coded constants
-	// TODO number formatting
-	$query = 'SELECT SUM(value) value FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
-	$data = db_query($query, array(9, 4));
-	if(count($data) == 0) {
-		return 'unknown';
-	}
-	else {
-		$rain = round($data[0]['value'], 2);
-		if($rain <= '0.1') {
+	global $memcached, $memcached_prefix;
+
+	$memcached_key = "${memcached_prefix}_daily_rain";
+	$memcached_data = $memcached->get($memcached_key);
+	if($memcached_data == null) {
+		$query = 'SELECT SUM(value) value FROM (SELECT value FROM `sensor_data` WHERE sensor = ? AND what = ? AND timestamp > DATE_SUB(NOW(), INTERVAL 24 HOUR) GROUP BY HOUR(timestamp) ORDER BY id DESC) a';
+		$data = db_query($query, array(9, 4));
+		if(count($data) == 0) {
 			$rain = 0;
 		}
-		$rain .= ' mm';
-		return $rain;
+		else {
+			$rain = $data[0]['value'];	
+		}
+		$memcached->set($memcached_key, $rain, 300);
 	}
+	else {
+		$rain = $memcached_data;
+	}
+
+	// TODO hard-coded constants
+	// TODO number formatting
+	$rain = round($rain, 2);
+	if($rain <= '0.1') {
+		$rain = 0;
+	}
+	$rain .= ' mm';
+	return $rain;
 }
 
 function get_last_cron_run() {

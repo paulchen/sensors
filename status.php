@@ -16,6 +16,13 @@ foreach($data as $row) {
 	}
 }
 
+$query = 'SELECT id, name, format, decimals, hide FROM sensor_values';
+$data = db_query($query);
+$values = array();
+foreach($data as $row) {
+	$values[$row['id']] = $row;
+}
+
 $query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $data = db_query($query, array($start_timestamp));
@@ -34,6 +41,10 @@ foreach($data as $row) {
 	}
 
 	$what = $row['what'];
+	if($values[$what]['hide'] == '1') {
+		continue;
+	}
+
 	$timestamp = $row['timestamp'];
 	$value = $row['value'];
 
@@ -99,13 +110,6 @@ foreach($keys as $index => $key) {
 	}
 
 	$avg_values[$index]['value'] /= $avg_values[$index]['count'];
-}
-
-$query = 'SELECT id, name, format, decimals FROM sensor_values';
-$data = db_query($query);
-$values = array();
-foreach($data as $row) {
-	$values[$row['id']] = $row;
 }
 
 $query = 'SELECT s.id id, s.sensor sensor, s.type type, COALESCE(sdn.name, s.description) description

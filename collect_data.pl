@@ -248,11 +248,23 @@ if($debug) {
 for($a=0; $a<=$#data; $a++) {
 	my @values;
 	if($data[$a]{'Sensortyp'} ne '') {
-		if(not $debug and $data[$a]{'Regen'} eq '1') {
-			log_status('Recording rain');
-			$stmt = $db->prepare('INSERT INTO precipitation () VALUES ()');
-			$stmt->execute();
-			$stmt->finish();
+		if(not $debug) {
+			if($data[$a]{'Regen'} eq '1') {
+				log_status('Recording rain');
+				$stmt1 = $db->prepare("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 1)");
+				$stmt2 = $db->prepare("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 1)");
+			}
+			else {
+				log_status('Recording no rain');
+				$stmt1 = $db->prepare("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 0)");
+				$stmt2 = $db->prepare("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 1)");
+			}
+
+			$stmt1->execute();
+			$stmt1->finish();
+
+			$stmt2->execute();
+			$stmt2->finish();
 		}
 
 		@values = get_values($a);
