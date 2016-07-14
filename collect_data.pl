@@ -248,7 +248,9 @@ if($debug) {
 for($a=0; $a<=$#data; $a++) {
 	my @values;
 	if($data[$a]{'Sensortyp'} ne '') {
-		if(not $debug) {
+		if(not $debug and $a eq 8) {
+			my $stmt1;
+			my $stmt2;
 			if($data[$a]{'Regen'} eq '1') {
 				log_status('Recording rain');
 				$stmt1 = $db->prepare("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 1)");
