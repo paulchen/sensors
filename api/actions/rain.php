@@ -42,7 +42,7 @@ foreach($rain_sensors as $sensor) {
 
 	if(!$daily_rain_calculated) {
 		$daily_rain = get_total_rain($one_hour_ago, $sensor, $sensor_values['rain_idx']);
-		// TODO save value to memcached
+		$memcached->set('ipwe_daily_rain', $rain, 86400);
 		$daily_rain_calculated = true;
 	}
 }
