@@ -38,6 +38,7 @@ foreach($data as $row) {
 	$sensor_values[$row['short']] = $row['id'];
 }
 
+$rain_sensors = array();
 for($a=0; $a<count($sensor_ids); $a++) {
 	$value = $values[$a];
 	$sensor_id = $sensor_ids[$a];
@@ -58,6 +59,10 @@ for($a=0; $a<count($sensor_ids); $a++) {
 	$inserts[] = $sensor_id;
 	$inserts[] = $sensor_values[$what_short];
 	$inserts[] = $value;
+
+	if($what_short == 'rain_idx') {
+		$rain_sensors[] = $sensor_id;
+	}
 }
 
 $parameters = array();
@@ -69,7 +74,9 @@ $parameter_string = implode(', ', $parameters);
 db_query("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
 db_query("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
 
-// TODO check if rain/rain_idx has been updated => update data
+if(count($rain_sensors) > 0) {
+	require_once(dirname(__FILE__) . '/rain.php');
+}
 
 die('ok');
 
