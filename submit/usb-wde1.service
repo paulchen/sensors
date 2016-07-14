@@ -1,0 +1,12 @@
+[Unit]
+Description=usb_wde1
+After=network.target
+
+[Service]
+User=root
+ExecStart=/home/paulchen/ipwe/submit/usb-wde1.py
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
