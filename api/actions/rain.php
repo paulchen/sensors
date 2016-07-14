@@ -41,7 +41,9 @@ foreach($rain_sensors as $sensor) {
 	db_query('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (NOW(), ?, ?, ?)', array($sensor, $what, $total_rain));
 
 	if(!$daily_rain_calculated) {
-		$daily_rain = get_total_rain($one_hour_ago, $sensor, $sensor_values['rain_idx']);
+		$one_day_ago = time() - 86400;
+
+		$daily_rain = get_total_rain($one_day_ago, $sensor, $sensor_values['rain_idx']);
 		$memcached->set('ipwe_daily_rain', $rain, 86400);
 		$daily_rain_calculated = true;
 	}
