@@ -250,7 +250,7 @@ for($a=0; $a<=$#data; $a++) {
 	if($data[$a]{'Sensortyp'} ne '') {
 		if(not $debug and $data[$a]{'Regen'} eq '1') {
 			log_status('Recording rain');
-			$stmt = $db->prepare('INSERT INTO precipitation () VALUES ()');
+			$stmt = $db->prepare("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (NOW(), 9, 7, 1)");
 			$stmt->execute();
 			$stmt->finish();
 		}
