@@ -5,13 +5,18 @@ chdir(dirname(__FILE__));
 $http_auth = true;
 require_once('common.php');
 
+$show_hidden = 0;
+if($_REQUEST['hidden'] == '1') {
+	$show_hidden = 1;
+}
+
 $query = 'SELECT pos, id, hide FROM sensors';
 $data = db_query($query);
 $position = array();
 $hidden_sensors = array();
 foreach($data as $row) {
 	$position[$row['id']] = $row['pos'];
-	if($row['hide'] == 1) {
+	if($row['hide'] == 1 && !$show_hidden) {
 		$hidden_sensors[] = $row['id'];
 	}
 }
@@ -41,7 +46,7 @@ foreach($data as $row) {
 	}
 
 	$what = $row['what'];
-	if($values[$what]['hide'] == '1') {
+	if(!$show_hidden && $values[$what]['hide'] == '1') {
 		continue;
 	}
 
