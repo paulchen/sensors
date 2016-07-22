@@ -25,17 +25,10 @@ if humidity2 is None or temperature2 is None:
     sys.exit(1)
 
 
-humidity_quotient = float(humidity1)/float(humidity2)
-temperature_quotient = float(temperature1)/float(temperature2)
+humidity_difference = abs(float(humidity1) - float(humidity2))
+temperature_difference = abs(float(temperature1) - float(temperature2))
 
-if humidity_quotient < 1:
-    humidity_quotient = 1 / humidity_quotient
-
-if temperature_quotient < 1:
-    temperature_quotient = 1 / temperature_quotient
-
-
-if temperature_quotient > 1.1 or humidity_quotient > 1.1:
+if temperature_difference > 1 or humidity_difference > 5:
     sys.exit(2)
 
 
