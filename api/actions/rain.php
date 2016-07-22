@@ -12,7 +12,7 @@ function calculate_total_rain($rain_index) {
 		}
 	}
 
-	print("$overflows\n");
+#	print("$overflows\n");
 
 	$first = $rain_index[0];
 	$last = $rain_index[count($rain_index) - 1];
@@ -20,7 +20,7 @@ function calculate_total_rain($rain_index) {
 }
 
 function get_total_rain($since, $sensor, $what) {
-	$data = db_query('SELECT value FROM sensor_cache WHERE UNIX_TIMESTAMP(timestamp) > ? AND sensor = ? AND what = ?', array($one_hour_ago, $sensor, $what));
+	$data = db_query('SELECT value FROM sensor_cache WHERE UNIX_TIMESTAMP(timestamp) > ? AND sensor = ? AND what = ?', array($since, $sensor, $what));
 	$values = array_map(function($a) { return $a['value']; }, $data);
 
 	return calculate_total_rain($values);
@@ -44,7 +44,7 @@ foreach($rain_sensors as $sensor) {
 		$one_day_ago = time() - 86400;
 
 		$daily_rain = get_total_rain($one_day_ago, $sensor, $sensor_values['rain_idx']);
-		$memcached->set('ipwe_daily_rain', $rain, 86400);
+		$memcached->set('ipwe_daily_rain', $daily_rain, 86400);
 		$daily_rain_calculated = true;
 	}
 }
