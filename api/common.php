@@ -15,7 +15,7 @@ function get_sensors() {
 	$data = db_query($query, array($lang));
 	$language_id = $data[0]['id'];
 
-	$query = 'SELECT sensor FROM sensor_data WHERE timestamp > ? ORDER BY id DESC';
+	$query = 'SELECT sensor FROM sensor_cache WHERE timestamp > ? ORDER BY id DESC';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	$data = db_query($query, array($start_timestamp));
 
@@ -128,7 +128,7 @@ function get_sensors_state($sensors = array()) {
 	}
 
 	$question_marks = str_repeat('?, ', count($sensors)-1) . '?';
-	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY id ASC';
+	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache	 WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY id ASC';
 	$params = $sensors;
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	array_unshift($params, $start_timestamp);

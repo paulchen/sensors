@@ -26,7 +26,7 @@ chdir(dirname(__FILE__));
 require_once('common.php');
 chdir(dirname(__FILE__));
 
-$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE timestamp > ? ORDER BY id ASC';
+$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $data = db_query($query, array($start_timestamp));
 $first_values = array();
