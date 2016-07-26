@@ -66,3 +66,5 @@ munin_data_directory = /var/lib/munin/domain/
 # prefix of filenames of Munin's RRD files used for IPWE data
 munin_prefix = host
 
+sensors_mapping = 1;2;3;4;5;6;11;7;9
+

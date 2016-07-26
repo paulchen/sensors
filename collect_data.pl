@@ -182,6 +182,14 @@ $host = $config->getProperty('host');
 $port = $config->getProperty('port');
 $https = $config->getProperty('https');
 
+my $sensors_mapping = $config->getProperty('sensors_mapping');
+$sensors_mapping =~ s/^\s+//;
+
+my @sensor_ids = split(/;/, $sensors_mapping);
+if(@sensor_ids != 9) {
+	die "Invalid value for 'sensors_mapping'";
+}
+
 my $time_margin = $config->getProperty('time_margin');
 
 my $db_host = $config->getProperty('db_host');
@@ -287,24 +295,11 @@ for($a=0; $a<=$#data; $a++) {
 			my $type = $data[$a]{'Sensortyp'};
 			my $description = $data[$a]{'Beschreibung'};
 
-			$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
-			$stmt->execute(($sensor, $type, $description));
-			my @result = $stmt->fetchrow_array();
-			$stmt->finish();
-			if(!@result) {
-				$stmt = $db->prepare('INSERT INTO sensors (sensor, type, description) VALUES (?, ?, ?)');
-				$stmt->execute(($sensor, $type, $description));
-				$stmt->finish();
-				$stmt = $db->prepare('SELECT id FROM sensors WHERE sensor = ? AND type = ? AND description = ?');
-				$stmt->execute(($sensor, $type, $description));
-				@result = $stmt->fetchrow_array();
-				$stmt->finish();
-			}
-			my $sensor_id = $result[0];
+			my $sensor_id = $sensor_ids[$sensor];
 
 			$stmt = $db->prepare('SELECT COUNT(*) `count` FROM sensor_cache WHERE sensor = ? AND UNIX_TIMESTAMP(timestamp) > ? AND UNIX_TIMESTAMP(timestamp) < ?');
 			$stmt->execute(($sensor_id, $timestamp-$time_margin, $timestamp+$time_margin));
-			@result = $stmt->fetchrow_array();
+			my @result = $stmt->fetchrow_array();
 			$stmt->finish();
 			if($result[0] == 0) {
 				$stmt = $db->prepare('SELECT value, UNIX_TIMESTAMP(timestamp) timestamp FROM sensor_cache WHERE sensor = ? AND what = ? ORDER BY id DESC LIMIT 0, 1');
