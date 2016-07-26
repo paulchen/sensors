@@ -18,16 +18,16 @@ $sensors = db_query($query);
 chdir($config['munin_data_directory']);
 
 $query1 = 'SELECT COUNT(*) value_count FROM sensor_cache WHERE sensor = ? AND what = ?';
-$query2 = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_data WHERE sensor = ? AND what = ? AND DATE_SUB(NOW(), INTERVAL 1 DAY) < timestamp ORDER BY id DESC LIMIT 0, 1';
+$query2 = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_SUB(NOW(), INTERVAL 1 DAY) < timestamp ORDER BY id DESC LIMIT 0, 1';
 foreach($sensors as $sensor) {
 	foreach($values as $value) {
-		$result = db_query($query1, array($sensor['id'], $value['id']));
-		if($result[0]['value_count'] == 0) {
-			// there is no data for this combination of 'sensor' and 'what' in sensor_cache,
-			// so there won't be any data in sensor_data either
-			continue;
-		}
-
+#		$result = db_query($query1, array($sensor['id'], $value['id']));
+#		if($result[0]['value_count'] == 0) {
+#			// there is no data for this combination of 'sensor' and 'what' in sensor_cache,
+#			// so there won't be any data in sensor_data either
+#			continue;
+#		}
+#
 		$data = db_query($query2, array($sensor['id'], $value['id']));
 		if(count($data) > 0) {
 			$timestamp = intval($data[0]['timestamp']);
