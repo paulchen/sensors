@@ -19,8 +19,6 @@ for key in settings['servers']:
         server_info[name] = server_section[name]
     servers.append(server_info)
 
-sensor_mapping = settings['sensor_mapping']['mapping'].split(';')
-
 logfile = path + 'usb-wde1.log'
 
 
@@ -50,8 +48,19 @@ def check_value(parts, index, sensor, what, values):
     values[sensor][what] = value.replace(',', '.')
 
 
-def submit_value(server, sensor_string, what_string, value_string):
+def submit_value(server, sensor_parts, what_parts, value_parts):
     start_time = time.time()
+
+    sensor_mapping = server['mapping'].split(';')
+
+    mapped_sensors = []
+
+    for sensor in sensor_parts:
+        mapped_sensors.append(str(sensor_mapping[sensor]))
+
+    sensor_string = ';'.join(mapped_sensors)
+    what_string = ';'.join(what_parts)
+    value_string = ';'.join(value_parts)
 
     url = server['url'] + '/api/'
     s = requests.session()
@@ -112,25 +121,17 @@ while True:
     value_parts = []
 
     for sensor, data in values.items():
-        if len(sensor_mapping) <= sensor:
-            continue
-        mapped_sensor = sensor_mapping[sensor]
-
         for what, value in data.items():
-            sensor_parts.append(str(mapped_sensor))
+            sensor_parts.append(sensor)
             what_parts.append(what)
             value_parts.append(value)
 
     if len(sensor_parts) == 0:
         continue
 
-    sensor_string = ';'.join(sensor_parts)
-    what_string = ';'.join(what_parts)
-    value_string = ';'.join(value_parts)
-
     threads = []
     for server in servers:
-        t = threading.Thread(target = submit_value, args = (server, sensor_string, what_string, value_string))
+        t = threading.Thread(target = submit_value, args = (server, sensor_parts, what_parts, value_parts))
         t.start()
         threads.append(t)
 
