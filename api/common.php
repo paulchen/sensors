@@ -15,7 +15,7 @@ function get_sensors() {
 	$data = db_query($query, array($lang));
 	$language_id = $data[0]['id'];
 
-	$query = 'SELECT sensor FROM sensor_cache WHERE timestamp > ? ORDER BY id DESC';
+	$query = 'SELECT DISTINCT sensor AS sensor FROM sensor_cache WHERE timestamp > ? ORDER BY id DESC';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	$data = db_query($query, array($start_timestamp));
 
@@ -132,7 +132,7 @@ function get_sensors_state($sensors = array()) {
 	$params = $sensors;
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	array_unshift($params, $start_timestamp);
-	$data = db_query($query, $params);
+	$stmt = db_query_resultset($query, $params);
 
 	$cur_values = array();
 	$min_values = array();
@@ -140,7 +140,7 @@ function get_sensors_state($sensors = array()) {
 	$avg_values = array();
 	$first_values = array();
 
-	foreach($data as $row) {
+	while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		$sensor_id = $row['sensor'];
 		$what = $row['what'];
 		$timestamp = $row['timestamp'];
@@ -207,6 +207,7 @@ function get_sensors_state($sensors = array()) {
 			$avg_values[$sensor_id][$what]['count']++;
 		}
 	}
+	db_stmt_close($stmt);
 
 	$sensor_data = array();
 	foreach($cur_values as $sensor_id => $value1) {

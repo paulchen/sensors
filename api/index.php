@@ -26,44 +26,6 @@ chdir(dirname(__FILE__));
 require_once('common.php');
 chdir(dirname(__FILE__));
 
-$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY id ASC';
-$start_timestamp = date('Y-m-d H:i', time()-86400);
-$data = db_query($query, array($start_timestamp));
-$first_values = array();
-$max_values = array();
-$min_values = array();
-$current_values = array();
-$keys = array();
-foreach($data as $row) {
-	$sensor = $row['sensor'];
-	$what = $row['what'];
-	$timestamp = $row['timestamp'];
-	$value = $row['value'];
-
-	$key = "$sensor-$what";
-	if(!isset($keys[$key])) {
-		$keys[$key] = array('sensor' => $sensor, 'what' => $what);
-	}
-
-	$current_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-	if(!isset($max_values[$key])) {
-		$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-		$max_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-	}
-	else {
-		if($value > $max_values[$key]['value']) {
-			$max_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-		}
-		else if($value < $min_values[$key]['value']) {
-			$min_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-		}
-	}
-	
-	if($timestamp < time()-$config['tendency_period'] || !isset($first_values[$key])) {
-		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
-	}
-}
-
 switch($action) {
 	case 'status':
 	case 'submit':
