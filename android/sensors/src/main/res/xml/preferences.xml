@@ -16,6 +16,6 @@
     <PreferenceCategory android:title="@string/settings_header_notifications" android:key="settings_header_notifications">
     	<CheckBoxPreference android:title="@string/settings_notifications" android:key="settings_notifications" android:defaultValue="true"></CheckBoxPreference>
     	<CheckBoxPreference android:title="@string/settings_notification_light" android:key="settings_notification_light" android:defaultValue="true" android:dependency="settings_notifications"></CheckBoxPreference>
-        <yuku.ambilwarna.widget.AmbilWarnaPreference android:key="settings_led_color" android:defaultValue="0xff00ff" android:title="@string/settings_notification_light_color" android:dependency="settings_notifications"/>
+         <yuku.ambilwarna.widget.AmbilWarnaPreference android:key="settings_led_color" android:defaultValue="0xff00ff" android:title="@string/settings_notification_light_color" android:dependency="settings_notifications"/>
     </PreferenceCategory>
 </PreferenceScreen>
