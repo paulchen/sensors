@@ -30,7 +30,7 @@ function get_sensors() {
 
 	$sensors = array();
 	if(count($question_marks) > 0) {
-		$query = 'SELECT s.id AS id, COALESCE(sdn.name, s.description) AS name
+		$query = 'SELECT s.id AS id, COALESCE(sdn.name, s.description) AS name, s.hide AS hide
 			FROM sensors s
 				LEFT JOIN sensor_display_names sdn ON (s.id = sdn.sensor AND sdn.language = ?)
 			WHERE id IN (' . implode(', ', $question_marks) . ')
@@ -57,7 +57,7 @@ function get_type_data($sensor_data = array()) {
 		}
 	}
 
-	$query = 'SELECT id, name, format, min, max, decimals FROM sensor_values ORDER BY id ASC';
+	$query = 'SELECT id, name, format, min, max, decimals, hide FROM sensor_values ORDER BY id ASC';
 	$data = db_query($query);
 	$type_data = array();
 	foreach($data as $row) {

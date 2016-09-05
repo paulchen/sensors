@@ -22,12 +22,13 @@ echo '<?xml version="1.0"?>';
 				<type id="<?php echo $type['id'] ?>" name="<?php echo htmlspecialchars($type['name'], ENT_COMPAT, 'UTF-8') ?>" format="<?php echo htmlspecialchars($type['format'], ENT_QUOTES, 'UTF-8') ?>" 
 					<?php if($type['min'] != ''): ?> min="<?php echo $type['min'] ?>" <?php endif; ?>
 					<?php if($type['max'] != ''): ?> max="<?php echo $type['max'] ?>" <?php endif; ?>
-					decimals="<?php echo $type['decimals'] ?>" />
+					decimals="<?php echo $type['decimals'] ?>"
+					hide="<?php echo $type['hide'] ?>" />
 			<?php endforeach; ?>
 		</types>
 	<?php endif; ?>
 	<?php foreach($sensors as $sensor): ?>
-		<sensor id="<?php echo $sensor['id'] ?>" name="<?php echo htmlspecialchars($sensor['name'], ENT_COMPAT, 'UTF-8') ?>">
+		<sensor id="<?php echo $sensor['id'] ?>" name="<?php echo htmlspecialchars($sensor['name'], ENT_COMPAT, 'UTF-8') ?>" hide="<?php echo $sensor['hide'] ?>">
 			<?php if(isset($sensor_data) && isset($sensor_data[$sensor['id']])): ?>
 				<values>
 					<?php foreach($sensor_data[$sensor['id']]['values'] as $value): ?>
