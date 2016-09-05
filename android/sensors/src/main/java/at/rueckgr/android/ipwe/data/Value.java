@@ -52,19 +52,29 @@ public class Value {
 		return "[Value:type=" + type + ";measurements=" + measurements.toString() + "]";
 	}
 
-	public List<Measurement> getMeasurements() {
-		return measurements;
+	public List<Measurement> getMeasurements(final boolean includeHidden) {
+		List<Measurement> result = new ArrayList<Measurement>();
+		for (Measurement measurement : measurements) {
+			if(!includeHidden && measurement.getValue().getType().isHide()) {
+				continue;
+			}
+
+			result.add(measurement);
+		}
+		return result;
 	}
 
 	public Sensor getSensor() {
 		return sensor;
 	}
 	
-	public int getStateCount(State state) {
+	public int getStateCount(final State state, final boolean includeHidden) {
 		int count = 0;
-		
-		for(Measurement measurement : measurements) {
-			count += measurement.getStateCount(state);
+
+		if(includeHidden || !type.isHide()) {
+			for (Measurement measurement : measurements) {
+				count += measurement.getStateCount(state);
+			}
 		}
 		
 		return count;
