@@ -55,14 +55,12 @@ public class SensorsApplication extends Application {
 	private String settingsUsername;
 	private String settingsPassword;
 	private boolean settingsAuth;
+	private boolean settingsHidden;
 
 	private boolean enableNotifications;
 	private boolean enableNotificationLight;
 	private int notificationLightColor;
 
-	public SensorsApplication() {
-	}
-	
 	@Override
 	public void onCreate() {
 		super.onCreate();
@@ -113,6 +111,7 @@ public class SensorsApplication extends Application {
 		settingsUsername = preferences.getString("settings_username", "");
 		settingsPassword = preferences.getString("settings_password", "");
 		settingsAuth = preferences.getBoolean("settings_auth", false);
+		settingsHidden = preferences.getBoolean("settings_hidden", false);
 		
 		enableNotifications = preferences.getBoolean("settings_notifications", true);
 		enableNotificationLight = preferences.getBoolean("settings_notification_light", true);
@@ -145,6 +144,10 @@ public class SensorsApplication extends Application {
 
 	public int getNotificationLightColor() {
 		return notificationLightColor;
+	}
+
+	public boolean isSettingsHidden() {
+		return settingsHidden;
 	}
 
 	public InputStream executeHttpGet(String urlString) throws SensorsException {

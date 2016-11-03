@@ -137,7 +137,7 @@ public class PollService extends Service {
 		}
 
 		private void updateNotification(Status status) {
-			Map<String, Integer> stateCounts = status.getStateCounts();
+			Map<String, Integer> stateCounts = status.getStateCounts(application.isSettingsHidden());
 			int total = 0;
 			int ok = 0;
 			for(String stateName : stateCounts.keySet()) {

@@ -7,16 +7,17 @@ public class Type {
 	private Integer min;
 	private Integer max;
 	private int decimals;
+	private boolean hide;
 	
 	public Type(int id, String name, String format, Integer min, Integer max,
-			int decimals) {
-		super();
+			int decimals, boolean hide) {
 		this.id = id;
 		this.name = name;
 		this.format = format;
 		this.min = min;
 		this.max = max;
 		this.decimals = decimals;
+		this.hide = hide;
 	}
 	
 	public int getId() {
@@ -65,5 +66,13 @@ public class Type {
 	
 	public void setDecimals(int decimals) {
 		this.decimals = decimals;
+	}
+
+	public boolean isHide() {
+		return hide;
+	}
+
+	public void setHide(boolean hide) {
+		this.hide = hide;
 	}
 }

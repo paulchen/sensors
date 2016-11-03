@@ -11,6 +11,7 @@ import at.rueckgr.android.ipwe.SensorsApplication;
 public class Sensor {
 	private int id;
 	private String name;
+	private boolean hide;
 	private List<Value> values;
 	private Status status;
 	
@@ -19,6 +20,7 @@ public class Sensor {
 		
 		try {
 			id = Integer.parseInt(parentNode.getAttributes().getNamedItem("id").getTextContent());
+			hide = Integer.parseInt(parentNode.getAttributes().getNamedItem("hide").getTextContent()) == 1;
 			name = parentNode.getAttributes().getNamedItem("name").getTextContent();
 		}
 		catch (NumberFormatException e) {
@@ -74,21 +76,21 @@ public class Sensor {
 		return status;
 	}
 
-	public int getStateCount(State state) {
+	public int getStateCount(final State state, final boolean includeHidden) {
 		int count = 0;
 		
 		for(Value value : values) {
-			count += value.getStateCount(state);
+			count += value.getStateCount(state, includeHidden);
 		}
 		
 		return count;
 	}
 
-	public List<Measurement> getMeasurements() {
+	public List<Measurement> getMeasurements(final boolean includeHidden) {
 		List<Measurement> measurements = new ArrayList<Measurement>();
 		
 		for(Value value : values) {
-			measurements.addAll(value.getMeasurements());
+			measurements.addAll(value.getMeasurements(includeHidden));
 		}
 		
 		return measurements;
@@ -96,5 +98,13 @@ public class Sensor {
 
 	public SensorsApplication getApplication() {
 		return status.getApplication();
+	}
+
+	public boolean isHide() {
+		return hide;
+	}
+
+	public void setHide(boolean hide) {
+		this.hide = hide;
 	}
 }

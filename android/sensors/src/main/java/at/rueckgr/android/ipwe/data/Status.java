@@ -97,9 +97,11 @@ public class Status {
 			if(node.getNodeName().equals("type")) {
 				NamedNodeMap attributes = node.getAttributes();
 				int id, decimals;
+				boolean hide;
 				String name, format;
 				try {
 					id = Integer.parseInt(attributes.getNamedItem("id").getTextContent());
+					hide = Integer.parseInt(attributes.getNamedItem("hide").getTextContent()) == 1;
 					name = attributes.getNamedItem("name").getTextContent();
 					format = attributes.getNamedItem("format").getTextContent();
 					decimals = Integer.parseInt(attributes.getNamedItem("decimals").getTextContent());
@@ -133,7 +135,7 @@ public class Status {
 					throw new SensorsException(e);
 				}
 				
-				Type type = new Type(id, name, format, min, max, decimals);
+				Type type = new Type(id, name, format, min, max, decimals, hide);
 				types.put(id, type);
 			}
 		}
@@ -147,31 +149,37 @@ public class Status {
 		return "[Status:sensors=" + sensors.toString() + "]";
 	}
 
-	public Integer getStateCount(State state) {
+	public Integer getStateCount(final State state, final boolean includeHidden) {
 		int count = 0;
 		
 		for(Sensor sensor : sensors) {
-			count += sensor.getStateCount(state);
+			if(!includeHidden && sensor.isHide()) {
+				continue;
+			}
+			count += sensor.getStateCount(state, includeHidden);
 		}
 		
 		return count;
 	}
 
-	public List<Measurement> getMeasurements() {
+	public List<Measurement> getMeasurements(final boolean includeHidden) {
 		List<Measurement> measurements = new ArrayList<Measurement>();
 		
 		for(Sensor sensor : sensors) {
-			measurements.addAll(sensor.getMeasurements());
+			if(!includeHidden && sensor.isHide()) {
+				continue;
+			}
+			measurements.addAll(sensor.getMeasurements(includeHidden));
 		}
 		
 		return measurements;
 	}
 
-	public Map<String, Integer> getStateCounts() {
+	public Map<String, Integer> getStateCounts(final boolean includeHidden) {
 		Map<String, State> states = application.getStates();
 		Map<String, Integer> stateCounts = new HashMap<String, Integer>();
 		for(String stateName : states.keySet()) {
-			stateCounts.put(stateName, getStateCount(states.get(stateName)));
+			stateCounts.put(stateName, getStateCount(states.get(stateName), includeHidden));
 		}
 		return stateCounts;
 	}
