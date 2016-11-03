@@ -44,7 +44,7 @@ for($a=0; $a<count($sensor_ids); $a++) {
 	$sensor_id = $sensor_ids[$a];
 	$what_short = $what_shorts[$a];
 
-	if(!preg_match('/^[0-9\.]+$/', $value)) {
+	if(!preg_match('/^\-?[0-9\.]+$/', $value)) {
 		// TODO
 		die('3');
 	}
