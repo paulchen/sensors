@@ -35,3 +35,9 @@ id:		16
 external:	/home/paulchen/temperv14/temperv14 -c 2> /dev/null
 values:		temp
 
+[database]
+hostname:	localhost
+database:	sensors
+username:	sensors
+password:	password
+
