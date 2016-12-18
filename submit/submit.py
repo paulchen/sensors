@@ -9,8 +9,9 @@ settings.read(path + 'submit.ini')
 
 servers = []
 for key in settings['servers']:
-    server_section = settings[settings['servers'][key]]
-    server_info = {}
+    server_name = settings['servers'][key]
+    server_section = settings[server_name]
+    server_info = {'name' : server_name}
     for name in server_section:
         server_info[name] = server_section[name]
     servers.append(server_info)
@@ -76,8 +77,8 @@ def submit_value(sensor, values, server, whats):
         db = oursql.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'])
 
         curs = db.cursor()
-#        curs.execute('INSERT INTO cache (`sensors`, `whats`, `values`) VALUES (?, ?, ?)', (sensors, ';'.join(whats), ';'.join(values)))
-#        rowid = curs.lastrowid
+        curs.execute('INSERT INTO cache (`server`, `sensors`, `whats`, `values`) VALUES (?, ?, ?, ?)', (server['name'], sensors, ';'.join(whats), ';'.join(values)))
+        rowid = curs.lastrowid
 
         resp = s.get(url, params={'action': 'submit', 'sensors': sensors, 'whats': ';'.join(whats), 'values': ';'.join(values)}, timeout=30)
 
@@ -85,7 +86,7 @@ def submit_value(sensor, values, server, whats):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-#        curs.execute('UPDATE cache SET submitted = 1 WHERE id = ?', (rowid, ))
+        curs.execute('UPDATE cache SET submitted = 1 WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
 
