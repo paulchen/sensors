@@ -71,8 +71,8 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         db = oursql.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'])
 
         curs = db.cursor()
-        curs.execute('INSERT INTO cache (`sensors`, `whats`, `values`) VALUES (?, ?, ?)', (sensor_string, what_string, value_string))
-        rowid = curs.lastrowid
+#        curs.execute('INSERT INTO cache (`sensors`, `whats`, `values`) VALUES (?, ?, ?)', (sensor_string, what_string, value_string))
+#        rowid = curs.lastrowid
 
         logger.info('Submitting values: sensors=%s, whats=%s, values=%s', sensor_string, what_string, value_string)
         resp = s.get(url, params={'action': 'submit', 'sensors': sensor_string, 'whats': what_string, 'values': value_string}, timeout=30)
@@ -80,7 +80,7 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-        curs.execute('UPDATE cache SET submitted = 1 WHERE id = ?', (rowid, ))
+#        curs.execute('UPDATE cache SET submitted = 1 WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
     except requests.exceptions.RequestException:
