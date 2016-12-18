@@ -22,6 +22,7 @@ if(!(isset($_REQUEST['value']) xor isset($_REQUEST['values']))) {
 $sensor_ids = isset($_REQUEST['sensor']) ? array($_REQUEST['sensor']) : explode(';', $_REQUEST['sensors']);
 $what_shorts = isset($_REQUEST['what']) ? array($_REQUEST['what']) : explode(';', $_REQUEST['whats']);
 $values = isset($_REQUEST['value']) ? array($_REQUEST['value']) : explode(';', $_REQUEST['values']);
+$timestamp = isset($_REQUEST['timestamp']) ? $timestamp : time();
 
 if(count($sensor_ids) != count($what_shorts) || count($sensor_ids) != count($values)) {
 	// TODO
@@ -54,6 +55,7 @@ for($a=0; $a<count($sensor_ids); $a++) {
 		die('4');
 	}
 
+	$inserts[] = $timestamp;
 	$inserts[] = $sensor_id;
 	$inserts[] = $sensor_values[$what_short];
 	$inserts[] = $value;
@@ -64,8 +66,8 @@ for($a=0; $a<count($sensor_ids); $a++) {
 }
 
 $parameters = array();
-for($a=0; $a<count($inserts)/3; $a++) {
-	$parameters[] = '(NOW(), ?, ?, ?)';
+for($a=0; $a<count($inserts)/4; $a++) {
+	$parameters[] = '(FROM_UNIXTIME(?), ?, ?, ?)';
 }
 $parameter_string = implode(', ', $parameters);
 
