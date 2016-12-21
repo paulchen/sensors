@@ -86,7 +86,7 @@ def submit_value(sensor, values, server, whats):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-        curs.execute('UPDATE cache SET submitted = 1 WHERE id = ?', (rowid, ))
+        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
 
@@ -122,8 +122,12 @@ def is_value_valid(value):
 def process_sensor(sensor, servers):
     logger.debug('Processing sensor %s', sensor['id'])
     values = get_sensor_value(sensor)
+    if not values:
+        logger.debug('No value determined for sensor %s, aborting', sensor['id'])
+        return
     for value in values:
         if not is_value_valid(value):
+            logger.debug('Value %s for sensor %s is invalid, aborting', value, sensor['id'])
             return
 
     whats = sensor['values'].split(',')

@@ -5,7 +5,7 @@ CREATE TABLE `cache` (
   `whats` text NOT NULL,
   `values` text NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-  `submitted` tinyint(4) NOT NULL DEFAULT '0',
+  `submitted` timestamp NULL,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 
