@@ -123,7 +123,7 @@ def process_sensor(sensor, servers):
     logger.debug('Processing sensor %s', sensor['id'])
     values = get_sensor_value(sensor)
     if not values:
-        logger('No value determined for sensor %s, aborting', sensor['id'])
+        logger.debug('No value determined for sensor %s, aborting', sensor['id'])
         return
     for value in values:
         if not is_value_valid(value):
