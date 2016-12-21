@@ -81,7 +81,7 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-        curs.execute('UPDATE cache SET submitted = 1 WHERE id = NOW()', (rowid, ))
+        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
     except requests.exceptions.RequestException:
