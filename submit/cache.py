@@ -33,7 +33,7 @@ curs2 = db.cursor()
 
 logger.info('Searching for rows that have not been submitted')
 
-curs.execute('SELECT `id`, `server`, `sensors`, `whats`, `values`, UNIX_TIMESTAMP(`timestamp`) AS `timestamp` FROM cache WHERE submitted = 0 AND `timestamp` < DATE_SUB(NOW(), INTERVAL 10 MINUTE) ORDER BY `id` ASC LIMIT 100')
+curs.execute('SELECT `id`, `server`, `sensors`, `whats`, `values`, UNIX_TIMESTAMP(`timestamp`) AS `timestamp` FROM cache WHERE submitted IS NULL AND `timestamp` < DATE_SUB(NOW(), INTERVAL 10 MINUTE) ORDER BY `id` ASC LIMIT 100')
 while(1):
     row = curs.fetchone()
     if row == None:
@@ -50,13 +50,13 @@ while(1):
     content = resp.text
     if content == 'ok':
         logger.info('Setting row %s to submitted', row['id'])
-        curs2.execute('UPDATE cache SET `submitted` = 1 WHERE `id` = ?', (row['id'], ))
+        curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = ?', (row['id'], ))
 
 curs2.close()
 
 logger.info('Deleting outdated rows')
 
-curs.execute('DELETE FROM cache WHERE submitted = 1 AND `timestamp` < DATE_SUB(NOW(), INTERVAL 14 DAY)')
+curs.execute('DELETE FROM cache WHERE submitted IS NOT NULL AND `timestamp` < DATE_SUB(NOW(), INTERVAL 14 DAY)')
 
 curs.close()
 db.close()
