@@ -71,4 +71,5 @@ sensors_mapping = 1;2;3;4;5;6;11;7;9
 wunderground_station = 
 wunderground_password = 
 wunderground_status_directory = /home/paulchen/web/ipwe/wunderground/
+wunderground_timeout = 120
 

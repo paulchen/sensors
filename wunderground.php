@@ -1,7 +1,10 @@
 <?php
 require_once(dirname(__FILE__) . '/api/common.php');
 
-if(!isset($config['wunderground_station']) || !isset($config['wunderground_password']) || !isset($config['wunderground_status_directory'])) {
+if(!isset($config['wunderground_station']) ||
+		!isset($config['wunderground_password']) ||
+		!isset($config['wunderground_status_directory']) ||
+		!isset($config['wunderground_timeout'])) {
 	die();
 }
 
@@ -21,6 +24,9 @@ foreach($sensor_data as $sensor_id => $sensor) {
 	foreach($sensor['values'] as $key => $valuex) {
 		$data = $valuex['measurements'][0];
 		$timestamp = $data['timestamp'];
+		if(time() - $timestamp > $config['wunderground_timeout']) {
+			continue;
+		}
 		$value = $data['value'];
 		if($sensor_id == 9 && $key == 1) {
 			$tempc = $value;
