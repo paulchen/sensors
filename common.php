@@ -200,11 +200,15 @@ function is_cli() {
 	return (php_sapi_name() == 'cli');
 }
 
-function get_rain() {
+function get_rain_raw() {
 	global $memcached, $memcached_prefix;
 
 	$memcached_key = "${memcached_prefix}_daily_rain";
-	$memcached_data = $memcached->get($memcached_key);
+	return $memcached->get($memcached_key);
+}
+
+function get_rain() {
+	$memcached_data = get_rain_raw();
 	if($memcached_data === null) {
 		return 'unbekannt';
 	}

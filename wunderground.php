@@ -10,6 +10,13 @@ echo date('Y-m-d H:i:s') . "\n";
 $sensor_data = get_sensors_state(array(9, 29));
 
 $wunderground_data = array();
+$rain = get_rain_raw();
+if($rain !== false) {
+	if(is_numeric($rain)) {
+		$wunderground_data['dailyrainin'] = round($rain / 2.54, 2);
+	}
+}
+
 foreach($sensor_data as $sensor_id => $sensor) {
 	foreach($sensor['values'] as $key => $valuex) {
 		$data = $valuex['measurements'][0];
@@ -17,11 +24,17 @@ foreach($sensor_data as $sensor_id => $sensor) {
 		$value = $data['value'];
 		if($sensor_id == 9 && $key == 1) {
 			$tempc = $value;
-			$wunderground_data['tempf'] = $value*1.8 + 32;
+			$wunderground_data['tempf'] = round($value*1.8 + 32, 2);
 		}
 		else if($sensor_id == 9 && $key == 2) {
 			$humidity = $value;
 			$wunderground_data['humidity'] = $value;
+		}
+		else if($sensor_id == 9 && $key == 3) {
+			$wunderground_data['windspeedmph'] = round($value / 1.60934, 2);
+		}
+		else if($sensor_id == 9 && $key == 4) {
+			$wunderground_data['rainin'] = round($value / 2.54, 2);
 		}
 		else if($sensor_id == 29 && $key == 5) {
 			$wunderground_data['baromin'] = round($value / 33.8639, 2);
