@@ -40,7 +40,7 @@ foreach($sensor_data as $sensor_id => $sensor) {
 			$wunderground_data['windspeedmph'] = round($value / 1.60934, 2);
 		}
 		else if($sensor_id == 9 && $key == 4) {
-			$wunderground_data['rainin'] = round($value / 2.54, 2);
+			$wunderground_data['rainin'] = round($value / 25.4, 2);
 		}
 		else if($sensor_id == 29 && $key == 5) {
 			$wunderground_data['baromin'] = round($value / 33.8639, 2);
