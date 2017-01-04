@@ -25,6 +25,12 @@ if($rain !== false) {
 	}
 }
 
+$data = db_query('SELECT id, short FROM sensor_values');
+$sensor_values = array();
+foreach($data as $row) {
+	$sensor_values[$row['short']] = $row['id'];
+}
+
 foreach($sensor_data as $sensor_id => $sensor) {
 	foreach($sensor['values'] as $key => $valuex) {
 		$data = $valuex['measurements'][0];
@@ -33,21 +39,21 @@ foreach($sensor_data as $sensor_id => $sensor) {
 			continue;
 		}
 		$value = $data['value'];
-		if($sensor_id == 9 && $key == 1) {
+		if($sensor_id == 9 && $key == $sensor_values['temp']) {
 			$tempc = $value;
 			$wunderground_data['tempf'] = c_to_f($value);
 		}
-		else if($sensor_id == 9 && $key == 2) {
+		else if($sensor_id == 9 && $key == $sensor_values['humid']) {
 			$humidity = $value;
 			$wunderground_data['humidity'] = $value;
 		}
-		else if($sensor_id == 9 && $key == 3) {
+		else if($sensor_id == 9 && $key == $sensor_values['wind']) {
 			$wunderground_data['windspeedmph'] = kmh_to_mph($value);
 		}
-		else if($sensor_id == 9 && $key == 4) {
+		else if($sensor_id == 9 && $key == $sensor_values['rain']) {
 			$wunderground_data['rainin'] = mm_to_in($value);
 		}
-		else if($sensor_id == 29 && $key == 5) {
+		else if($sensor_id == 29 && $key == $sensor_values['pressure']) {
 			$wunderground_data['baromin'] = hpa_to_inhg($value);
 		}
 	}
