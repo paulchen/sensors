@@ -16,7 +16,7 @@ $wunderground_data = array();
 $rain = get_rain_raw();
 if($rain !== false) {
 	if(is_numeric($rain)) {
-		$wunderground_data['dailyrainin'] = round($rain / 2.54, 2);
+		$wunderground_data['dailyrainin'] = round($rain / 25.4, 2);
 	}
 }
 
