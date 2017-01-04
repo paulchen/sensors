@@ -1,3 +1,4 @@
 *.log*
 config.properties
 wunderground/*
+log/*.log*
