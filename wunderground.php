@@ -1,6 +1,11 @@
 <?php
 require_once(dirname(__FILE__) . '/api/common.php');
 
+function mm_to_in($mm) { return round($mm / 25.4, 2); }
+function kmh_to_mph($kmh) { return round($kmh / 1.60934, 2); }
+function hpa_to_inhg($hpa) { return round($hpa / 33.8639, 2); }
+function c_to_f($c) { return round($c * 1.8 + 32, 2); }
+
 if(!isset($config['wunderground_station']) ||
 		!isset($config['wunderground_password']) ||
 		!isset($config['wunderground_status_directory']) ||
@@ -16,7 +21,7 @@ $wunderground_data = array();
 $rain = get_rain_raw();
 if($rain !== false) {
 	if(is_numeric($rain)) {
-		$wunderground_data['dailyrainin'] = round($rain / 25.4, 2);
+		$wunderground_data['dailyrainin'] = mm_to_in($rain);
 	}
 }
 
@@ -30,27 +35,27 @@ foreach($sensor_data as $sensor_id => $sensor) {
 		$value = $data['value'];
 		if($sensor_id == 9 && $key == 1) {
 			$tempc = $value;
-			$wunderground_data['tempf'] = round($value*1.8 + 32, 2);
+			$wunderground_data['tempf'] = c_to_f($value);
 		}
 		else if($sensor_id == 9 && $key == 2) {
 			$humidity = $value;
 			$wunderground_data['humidity'] = $value;
 		}
 		else if($sensor_id == 9 && $key == 3) {
-			$wunderground_data['windspeedmph'] = round($value / 1.60934, 2);
+			$wunderground_data['windspeedmph'] = kmh_to_mph($value);
 		}
 		else if($sensor_id == 9 && $key == 4) {
-			$wunderground_data['rainin'] = round($value / 25.4, 2);
+			$wunderground_data['rainin'] = mm_to_in($value);
 		}
 		else if($sensor_id == 29 && $key == 5) {
-			$wunderground_data['baromin'] = round($value / 33.8639, 2);
+			$wunderground_data['baromin'] = hpa_to_inhg($value);
 		}
 	}
 }
 
 if(isset($tempc) && isset($humidity)) {
 	$dew_point = $tempc - ((100 - $humidity)/5);
-	$wunderground_data['dewptf'] = round($dew_point*1.8 + 32, 2);
+	$wunderground_data['dewptf'] = c_to_f($dew_point);
 }
 
 if(count($wunderground_data) == 0) {
