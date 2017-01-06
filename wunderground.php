@@ -52,11 +52,9 @@ foreach($sensor_data as $sensor_id => $sensor) {
 		}
 		$value = $data['value'];
 		if(is_sensor('temp', $sensor_id, $key)) {
-			$tempc = $value;
 			$wunderground_data['tempf'] = c_to_f($value);
 		}
 		else if(is_sensor('humid', $sensor_id, $key)) {
-			$humidity = $value;
 			$wunderground_data['humidity'] = $value;
 		}
 		else if(is_sensor('wind', $sensor_id, $key)) {
@@ -68,12 +66,10 @@ foreach($sensor_data as $sensor_id => $sensor) {
 		else if(is_sensor('pressure', $sensor_id, $key)) {
 			$wunderground_data['baromin'] = hpa_to_inhg($value);
 		}
+		else if(is_sensor('dewp', $sensor_id, $key)) {
+			$wunderground_data['dewptf'] = c_to_f($value);
+		}
 	}
-}
-
-if(isset($tempc) && isset($humidity)) {
-	$dew_point = $tempc - ((100 - $humidity)/5);
-	$wunderground_data['dewptf'] = c_to_f($dew_point);
 }
 
 if(count($wunderground_data) == 0) {

@@ -76,5 +76,6 @@ wunderground_sensor_temp = 9
 wunderground_sensor_humid = 9
 wunderground_sensor_wind = 9
 wunderground_sensor_rain = 9
+wunderground_sensor_dewp = 9
 wunderground_sensor_pressure = 29
 
