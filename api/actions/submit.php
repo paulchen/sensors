@@ -18,6 +18,33 @@ if(!(isset($_REQUEST['value']) xor isset($_REQUEST['values']))) {
 }
 
 
+function dew_point($temp, $humid) {
+	// https://www.wetterochs.de/wetter/feuchte.html
+
+	if($temp >= 0) {
+		$a = 7.5;
+		$b = 237.3;
+	}
+	else {
+		$a = 7.6;
+		$b = 240.7;
+	}
+
+	$sdd = 6.1078 * pow(10, $a * $temp / ($b + $temp));
+
+	$dd = $humid/100*$sdd;
+
+	$v = log10($dd / 6.1078);
+
+	$td = $b * $v / ($a - $v);
+
+	$tk = $temp + 273.15;
+
+	$abshum = 100000 * 18.016 / 8314.3 * $dd / $tk;
+
+	return array('dewp' => $td, 'abshum' => $abshum);
+}
+
 
 $sensor_ids = isset($_REQUEST['sensor']) ? array($_REQUEST['sensor']) : explode(';', $_REQUEST['sensors']);
 $what_shorts = isset($_REQUEST['what']) ? array($_REQUEST['what']) : explode(';', $_REQUEST['whats']);
@@ -39,6 +66,7 @@ foreach($data as $row) {
 	$sensor_values[$row['short']] = $row['id'];
 }
 
+$dewpoint_data = array();
 $rain_sensors = array();
 for($a=0; $a<count($sensor_ids); $a++) {
 	$value = $values[$a];
@@ -62,6 +90,26 @@ for($a=0; $a<count($sensor_ids); $a++) {
 
 	if($what_short == 'rain_idx') {
 		$rain_sensors[] = $sensor_id;
+	}
+
+	if($what_short == 'humid' || $what_short == 'temp') {
+		if(!isset($dewpoint_data[$sensor_id])) {
+			$dewpoint_data[$sensor_id] = array();
+		}
+		$dewpoint_data[$sensor_id][$what_short] = $value;
+	}
+}
+
+foreach($dewpoint_data as $sensor_id => $data) {
+	if(isset($data['temp']) && isset($data['humid'])) {
+		$result = dew_point($data['temp'], $data['humid']);
+
+		foreach(array('dewp', 'abshum') as $sensor_value) {
+			$inserts[] = $timestamp;
+			$inserts[] = $sensor_id;
+			$inserts[] = $sensor_values[$sensor_value];
+			$inserts[] = $result[$sensor_value];
+		}
 	}
 }
 
