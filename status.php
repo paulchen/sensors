@@ -286,6 +286,7 @@ foreach($data as $line) {
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<!-- memory footprint: <?php echo memory_get_peak_usage(); ?> -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php echo t('Sensor status') ?></title>
 <style type="text/css">
