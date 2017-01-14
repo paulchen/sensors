@@ -30,7 +30,7 @@ foreach($data as $row) {
 
 $query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY id ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
-$data = db_query($query, array($start_timestamp));
+$stmt = db_query_resultset($query, array($start_timestamp));
 
 $first_values = array();
 $max_values = array();
@@ -39,7 +39,7 @@ $avg_values = array();
 $current_values = array();
 $keys = array();
 
-foreach($data as $row) {
+while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 	$sensor = $row['sensor'];
 	if(in_array($sensor, $hidden_sensors)) {
 		continue;
@@ -79,6 +79,7 @@ foreach($data as $row) {
 		$first_values[$key] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
+db_stmt_close($stmt);
 
 $keys2 = $keys;
 uksort($keys, function($a, $b) {
@@ -286,6 +287,7 @@ foreach($data as $line) {
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml">
 <head>
+<!-- memory footprint: <?php echo memory_get_peak_usage(); ?> -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <title><?php echo t('Sensor status') ?></title>
 <style type="text/css">

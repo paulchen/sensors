@@ -16,6 +16,7 @@ if(!$config) {
 $db_name = $config['db_database'];
 $db_host = $config['db_host'];
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $config['db_username'], $config['db_password']);
+$db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
 db_query('SET NAMES utf8');
 
 unset($db_name);
@@ -200,11 +201,15 @@ function is_cli() {
 	return (php_sapi_name() == 'cli');
 }
 
-function get_rain() {
+function get_rain_raw() {
 	global $memcached, $memcached_prefix;
 
 	$memcached_key = "${memcached_prefix}_daily_rain";
-	$memcached_data = $memcached->get($memcached_key);
+	return $memcached->get($memcached_key);
+}
+
+function get_rain() {
+	$memcached_data = get_rain_raw();
 	if($memcached_data === null) {
 		return 'unbekannt';
 	}

@@ -1,0 +1,9 @@
+/home/paulchen/web/ipwe/log/*.log {
+	weekly
+	missingok
+	rotate 52
+	compress
+	copytruncate
+	create 664 paulchen paulchen
+}
+

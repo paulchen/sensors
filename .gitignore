@@ -1,3 +1,4 @@
-update.log
-current.log
+*.log*
 config.properties
+wunderground/*
+log/*.log*

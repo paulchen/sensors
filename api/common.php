@@ -1,8 +1,8 @@
 <?php
-if(basename($_SERVER['SCRIPT_FILENAME']) != 'index.php') {
-	// TODO
-	die();
-}
+#if(basename($_SERVER['SCRIPT_FILENAME']) != 'index.php') {
+#	// TODO
+#	die();
+#}
 
 chdir(dirname(__FILE__));
 chdir('..');
