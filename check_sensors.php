@@ -112,19 +112,19 @@ foreach($sensors as $sensor_id) {
 
 			$name = $value_ids[$what]['name'];
 			$value = str_replace('%s', round($item, $value_ids[$what]['decimals']), $value_ids[$what]['format']);
-			if($item <= $limits[$what]['low_crit']) {
+			if($item < $limits[$what]['low_crit']) {
 				$messages[] = "$sensor_description/$name - CRITICAL ($value)";
 				$states[] = 2;
 			}
-			else if($item <= $limits[$what]['low_warn']) {
+			else if($item < $limits[$what]['low_warn']) {
 				$messages[] = "$sensor_description/$name - WARNING ($value)";
 				$states[] = 1;
 			}
-			else if($item >= $limits[$what]['high_crit']) {
+			else if($item > $limits[$what]['high_crit']) {
 				$messages[] = "$sensor_description/$name - CRITICAL ($value)";
 				$states[] = 2;
 			}
-			else if($item >= $limits[$what]['high_warn']) {
+			else if($item > $limits[$what]['high_warn']) {
 				$messages[] = "$sensor_description/$name - WARNING ($value)";
 				$states[] = 1;
 			}
