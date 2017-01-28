@@ -226,7 +226,7 @@ if(!$debug) {
 	$stmt->finish();
 }
 
-$stmt = $db->prepare('SELECT id, name FROM sensor_values');
+$stmt = $db->prepare('SELECT id, short FROM sensor_values');
 $stmt->execute();
 my $value_ids = {};
 while(my @result = ($stmt->fetchrow_array())) {
@@ -307,22 +307,22 @@ for($a=0; $a<=$#data; $a++) {
 				my $stmt1 = $db->prepare('INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 				my $stmt2 = $db->prepare('INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES (FROM_UNIXTIME(?), ?, ?, ?)');
 
-				$stmt->execute(($sensor_id, $value_ids->{'Temperature'}));
+				$stmt->execute(($sensor_id, $value_ids->{'temp'}));
 				@result = $stmt->fetchrow_array();
 				my $value_outdated = (time() - $result[1]) > 3600; # TODO magic number
 				if(!@result or abs($value->{'Temperatur'}-$result[0]) < $bullshit_threshold or $value_outdated) {
-					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
-					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Temperature'}, $value->{'Temperatur'}));
+					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'temp'}, $value->{'Temperatur'}));
+					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'temp'}, $value->{'Temperatur'}));
 				}
 				else {
 					log_status('Value of temperature (' . $value->{'Temperatur'} . ') ignored due to bullshit threshold');
 				}
 
-				$stmt->execute(($sensor_id, $value_ids->{'Humidity'}));
+				$stmt->execute(($sensor_id, $value_ids->{'humid'}));
 				@result = $stmt->fetchrow_array();
 				if(!@result or abs($value->{'Luftfeuchtigkeit'}-$result[0]) < $bullshit_threshold or $value_outdated) {
-					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
-					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Humidity'}, $value->{'Luftfeuchtigkeit'}));
+					$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'humid'}, $value->{'Luftfeuchtigkeit'}));
+					$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'humid'}, $value->{'Luftfeuchtigkeit'}));
 				}
 				else {
 					log_status('Value of humidity (' . $value->{'Luftfeuchtigkeit'} . ') ignored due to bullshit threshold');
@@ -333,8 +333,8 @@ for($a=0; $a<=$#data; $a++) {
 #					@result = $stmt->fetchrow_array();
 #					if(!@result or abs($value->{'Windgeschwindigkeit'}-$result[0]) < $bullshit_threshold) {
 					if($value->{'Windgeschwindigkeit'} < 150) {
-						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
-						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Wind speed'}, $value->{'Windgeschwindigkeit'}));
+						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'wind'}, $value->{'Windgeschwindigkeit'}));
+						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'wind'}, $value->{'Windgeschwindigkeit'}));
 					}
 					else {
 						log_status('Value of wind speed (' . $value->{'Windgeschwindigkeit'} . ') ignored due to bullshit threshold');
@@ -343,8 +343,8 @@ for($a=0; $a<=$#data; $a++) {
 				if($value->{'Regenmenge'} > -1) {
 					my $cur = $value->{'Regenmenge'};
 					my $stmt3 = $db->prepare('SELECT ROUND(MIN(value), 7) min, ROUND(MAX(value), 7) max FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW()');
-					log_status($sensor_id . " " . $value_ids->{'Precipitation'});
-					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
+					log_status($sensor_id . " " . $value_ids->{'rain'});
+					$stmt3->execute(($sensor_id, $value_ids->{'rain'}));
 					@result = $stmt3->fetchrow_array();
 					log_status(Dumper(@result));
 					my $min = (defined($result[0]) and $result[0]<$cur) ? $result[0] : $cur; # minimum value in the last hour
@@ -352,7 +352,7 @@ for($a=0; $a<=$#data; $a++) {
 					$stmt3->finish();
 
 					$stmt3 = $db->prepare('SELECT value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_ADD(timestamp, INTERVAL 1 HOUR) > NOW() ORDER BY id ASC LIMIT 0, 1');
-					$stmt3->execute(($sensor_id, $value_ids->{'Precipitation'}));
+					$stmt3->execute(($sensor_id, $value_ids->{'rain'}));
 					@result = $stmt3->fetchrow_array();
 					my $first = defined($result[0]) ? $result[0] : $cur; # first value in the last hour
 
@@ -371,8 +371,8 @@ for($a=0; $a<=$#data; $a++) {
 					}
 
 					if($rain_value < 100) {
-						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $rain_value));
-						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'Precipitation'}, $value->{'Regenmenge'}));
+						$stmt1->execute(($timestamp, $sensor_id, $value_ids->{'rain'}, $rain_value));
+						$stmt2->execute(($timestamp, $sensor_id, $value_ids->{'rain'}, $value->{'Regenmenge'}));
 					}
 					else {
 						log_status('Calculated value of precipitation (' . $rain_value . ') ignored due to bullshit threshold');

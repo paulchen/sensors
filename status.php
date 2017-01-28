@@ -106,13 +106,13 @@ foreach($keys as $index => $key) {
 	$new = $current_values[$index]['value'];
 
 	if($new != 0 && abs(1-$old/$new) < $config['stable_margin']) {
-		$tendencies[$index] = 'stable';
+		$tendencies[$index] = 'stabil';
 	}
 	else if($old > $new) {
-		$tendencies[$index] = 'decreasing';
+		$tendencies[$index] = 'fallend';
 	}
 	else {
-		$tendencies[$index] = 'increasing';
+		$tendencies[$index] = 'steigend';
 	}
 
 	$avg_values[$index]['value'] /= $avg_values[$index]['count'];
@@ -142,7 +142,7 @@ foreach($sensors as $id => $sensor) {
 
 		$sensors[$id]['battery_date'] = date($config["date_pattern.php.$lang"], $timestamp);
 		$battery_days = floor((time()-$timestamp)/86400);
-		$sensors[$id]['battery_days'] = t('%s day(s)', array($battery_days));
+		$sensors[$id]['battery_days'] = "$battery_days Tag(e)";
 		if($battery_days <= $config['battery_warning']) {
 			$sensors[$id]['battery_state'] = 'ok';
 		}
@@ -169,35 +169,35 @@ $state_class = array();
 foreach($keys as $index => $key) {
 	if(isset($limits[$index])) {
 		if(time()-$current_values[$index]['timestamp'] > $config['value_outdated_period']) {
-			$states[$index] = t('UNKNOWN (most recent value is too old)');
+			$states[$index] = 'UNBEKANNT (letzter Wert ist zu alt)';
 			$state_class[$index] = 'unknown';
 		}
 		else {
 			$value = $current_values[$index]['value'];
 			if($value < $limits[$index]['low_crit']) {
-				$states[$index] = t('CRITICAL (below limit of %s)', array(str_replace('%s', round_local($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = sprintf('KRITISCH (unter %s)', str_replace('%s', round_local($limits[$index]['low_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']));
 				$state_class[$index] = 'critical';
 			}
 			else if($value < $limits[$index]['low_warn']) {
-				$states[$index] = t('WARNING (below limit of %s)', array(str_replace('%s', round_local($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = sprintf('WARNUNG (unter %s)', str_replace('%s', round_local($limits[$index]['low_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']));
 				$state_class[$index] = 'warning';
 			}
 			else if($value > $limits[$index]['high_crit']) {
-				$states[$index] = t('CRITICAL (above limit of %s)', array(str_replace('%s', round_local($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = sprintf('KRITISCH (über %s)', str_replace('%s', round_local($limits[$index]['high_crit'], $values[$key['what']]['decimals']), $values[$key['what']]['format']));
 				$state_class[$index] = 'critical';
 			}
 			else if($value > $limits[$index]['high_warn']) {
-				$states[$index] = t('WARNING (above limit of %s)', array(str_replace('%s', round_local($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format'])));
+				$states[$index] = sprintf('WARNUNG (über %s)', str_replace('%s', round_local($limits[$index]['high_warn'], $values[$key['what']]['decimals']), $values[$key['what']]['format']));
 				$state_class[$index] = 'warning';
 			}
 			else {
-				$states[$index] = t('OK');
+				$states[$index] = 'OK';
 				$state_class[$index] = 'ok';
 			}
 		}
 	}
 	else {
-		$states[$index] = 'UNKNOWN (no limits set)';
+		$states[$index] = 'UNBEKANNT (keine Limits gesetzt)';
 		$state_class[$index] = 'unknown';
 	}
 }
@@ -289,7 +289,7 @@ foreach($data as $line) {
 <head>
 <!-- memory footprint: <?php echo memory_get_peak_usage(); ?> -->
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<title><?php echo t('Sensor status') ?></title>
+<title>Sensorstatus</title>
 <style type="text/css">
 body { font-family: Verdana,Arial,Helvetica,sans-serif; }
 body > div { margin: auto; }
@@ -396,12 +396,12 @@ $(document).ready(function() {
 </head>
 <body>
 <div>
-	<h1><?php echo t('Current sensor state') ?></h1>
+	<h1>Aktueller Sensorstatus</h1>
 	<div id="lastrun">
-		<?php echo t('Last cronjob run: ') ?><span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
-		<?php echo t('Last successful cronjob run: ') ?><span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
-		<?php echo t('Last page load: ') ?><span id="status_last_page_load"><?php echo date($config["date_pattern.php.$lang"]); ?></span><br />
-		<img id="img_loading" src="ajax-loader.gif" alt="<?php echo t('Loading...') ?>" title="<?php echo t('Loading...') ?>" />
+		Letzte Datenaktualisierung: <span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
+		Letzte erfolgreiche Datenaktualisierung: <span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
+		Letzte Seitenaktualisierung: <span id="status_last_page_load"><?php echo date($config["date_pattern.php.$lang"]); ?></span><br />
+		<img id="img_loading" src="ajax-loader.gif" alt="Lade..." title="Lade..." />
 	</div>
 	<?php if($config["top_text.$lang"] != ''): ?>
 		<div id="top_text">
@@ -411,14 +411,14 @@ $(document).ready(function() {
 	<table>
 		<thead>
 			<tr>
-				<th><?php echo t('Sensor') ?></th>
-				<th><?php echo t('Value') ?></th>
-				<th><?php echo t('Current state') ?></th>
-				<th><?php echo t('Current value') ?></th>
-				<th><?php echo t('Maximum value (24 hours)') ?></th>
-				<th><?php echo t('Minimum value (24 hours)') ?></th>
-				<th><?php echo t('Average value (24 hours)') ?></th>
-				<th><?php echo t('Current tendency') ?></th>
+				<th>Sensor</th>
+				<th>Wert</th>
+				<th>Aktueller Zustand</th>
+				<th>Aktueller Wert</th>
+				<th>Höchstwert (24 Stunden)</th>
+				<th>Tiefstwert (24 Stunden)</th>
+				<th>Mittelwert (24 Stunden)</th>
+				<th>Aktuelle Tendenz</th>
 			</tr>
 		</thead>
 		<tbody>
@@ -430,19 +430,19 @@ $(document).ready(function() {
 				<?php endif ?>
 				<tr id="data_<?php echo $index ?>" >
 					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
-					<td class="<?php echo $oddstring ?>"><?php echo t($values[$what]['name']) ?></td>
+					<td class="<?php echo $oddstring ?>"><?php echo $values[$what]['name'] ?></td>
 					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
 					<td class="current <?php echo $oddstring ?>"><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="minimum <?php echo $oddstring ?>"><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
 					<td class="average <?php echo $oddstring ?>"><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
-					<td class="tendency <?php echo $oddstring ?>"><?php echo t($tendencies[$index]) ?></td>
+					<td class="tendency <?php echo $oddstring ?>"><?php echo $tendencies[$index] ?></td>
 				</tr>
 			<?php $previous_sensor = $sensor; endforeach; ?>
 		</tbody>
 	</table>
 	<p style="text-align: left;">
-		<?php echo t('Precipitation (last 24 hours): %s', array('')); ?> 
+		Niederschlag (letzte 24 Stunden): 
 		<span id="rain"><?php echo $rain; ?></span>
 	</p>
 	<p>
@@ -453,23 +453,23 @@ $(document).ready(function() {
 		<?php endforeach; ?>
 		</span><br />
 	</p>
-	<h3><?php echo t('Sensor limits') ?></h3>
+	<h3>Sensorlimits</h3>
 	<table>
 		<thead>
 			<tr>
-				<th><?php echo t('Sensor') ?></th>
-				<th><?php echo t('Value') ?></th>
-				<th><?php echo t('Critical') ?></th>
-				<th><?php echo t('Warning') ?></th>
-				<th><?php echo t('Warning') ?></th>
-				<th><?php echo t('Critical') ?></th>
+				<th>Sensor</th>
+				<th>Wert</th>
+				<th>Kritisch</th>
+				<th>Warnung</th>
+				<th>Warnung</th>
+				<th>Kritisch</th>
 			</tr>
 		</thead>
 		<tbody>
 			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? ' class="odd"' : ''; ?>
 				<tr>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
-					<td<?php echo $oddstring ?>><?php echo t($values[$what]['name']) ?></td>
+					<td<?php echo $oddstring ?>><?php echo $values[$what]['name'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['low_crit'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['low_warn'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $formatted_limits[$index]['high_warn'] ?></td>
@@ -479,13 +479,13 @@ $(document).ready(function() {
 		</tbody>
 	</table>
 	<a id="battery"></a>
-	<h3><?php echo t('Battery changes') ?></h3>
+	<h3>Batteriewechsel</h3>
 	<table>
 		<thead>
 			<tr>
-				<th><?php echo t('Sensor') ?></th>
-				<th><?php echo t('Last battery change') ?></th>
-				<th><?php echo t('Days') ?></th>
+				<th>Sensor</th>
+				<th>Letzter Batteriewechsel</th>
+				<th>Tage</th>
 				<th></th>
 			</tr>
 		</thead>
@@ -495,7 +495,7 @@ $(document).ready(function() {
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['description'] ?></td>
 					<td<?php echo $oddstring ?>><?php echo $sensors[$sensor]['battery_date'] ?></td>
 					<td class="state_<?php echo $sensors[$sensor]['battery_state'] ?>"><?php echo $sensors[$sensor]['battery_days'] ?></td>
-					<td<?php echo $oddstring ?>><a href="battery.php?id=<?php echo $sensor ?>"><?php echo t('Change battery') ?></a></td>
+					<td<?php echo $oddstring ?>><a href="battery.php?id=<?php echo $sensor ?>">Batterie wechseln</a></td>
 				</tr>
 			<?php endforeach; ?>
 		</tbody>
