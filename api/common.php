@@ -147,21 +147,21 @@ function get_sensors_state($sensors = array()) {
 
 		$value = round($row['value'], $type_decimals[$what]);
 		$localized_value = round_local($row['value'], $type_decimals[$what]);
-		if($value <= $limits[$sensor_id][$what]['low_crit']) {
+		if($value < $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
-			$state_description = t('CRITICAL (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$what]), $type_formats[$what])));
+			$state_description = sprintf('KRITISCH (unter %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value <= $limits[$sensor_id][$what]['low_warn']) {
+		else if($value < $limits[$sensor_id][$what]['low_warn']) {
 			$state = 'warning';
-			$state_description = t('WARNING (below limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['low_warn'], $type_decimals[$what]), $type_formats[$what])));
+			$state_description = sprintf('WARNUNG (unter %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['low_warn'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value >= $limits[$sensor_id][$what]['high_crit']) {
+		else if($value > $limits[$sensor_id][$what]['high_crit']) {
 			$state = 'critical';
-			$state_description = t('CRITICAL (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_crit'], $type_decimals[$what]), $type_formats[$what])));
+			$state_description = sprintf('KRITISCH (über %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['high_crit'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value >= $limits[$sensor_id][$what]['high_warn']) {
+		else if($value > $limits[$sensor_id][$what]['high_warn']) {
 			$state = 'warning';
-			$state_description = t('WARNING (above limit of %s)', array(str_replace('%s', round_local($limits[$sensor_id][$what]['high_warn'], $type_decimals[$what]), $type_formats[$what])));
+			$state_description = sprintf('WARNUNG (über %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['high_warn'], $type_decimals[$what]), $type_formats[$what]));
 		}
 		else {
 			$state = 'ok';
@@ -225,7 +225,8 @@ function get_sensors_state($sensors = array()) {
 				$tendency = 'increasing';
 			}
 			$cur_values[$sensor_id][$what]['tendency'] = $tendency;
-			$cur_values[$sensor_id][$what]['localized_tendency'] = t($tendency);
+			// TODO i18n remove
+			$cur_values[$sensor_id][$what]['localized_tendency'] = $tendency;
 
 			$avg_value = $avg_values[$sensor_id][$what]['value']/$avg_values[$sensor_id][$what]['count'];
 			$avg_values[$sensor_id][$what]['value'] = round($avg_value, $type_decimals[$what]);

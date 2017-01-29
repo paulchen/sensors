@@ -6,6 +6,8 @@ CREATE TABLE `cache` (
   `values` text NOT NULL,
   `timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `submitted` timestamp NULL,
-  PRIMARY KEY (`id`)
+  PRIMARY KEY (`id`),
+  KEY `cache_submitted_idx` (`submitted`),
+  KEY `cache_timestamp_index` (`timestamp`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8;
 

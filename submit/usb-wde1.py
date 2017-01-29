@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading, requests, time, logging, oursql
+import serial, sys, os, configparser, threading, requests, time, logging, oursql, re
 
 
 port = '/dev/ttyUSB0'
@@ -41,6 +41,10 @@ def expect(parts, index, value):
 def check_value(parts, index, sensor, what, values):
     value = parts[index]
     if value == '':
+        return
+
+    pattern = re.compile('^\-?([0-9]+|[0-9]*[\.,][0-9]+)$')
+    if not re.match(pattern, value):
         return
 
     if not sensor in values:
