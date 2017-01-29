@@ -171,7 +171,7 @@ function get_sensors_state($sensors = array()) {
 		$cur_state = $state;
 		if(time()-$timestamp > $config['value_outdated_period']) {
 			$cur_state = 'unknown';
-			$state_description = t('UNKNOWN (most recent value is too old)');
+			$state_description = 'UNBEKANNT (letzter Wert ist zu alt)';
 		}
 
 		if(!isset($cur_values[$sensor_id])) {
