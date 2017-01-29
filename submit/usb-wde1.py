@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading, requests, time, logging, oursql, re
+import serial, sys, os, configparser, threading, requests, time, logging, oursql, re, urllib3
 
 
 port = '/dev/ttyUSB0'
@@ -88,6 +88,15 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
+        
+    except urllib3.exceptions.ConnectTimeoutError:
+        logger.error('Timeout during update')
+        return
+
+    except urllib3.exceptions.ReadTimeoutError:
+        logger.error('Timeout during update')
+        return
+
     except requests.exceptions.RequestException:
         logger.error('Error during update')
         return

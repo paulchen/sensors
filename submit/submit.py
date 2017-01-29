@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, oursql
+import os, requests, logging, time, subprocess, threading, configparser, oursql, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
@@ -89,6 +89,14 @@ def submit_value(sensor, values, server, whats):
         curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
         curs.close()
         db.close()
+
+    except urllib3.exceptions.ConnectTimeoutError:
+        logger.error('Timeout during update')
+        return
+
+    except urllib3.exceptions.ReadTimeoutError:
+        logger.error('Timeout during update')
+        return
 
     except requests.exceptions.RequestException:
         logger.error('Error during update')
