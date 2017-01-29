@@ -90,6 +90,14 @@ def submit_value(sensor, values, server, whats):
         curs.close()
         db.close()
 
+    except urllib3.exceptions.ConnectTimeoutError:
+        logger.error('Timeout during update')
+        return
+
+    except urllib3.exceptions.ReadTimeoutError:
+        logger.error('Timeout during update')
+        return
+
     except requests.exceptions.RequestException:
         logger.error('Error during update')
         return
