@@ -6,7 +6,7 @@ $http_auth = true;
 require_once('common.php');
 
 $show_hidden = 0;
-if($_REQUEST['hidden'] == '1') {
+if(isset($_REQUEST['hidden']) && $_REQUEST['hidden'] == '1') {
 	$show_hidden = 1;
 }
 
