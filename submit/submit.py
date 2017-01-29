@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, oursql
+import os, requests, logging, time, subprocess, threading, configparser, oursql, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
