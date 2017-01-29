@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading, requests, time, logging, oursql, re
+import serial, sys, os, configparser, threading, requests, time, logging, oursql, re, urllib3
 
 
 port = '/dev/ttyUSB0'
