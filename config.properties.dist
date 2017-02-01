@@ -44,22 +44,15 @@ error_mails_rcpt = paulchen@rueckgr.at
 # sender of error mails (From: header of emails)
 error_mails_from = Sensors <sensors@rueckgr.at>
 
-# additional HTML to include at the top of the page, separately for each language
-top_text.de = 
-top_text.en = 
+# additional HTML to include at the top of the page
+top_text = 
 
-# default language to be used
-default_language = en
+# date patterns for PHP and JavaScript
+date_pattern.php = d.m.Y H:i
+date_pattern.javascript = dd.MM.yyyy HH:mm
 
-# date patterns for PHP and JavaScript, separately for each language
-date_pattern.php.en = Y-m-d H:i
-date_pattern.javascript.en = yyyy-MM-dd HH:mm
-date_pattern.php.de = d.m.Y H:i
-date_pattern.javascript.de = dd.MM.yyyy HH:mm
-
-# decimal marks, separately for each language
-decimal_mark.en = .
-decimal_mark.de = ,
+# decimal marks
+decimal_mark = ,
 
 # directory containing Munin's RRD files
 munin_data_directory = /var/lib/munin/domain/
