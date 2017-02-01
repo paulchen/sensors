@@ -34,19 +34,13 @@ $value_decimals = $data[0]['decimals'];
 $sensors = explode('.', $sensor_list);
 $sensor_info = array();
 
-$lang = 'de'; // TODO configurable
-$query = 'SELECT id FROM languages WHERE language = ?';
-$data = db_query($query, array($lang));
-$language_id = $data[0]['id'];
-
-$query = 'SELECT s.sensor sensor, s.type type, COALESCE(sdn.name, s.description) description, s.color color
+$query = 'SELECT s.sensor sensor, s.type type, COALESCE(s.display_name, s.description) description, s.color color
 	FROM sensors s
-		LEFT JOIN sensor_display_names sdn ON (s.id = sdn.sensor AND sdn.language = ?)
 	WHERE id = ?
 	ORDER BY id DESC
 	LIMIT 0, 1';
 foreach($sensors as $sensor_id) {
-	$data = db_query($query, array($language_id, $sensor_id));
+	$data = db_query($query, array($sensor_id));
 	if(count($data) != 1) {
 		echo "Unknown sensor ID: $sensor_id\n";
 		die(3);

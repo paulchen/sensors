@@ -118,10 +118,9 @@ foreach($keys as $index => $key) {
 	$avg_values[$index]['value'] /= $avg_values[$index]['count'];
 }
 
-$query = 'SELECT s.id id, s.sensor sensor, s.type type, COALESCE(sdn.name, s.description) description
-       		FROM sensors s
-			LEFT JOIN sensor_display_names sdn ON (s.id = sdn.sensor AND sdn.language = ?)';
-$data = db_query($query, array($lang_id));
+$query = 'SELECT s.id id, s.sensor sensor, s.type type, COALESCE(s.display_name, s.description) description
+       		FROM sensors s';
+$data = db_query($query);
 $sensors = array();
 foreach($data as $row) {
 	if($row['description'] == '') {
@@ -140,7 +139,7 @@ foreach($sensors as $id => $sensor) {
 	foreach($data as $row) {
 		$timestamp = $row['timestamp'];
 
-		$sensors[$id]['battery_date'] = date($config["date_pattern.php.$lang"], $timestamp);
+		$sensors[$id]['battery_date'] = date($config['date_pattern.php'], $timestamp);
 		$battery_days = floor((time()-$timestamp)/86400);
 		$sensors[$id]['battery_days'] = "$battery_days Tag(e)";
 		if($battery_days <= $config['battery_warning']) {
@@ -207,13 +206,13 @@ foreach($keys as $index => $key) {
 	$what = $key['what'];
 
 	$current_values[$index]['formatted_value'] = str_replace('%s', round_local($current_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$current_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $current_values[$index]['timestamp']);
+	$current_values[$index]['formatted_timestamp'] = date($config['date_pattern.php'], $current_values[$index]['timestamp']);
 
 	$min_values[$index]['formatted_value'] = str_replace('%s', round_local($min_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$min_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $min_values[$index]['timestamp']);
+	$min_values[$index]['formatted_timestamp'] = date($config['date_pattern.php'], $min_values[$index]['timestamp']);
 
 	$max_values[$index]['formatted_value'] = str_replace('%s', round_local($max_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
-	$max_values[$index]['formatted_timestamp'] = date($config["date_pattern.php.$lang"], $max_values[$index]['timestamp']);
+	$max_values[$index]['formatted_timestamp'] = date($config['date_pattern.php'], $max_values[$index]['timestamp']);
 
 	$avg_values[$index]['formatted_value'] = str_replace('%s', round_local($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 
@@ -225,18 +224,18 @@ foreach($keys as $index => $key) {
 
 $timestamp = get_last_cron_run();
 if($timestamp == '') {
-	$last_cron_run = 'never';
+	$last_cron_run = 'nie';
 }
 else {
-	$last_cron_run = date($config["date_pattern.php.$lang"], $timestamp);
+	$last_cron_run = date($config['date_pattern.php'], $timestamp);
 }
 
 $timestamp = get_last_successful_cron_run();
 if($timestamp == '') {
-	$last_successful_cron_run = 'never';
+	$last_successful_cron_run = 'nie';
 }
 else {
-	$last_successful_cron_run = date($config["date_pattern.php.$lang"], $timestamp);
+	$last_successful_cron_run = date($config['date_pattern.php'], $timestamp);
 }
 
 $rain = get_rain();
@@ -331,7 +330,7 @@ function format_value(type, types, value) {
 function do_refresh() {
 	$('#img_loading').css('visibility', 'visible');
 
-	$.ajax('api/?action=status&format=json&lang=<?php echo $lang ?>', {
+	$.ajax('api/?action=status&format=json', {
 			dataType: 'json',
 			error: function(xhr, text_status, error_thrown) {
 				start_refresh_timer();
@@ -339,7 +338,7 @@ function do_refresh() {
 			success: function(data, text_status, xhr) {
 				// 1. update status
 				$.each(data['status']['value'], function(index, element) {
-					$('#status_' + element['name']).html(new Date(element['value']).toString('<?php echo $config["date_pattern.javascript.$lang"] ?>'));
+					$('#status_' + element['name']).html(new Date(element['value']).toString('<?php echo $config['date_pattern.javascript'] ?>'));
 				});
 
 				// 2. update values and states
@@ -363,7 +362,7 @@ function do_refresh() {
 							value_data += '</strong>';
 							if('timestamp' in measurement) {
 								value_data += ' (';
-								value_data += new Date(measurement['timestamp']).toString('<?php echo $config["date_pattern.javascript.$lang"] ?>');
+								value_data += new Date(measurement['timestamp']).toString('<?php echo $config['date_pattern.javascript'] ?>');
 								value_data += ')';
 							}
 
@@ -400,12 +399,12 @@ $(document).ready(function() {
 	<div id="lastrun">
 		Letzte Datenaktualisierung: <span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
 		Letzte erfolgreiche Datenaktualisierung: <span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
-		Letzte Seitenaktualisierung: <span id="status_last_page_load"><?php echo date($config["date_pattern.php.$lang"]); ?></span><br />
+		Letzte Seitenaktualisierung: <span id="status_last_page_load"><?php echo date($config['date_pattern.php']); ?></span><br />
 		<img id="img_loading" src="ajax-loader.gif" alt="Lade..." title="Lade..." />
 	</div>
-	<?php if($config["top_text.$lang"] != ''): ?>
+	<?php if($config['top_text'] != ''): ?>
 		<div id="top_text">
-			<?php echo $config["top_text.$lang"]; ?>
+			<?php echo $config['top_text']; ?>
 		</div>
 	<?php endif; ?>
 	<table>

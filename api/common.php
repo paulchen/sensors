@@ -10,11 +10,6 @@ require_once('common.php');
 chdir('api');
 
 function get_sensors() {
-	$lang = 'de'; // TODO configurable
-	$query = 'SELECT id FROM languages WHERE language = ?';
-	$data = db_query($query, array($lang));
-	$language_id = $data[0]['id'];
-
 	$query = 'SELECT DISTINCT sensor AS sensor FROM sensor_cache WHERE timestamp > ? ORDER BY id DESC';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	$data = db_query($query, array($start_timestamp));
@@ -30,12 +25,10 @@ function get_sensors() {
 
 	$sensors = array();
 	if(count($question_marks) > 0) {
-		$query = 'SELECT s.id AS id, COALESCE(sdn.name, s.description) AS name, s.hide AS hide
+		$query = 'SELECT s.id AS id, COALESCE(s.display_name, s.description) AS name, s.hide AS hide
 			FROM sensors s
-				LEFT JOIN sensor_display_names sdn ON (s.id = sdn.sensor AND sdn.language = ?)
 			WHERE id IN (' . implode(', ', $question_marks) . ')
 			ORDER BY pos ASC';
-		array_unshift($sensor_ids, $language_id);
 		$sensors = db_query($query, $sensor_ids);
 	}
 
