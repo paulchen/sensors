@@ -10,7 +10,7 @@ require_once('common.php');
 chdir('api');
 
 function get_sensors() {
-	$query = 'SELECT DISTINCT sensor AS sensor FROM sensor_cache WHERE timestamp > ? ORDER BY id DESC';
+	$query = 'SELECT sensor AS sensor FROM sensor_cache WHERE timestamp > ? group by sensor';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	$data = db_query($query, array($start_timestamp));
 
