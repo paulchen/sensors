@@ -116,7 +116,7 @@ function noauth() {
 }
 
 function http_auth() {
-	global $mysqli;
+	global $mysqli, $user_id;
 
 	/* HTTP basic authentication */
 	if(!isset($_SERVER['PHP_AUTH_USER'])) {
@@ -126,12 +126,13 @@ function http_auth() {
 	$username = $_SERVER['PHP_AUTH_USER'];
 	$password = $_SERVER['PHP_AUTH_PW'];
 	
-	$query = 'SELECT hash FROM api_accounts WHERE username = ?';
+	$query = 'SELECT id, hash FROM api_accounts WHERE username = ?';
 	$data = db_query($query, array($username));
 	if(count($data) == 1) {
 		$db_hash = $data[0]['hash'];
 		$hash = crypt($password, $db_hash);
 		if($hash == $db_hash) {
+			$user_id = $data[0]['id'];
 			return;
 		}
 	}
