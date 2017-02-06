@@ -126,7 +126,7 @@ foreach($data as $row) {
 	if($row['description'] == '') {
 		$row['description'] = "Sensor $sensor";
 	}
-	$row['battery_date'] = 'never';
+	$row['battery_date'] = 'nie';
 	$row['battery_days'] = '';
 	$row['battery_state'] = 'unknown';
 
