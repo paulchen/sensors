@@ -209,13 +209,13 @@ function get_sensors_state($sensors = array()) {
 			$new = $cur_values[$sensor_id][$what]['value'];
 
 			if($new != 0 && abs(1-$old/$new) < $config['stable_margin']) {
-				$tendency = 'stable';
+				$tendency = 'stabil';
 			}
 			else if($old > $new) {
-				$tendency = 'decreasing';
+				$tendency = 'fallend';
 			}
 			else {
-				$tendency = 'increasing';
+				$tendency = 'steigend';
 			}
 			$cur_values[$sensor_id][$what]['tendency'] = $tendency;
 			// TODO i18n remove
