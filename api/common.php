@@ -218,8 +218,6 @@ function get_sensors_state($sensors = array()) {
 				$tendency = 'steigend';
 			}
 			$cur_values[$sensor_id][$what]['tendency'] = $tendency;
-			// TODO i18n remove
-			$cur_values[$sensor_id][$what]['localized_tendency'] = $tendency;
 
 			$avg_value = $avg_values[$sensor_id][$what]['value']/$avg_values[$sensor_id][$what]['count'];
 			$avg_values[$sensor_id][$what]['value'] = round($avg_value, $type_decimals[$what]);

@@ -354,7 +354,7 @@ function do_refresh() {
 								td_state.html(measurement['state_description']);
 								td_state.removeClass().addClass('state').addClass('state_' + measurement['state']);
 
-								$(tr_id + ' td.tendency').html(measurement['localized_tendency']);
+								$(tr_id + ' td.tendency').html(measurement['tendency']);
 							}
 
 							var value_data = '<strong>';
