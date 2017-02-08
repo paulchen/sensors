@@ -28,6 +28,86 @@ foreach($data as $row) {
 	$values[$row['id']] = $row;
 }
 
+$requested_locations = isset($_REQUEST['locations']) ? $_REQUEST['locations'] : array();
+$requested_groups = isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array();
+$requested_sensors = isset($_REQUEST['sensors']) ? $_REQUEST['sensors'] : array();
+$nothing_requested = (count($requested_locations) + count($requested_groups) + count($requested_sensors) == 0);
+
+$query = 'SELECT s.id sensor_id, COALESCE(s.display_name, s.description) sensor_name, s.hide sensor_hide,
+		g.id group_id, g.name group_name, g.visible group_visible,
+		l.id location_id, l.name location_name, l.visible location_visible
+	FROM sensors s
+		JOIN sensor_group sg ON (s.id = sg.sensor)
+		JOIN `group` g ON (sg.group = g.id)
+		JOIN `location` l ON (g.location = l.id)
+		JOIN account_location al ON (l.id = al.location)
+	WHERE al.account = ?
+	ORDER BY g.pos ASC, l.pos ASC, s.pos ASC';
+$data = db_query($query, array($user_id));
+$locations = array();
+$selected_locations = array();
+$selected_groups = array();
+$selected_sensors = array();
+$all_locations = array();
+$all_groups = array();
+$all_sensors = array();
+foreach($data as $row) {
+	if(!$show_hidden && $row['sensor_hide'] == 1) {
+		continue;
+	}
+
+	$all_locations[] = $row['location_id'];
+	$all_groups[] = $row['group_id'];
+	$all_sensors[] = $row['sensor_id'];
+
+	if(!isset($locations[$row['location_id']])) {
+		$locations[$row['location_id']] = array();
+	}
+	$locations[$row['location_id']]['name'] = $row['location_name'];
+	$locations[$row['location_id']]['visible'] = $row['location_visible'];
+
+	if(!isset($locations[$row['location_id']]['groups'])) {
+		$locations[$row['location_id']]['groups'] = array();
+	}
+	if(!isset($locations[$row['location_id']]['groups'][$row['group_id']])) {
+		$locations[$row['location_id']]['groups'][$row['group_id']] = array();
+	}
+	$locations[$row['location_id']]['groups'][$row['group_id']]['name'] = $row['group_name'];
+	$locations[$row['location_id']]['groups'][$row['group_id']]['visible'] = $row['group_visible'];
+
+	if(!isset($locations[$row['location_id']]['groups'][$row['group_id']]['sensors'])) {
+		$locations[$row['location_id']]['groups'][$row['group_id']]['sensors'] = array();
+	}
+	$locations[$row['location_id']]['groups'][$row['group_id']]['sensors'][$row['sensor_id']] = $row['sensor_name'];
+
+	if($nothing_requested && $row['location_visible']) {
+		$selected_locations[] = $row['location_id'];
+	}
+	else if(in_array($row['location_id'], $requested_locations)) {
+		$selected_locations[] = $row['location_id'];
+	}
+
+	if($nothing_requested && $row['location_visible'] && $row['group_visible']) {
+		$selected_groups[] = $row['group_id'];
+		$selected_sensors[] = $row['sensor_id'];
+	}
+	else if(in_array($row['sensor_id'], $requested_sensors)) {
+		$selected_groups[] = $row['group_id'];
+		$selected_sensors[] = $row['sensor_id'];
+		$selected_locations[] = $row['location_id'];
+	}
+	else if(in_array($row['group_id'], $requested_groups)) {
+		$selected_groups[] = $row['group_id'];
+		$selected_locations[] = $row['location_id'];
+	}
+}
+
+if(count($selected_sensors) == 0) {
+	$selected_locations = $all_locations;
+	$selected_groups = $all_groups;
+	$selected_sensors = $all_sensors;
+}
+
 $query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY timestamp ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $stmt = db_query_resultset($query, array($start_timestamp));
@@ -126,7 +206,7 @@ foreach($data as $row) {
 	if($row['description'] == '') {
 		$row['description'] = "Sensor $sensor";
 	}
-	$row['battery_date'] = 'nie';
+	$row['battery_date'] = 'never';
 	$row['battery_days'] = '';
 	$row['battery_state'] = 'unknown';
 
@@ -264,11 +344,15 @@ if(is_cli()) {
 	exit;
 }
 
-$query = 'SELECT id, url, row, height, width FROM munin_graphs ORDER BY id ASC';
+$query = 'SELECT g.id, url, row, height, width, gg.`group` FROM munin_graphs g JOIN graph_group gg ON (g.id = gg.graph) ORDER BY id ASC';
 $data = db_query($query);
 $graphs = array();
 $last_row = -1;
 foreach($data as $line) {
+	if(!in_array($line['group'], $selected_groups)) {
+		continue;
+	}
+
 	$url = $line['url'];
 	$row = $line['row'];
 	$id = $line['id'];
@@ -301,7 +385,7 @@ td.state_critical { background-color: #ff3300; }
 td.state_unknown { background-color: #e066ff; }
 td.odd { background-color: #f1f1f1; }
 div#lastrun { padding-bottom: 1em; }
-div#top_text { padding-bottom: 2em; }
+div#top_text { padding-bottom: 1em; }
 body > div > p { text-align: center; }
 img#img_loading { visibility: hidden; }
 a { text-decoration: none; }
@@ -354,7 +438,7 @@ function do_refresh() {
 								td_state.html(measurement['state_description']);
 								td_state.removeClass().addClass('state').addClass('state_' + measurement['state']);
 
-								$(tr_id + ' td.tendency').html(measurement['tendency']);
+								$(tr_id + ' td.tendency').html(measurement['localized_tendency']);
 							}
 
 							var value_data = '<strong>';
@@ -387,8 +471,35 @@ function do_refresh() {
 		});
 }
 
+function enable_parents(node) {
+	parent_input = node.parent().parent().children('input');
+	
+	if(parent_input.length) {
+		parent_input.prop('checked', true);
+		enable_parents(parent_input);
+	}
+}
+
 $(document).ready(function() {
 	start_refresh_timer();
+
+	$('#filter_link').click(function() {
+		$('#fieldset_filter').toggle('slow');
+	});
+
+	$('.checkbox_location').change(function() {
+		div_id = $(this).attr('id').replace('_', '_div_');
+		$('#' + div_id + ' input:checkbox').prop('checked', $(this).is(':checked'));
+	});
+
+	$('.checkbox_group').change(function() {
+		div_id = $(this).attr('id').replace('_', '_div_');
+		$('#' + div_id + ' input:checkbox').prop('checked', $(this).is(':checked'));
+	});
+
+	$('#fieldset_filter input:checkbox').change(function() {
+		enable_parents($(this));
+	});
 });
 // -->
 </script>
@@ -407,6 +518,37 @@ $(document).ready(function() {
 			<?php echo $config['top_text']; ?>
 		</div>
 	<?php endif; ?>
+	<div>
+	<div style="padding-bottom: 1em;">
+	<a href="#" id="filter_link">Filter</a>
+	</div>
+	<div id="fieldset_filter" style="display: none;">
+	<fieldset style="margin-bottom: 1.5em;">
+	<legend>Filter</legend>
+	<form method="get">
+	<?php foreach($locations as $location_id => $location): ?>
+		<div style="padding-bottom: 1em;">
+		<input class="checkbox_location" id="location_<?php echo $location_id; ?>" value="<?php echo $location_id ?>" type="checkbox" name="locations[]" <?php if(in_array($location_id, $selected_locations)): ?> checked="checked"<?php endif; ?> />
+		<label for="location_<?php echo $location_id; ?>"><?php echo $location['name'] ?></label>
+
+		<div style="padding-left: 10px;" id="location_div_<?php echo $location_id ?>">
+			<?php foreach($location['groups'] as $group_id => $group): ?>
+				<input class="checkbox_group" id="group_<?php echo $group_id; ?>" value="<?php echo $group_id ?>" type="checkbox" name="groups[]" <?php if(in_array($group_id, $selected_groups)): ?> checked="checked"<?php endif; ?> />
+				<label for="group_<?php echo $group_id; ?>"><?php echo $group['name'] ?></label>
+				
+				<div style="padding-left: 10px;" id="group_div_<?php echo $group_id ?>">
+					<?php foreach($group['sensors'] as $sensor_id => $sensor): ?>
+						<input id="sensor_<?php echo $sensor_id; ?>" value="<?php echo $sensor_id ?>" type="checkbox" name="sensors[]" <?php if(in_array($sensor_id, $selected_sensors)): ?> checked="checked"<?php endif; ?> />
+						<label for="sensor_<?php echo $sensor_id; ?>"><?php echo $sensor ?></label>
+					<?php endforeach; ?>
+				</div>
+			<?php endforeach; ?>
+		</div>
+		</div>
+	<?php endforeach; ?>
+	<input type="submit" value="Filtern" />
+	</form></fieldset>
+	</div></div>
 	<table>
 		<thead>
 			<tr>
@@ -421,7 +563,7 @@ $(document).ready(function() {
 			</tr>
 		</thead>
 		<tbody>
-			<?php $odd = 0; foreach($keys as $index => $key): $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? 'odd' : 'even'; ?>
+			<?php $odd = 0; foreach($keys as $index => $key): if(!in_array($key['sensor'], $selected_sensors)) continue; $sensor = $key['sensor']; $what = $key['what']; $odd = 1-$odd; $oddstring = $odd ? 'odd' : 'even'; ?>
 				<?php if(!isset($previous_sensor) || $sensor != $previous_sensor): ?>
 					<tr class="spacer">
 						<td></td>

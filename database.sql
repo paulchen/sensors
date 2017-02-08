@@ -200,6 +200,119 @@ CREATE TABLE IF NOT EXISTS `munin_graphs` (
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `account_location`
+--
+
+CREATE TABLE `account_location` (
+  `account` int(11) NOT NULL DEFAULT '0',
+  `location` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `graph_group`
+--
+
+CREATE TABLE `graph_group` (
+  `graph` int(11) NOT NULL DEFAULT '0',
+  `group` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `group`
+--
+
+CREATE TABLE `group` (
+  `id` int(11) NOT NULL,
+  `location` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `visible` tinyint(4) NOT NULL,
+  `pos` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `location`
+--
+
+CREATE TABLE `location` (
+  `id` int(11) NOT NULL,
+  `name` text NOT NULL,
+  `visible` tinyint(4) NOT NULL,
+  `pos` int(11) NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `sensor_group`
+--
+
+CREATE TABLE `sensor_group` (
+  `sensor` int(11) NOT NULL DEFAULT '0',
+  `group` int(11) NOT NULL DEFAULT '0'
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
+--
+-- Indizes der exportierten Tabellen
+--
+
+--
+-- Indizes für die Tabelle `account_location`
+--
+ALTER TABLE `account_location`
+  ADD PRIMARY KEY (`account`,`location`),
+  ADD KEY `location` (`location`);
+
+--
+-- Indizes für die Tabelle `graph_group`
+--
+ALTER TABLE `graph_group`
+  ADD PRIMARY KEY (`graph`,`group`),
+  ADD KEY `group` (`group`);
+
+--
+-- Indizes für die Tabelle `group`
+--
+ALTER TABLE `group`
+  ADD PRIMARY KEY (`id`),
+  ADD KEY `location` (`location`);
+
+--
+-- Indizes für die Tabelle `location`
+--
+ALTER TABLE `location`
+  ADD PRIMARY KEY (`id`);
+
+--
+-- Indizes für die Tabelle `sensor_group`
+--
+ALTER TABLE `sensor_group`
+  ADD PRIMARY KEY (`sensor`,`group`),
+  ADD KEY `group` (`group`);
+
+--
+-- AUTO_INCREMENT für exportierte Tabellen
+--
+
+--
+-- AUTO_INCREMENT für Tabelle `group`
+--
+ALTER TABLE `group`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+--
+-- AUTO_INCREMENT für Tabelle `location`
+--
+ALTER TABLE `location`
+  MODIFY `id` int(11) NOT NULL AUTO_INCREMENT;
+
 --
 -- Constraints der exportierten Tabellen
 --
@@ -230,4 +343,31 @@ ALTER TABLE `sensor_limits`
 --
 ALTER TABLE `battery_changes`
   ADD CONSTRAINT `battery_changes_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
+
+--
+-- Constraints der Tabelle `account_location`
+--
+ALTER TABLE `account_location`
+  ADD CONSTRAINT `account_location_ibfk_2` FOREIGN KEY (`location`) REFERENCES `location` (`id`),
+  ADD CONSTRAINT `account_location_ibfk_1` FOREIGN KEY (`account`) REFERENCES `api_accounts` (`id`);
+
+--
+-- Constraints der Tabelle `graph_group`
+--
+ALTER TABLE `graph_group`
+  ADD CONSTRAINT `graph_group_ibfk_2` FOREIGN KEY (`group`) REFERENCES `group` (`id`),
+  ADD CONSTRAINT `graph_group_ibfk_1` FOREIGN KEY (`graph`) REFERENCES `munin_graphs` (`id`);
+
+--
+-- Constraints der Tabelle `group`
+--
+ALTER TABLE `group`
+  ADD CONSTRAINT `group_ibfk_1` FOREIGN KEY (`location`) REFERENCES `location` (`id`);
+
+--
+-- Constraints der Tabelle `sensor_group`
+--
+ALTER TABLE `sensor_group`
+  ADD CONSTRAINT `sensor_group_ibfk_2` FOREIGN KEY (`group`) REFERENCES `group` (`id`),
+  ADD CONSTRAINT `sensor_group_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 
