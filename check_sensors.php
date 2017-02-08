@@ -75,7 +75,7 @@ foreach($sensors as $sensor_id) {
 		$limits[$row['value']] = $row;
 	}
 
-	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_data WHERE sensor = ? ORDER BY id DESC LIMIT 0, ?';
+	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_cache WHERE sensor = ? ORDER BY timestamp DESC LIMIT 0, ?';
 	$db_data = db_query($query, array($sensor_id, count($value_ids)));
 	$data = array();
 	$timestamps = array();

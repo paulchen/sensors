@@ -121,7 +121,7 @@ function get_sensors_state($sensors = array()) {
 	}
 
 	$question_marks = str_repeat('?, ', count($sensors)-1) . '?';
-	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache	 WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY id ASC';
+	$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? AND sensor IN (' . $question_marks . ') ORDER BY timestamp ASC';
 	$params = $sensors;
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	array_unshift($params, $start_timestamp);

@@ -28,7 +28,7 @@ foreach($data as $row) {
 	$values[$row['id']] = $row;
 }
 
-$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY id ASC';
+$query = 'SELECT sensor, what, UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE timestamp > ? ORDER BY timestamp ASC';
 $start_timestamp = date('Y-m-d H:i', time()-86400);
 $stmt = db_query_resultset($query, array($start_timestamp));
 

@@ -97,7 +97,7 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	exit;
 }
 
-$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_SUB(NOW(), INTERVAL 1 DAY) < timestamp ORDER BY id DESC LIMIT 0, 1';
+$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, value FROM sensor_cache WHERE sensor = ? AND what = ? AND DATE_SUB(NOW(), INTERVAL 1 DAY) < timestamp ORDER BY timestamp DESC LIMIT 0, 1';
 foreach($sensor_info as $index => $sensor) {
 	$data = db_query($query, array($sensor['id'], $value_id));
 	if(count($data) > 0) {
