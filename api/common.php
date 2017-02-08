@@ -10,6 +10,8 @@ require_once('common.php');
 chdir('api');
 
 function get_sensors() {
+	global $user_id;
+
 	$query = 'SELECT sensor AS sensor FROM sensor_cache WHERE timestamp > ? group by sensor';
 	$start_timestamp = date('Y-m-d H:i', time()-86400);
 	$data = db_query($query, array($start_timestamp));
@@ -27,8 +29,13 @@ function get_sensors() {
 	if(count($question_marks) > 0) {
 		$query = 'SELECT s.id AS id, COALESCE(s.display_name, s.description) AS name, s.hide AS hide
 			FROM sensors s
-			WHERE id IN (' . implode(', ', $question_marks) . ')
-			ORDER BY pos ASC';
+				JOIN sensor_group sg ON (s.id = sg.sensor)
+				JOIN `group` g ON (sg.group = g.id)
+				JOIN account_location al ON (al.location = g.location)
+			WHERE s.id IN (' . implode(', ', $question_marks) . ')
+				AND al.account = ?
+			ORDER BY s.pos ASC';
+		$sensor_ids[] = $user_id;
 		$sensors = db_query($query, $sensor_ids);
 	}
 

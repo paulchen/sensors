@@ -94,7 +94,13 @@ if(count($sensor_ids) != count($what_shorts) || count($sensor_ids) != count($val
 
 $inserts = array();
 
-$db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query('SELECT id FROM sensors'));
+$query = 'SELECT s.id id
+	FROM sensors s
+		JOIN sensor_group sg ON (sg.sensor = s.id)
+		JOIN `group` g ON (sg.group = g.id)
+		JOIN account_location al ON (g.location = al.location)
+	WHERE al.account = ?';
+$db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query($query, array($user_id)));
 
 $data = db_query('SELECT id, short FROM sensor_values');
 $sensor_values = array();
