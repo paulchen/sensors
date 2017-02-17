@@ -519,9 +519,11 @@ $(document).ready(function() {
 		</div>
 	<?php endif; ?>
 	<div>
+	<?php if(!$nothing_requested or $_REQUEST['filter'] == '1'): ?>
 	<div style="padding-bottom: 1em;">
 	<a href="#" id="filter_link">Filter</a>
 	</div>
+	<?php endif; ?>
 	<div id="fieldset_filter" style="display: none;">
 	<fieldset style="margin-bottom: 1.5em;">
 	<legend>Filter</legend>
