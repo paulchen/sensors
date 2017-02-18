@@ -2,3 +2,4 @@
 config.properties
 wunderground/*
 log/*.log*
+minmax.last

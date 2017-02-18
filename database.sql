@@ -260,6 +260,21 @@ CREATE TABLE `sensor_group` (
   `group` int(11) NOT NULL DEFAULT '0'
 ) ENGINE=InnoDB DEFAULT CHARSET=latin1;
 
+-- --------------------------------------------------------
+
+--
+-- Tabellenstruktur für Tabelle `all_time_list`
+--
+
+CREATE TABLE `all_time_list` (
+  `sensor` int(11) NOT NULL,
+  `what` int(11) NOT NULL,
+  `min_timestamp` timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+  `min` float NOT NULL,
+  `max_timestamp` timestamp NOT NULL DEFAULT '0000-00-00 00:00:00',
+  `max` float NOT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=latin1;
+
 --
 -- Indizes der exportierten Tabellen
 --
@@ -297,6 +312,13 @@ ALTER TABLE `location`
 ALTER TABLE `sensor_group`
   ADD PRIMARY KEY (`sensor`,`group`),
   ADD KEY `group` (`group`);
+
+--
+-- Indizes für die Tabelle `all_time_list`
+--
+ALTER TABLE `all_time_list`
+  ADD PRIMARY KEY (`sensor`,`what`),
+  ADD KEY `what` (`what`);
 
 --
 -- AUTO_INCREMENT für exportierte Tabellen
@@ -371,3 +393,9 @@ ALTER TABLE `sensor_group`
   ADD CONSTRAINT `sensor_group_ibfk_2` FOREIGN KEY (`group`) REFERENCES `group` (`id`),
   ADD CONSTRAINT `sensor_group_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
 
+--
+-- Constraints der Tabelle `all_time_list`
+--
+ALTER TABLE `all_time_list`
+  ADD CONSTRAINT `all_time_list_ibfk_2` FOREIGN KEY (`what`) REFERENCES `sensor_values` (`id`),
+  ADD CONSTRAINT `all_time_list_ibfk_1` FOREIGN KEY (`sensor`) REFERENCES `sensors` (`id`);
