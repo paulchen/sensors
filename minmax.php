@@ -38,4 +38,5 @@ foreach($data as $sensor => $item) {
 	}
 }
 
+touch(dirname(__FILE__) . '/minmax.last');
 
