@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, oursql
+import os, requests, logging, time, subprocess, threading, configparser, oursql, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
@@ -45,12 +45,23 @@ while(1):
 
     logger.info('Sending sensors %s, whats %s, values %s, timestamp %s to server %s; row id: %s', row['sensors'], row['whats'], row['values'], row['timestamp'], row['server'], row['id'])
 
-    resp = s.get(url, params={'action': 'submit', 'sensors': row['sensors'], 'whats': row['whats'], 'values': row['values'], 'timestamp': row['timestamp']}, timeout=30)
+    try:
+        resp = s.get(url, params={'action': 'submit', 'sensors': row['sensors'], 'whats': row['whats'], 'values': row['values'], 'timestamp': row['timestamp']}, timeout=30)
 
-    content = resp.text
-    if content == 'ok':
-        logger.info('Setting row %s to submitted', row['id'])
-        curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = ?', (row['id'], ))
+        content = resp.text
+        if content == 'ok':
+            logger.info('Setting row %s to submitted', row['id'])
+            curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = ?', (row['id'], ))
+
+    except urllib3.exceptions.ConnectTimeoutError:
+        logger.error('Timeout during update')
+
+    except urllib3.exceptions.ReadTimeoutError:
+        logger.error('Timeout during update')
+
+    except requests.exceptions.RequestException:
+        logger.error('Error during update')
+
 
 curs2.close()
 
