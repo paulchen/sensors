@@ -20,7 +20,7 @@ for key in settings['servers']:
         server_info[name] = server_section[name]
     servers.append(server_info)
 
-logfile = path + 'usb-wde1.log'
+logfile = path + '../log/usb-wde1.log'
 
 
 logger = logging.getLogger()
