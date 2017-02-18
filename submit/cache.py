@@ -16,7 +16,7 @@ for key in settings['servers']:
         server_info[name] = server_section[name]
     servers[server_name] = server_info
 
-logfile = path + 'cache.log'
+logfile = path + '../log/cache.log'
 
 
 logger = logging.getLogger()
