@@ -86,7 +86,7 @@ a { text-decoration: none; }
 						<td></td>
 					</tr>
 				<?php endif ?>
-				<tr id="data_<?php echo $index ?>" >
+				<tr>
 					<td class="<?php echo $oddstring ?>"><?php echo $row['description'] ?></td>
 					<td class="<?php echo $oddstring ?>"><?php echo $row['name'] ?></td>
 					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $row['formatted_max'] . "</strong> (" . $row['formatted_max_timestamp'] . ")" ?></td>
