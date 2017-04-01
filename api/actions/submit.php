@@ -120,9 +120,14 @@ for($a=0; $a<count($sensor_ids); $a++) {
 		die('3');
 	}
 
-	if(!in_array($sensor_id, $db_sensor_ids) || !isset($sensor_values[$what_short])) {
+	if(!in_array($sensor_id, $db_sensor_ids)) {
 		// TODO
-		die('4');
+		die('4b');
+	}
+
+	if(!isset($sensor_values[$what_short])) {
+		// TODO
+		die('4a');
 	}
 
 	$inserts[] = $timestamp;
