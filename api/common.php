@@ -147,7 +147,11 @@ function get_sensors_state($sensors = array()) {
 
 		$value = round($row['value'], $type_decimals[$what]);
 		$localized_value = round_local($row['value'], $type_decimals[$what]);
-		if($value < $limits[$sensor_id][$what]['low_crit']) {
+		if(!isset($limits[$sensor_id]) || !isset($limits[$sensor_id][$what])) {
+			$state = 'unknown';
+			$state_description = 'UNBEKANNT (keine Limits gesetzt)';
+		}
+		else if($value < $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
 			$state_description = sprintf('KRITISCH (unter %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$what]), $type_formats[$what]));
 		}
