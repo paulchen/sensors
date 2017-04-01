@@ -25,7 +25,7 @@ for key in settings['sensors']:
     sensors.append(sensor_info)
 
 
-logfile = path + 'submit_py.log'
+logfile = path + '../log/submit_py.log'
 
 
 logger = logging.getLogger()
