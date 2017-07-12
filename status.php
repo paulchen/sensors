@@ -522,7 +522,7 @@ $(document).ready(function() {
 	<div style="padding-bottom: 1em;">
 	<a href="bestenliste.php">Ewige Bestenliste</a>
 	</div>
-	<?php if(!$nothing_requested or $_REQUEST['filter'] == '1'): ?>
+	<?php if(!$nothing_requested or (isset($_REQUEST['filter']) && $_REQUEST['filter'] == '1')): ?>
 	<div style="padding-bottom: 1em;">
 	<a href="#" id="filter_link">Filter</a>
 	</div>

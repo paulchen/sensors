@@ -2,7 +2,7 @@
 
 require_once(dirname(__FILE__) . '/common.php');
 
-$sql = 'SELECT sensor, what, value, UNIX_TIMESTAMP(`timestamp`) `timestamp` FROM sensor_data ORDER BY `timestamp` ASC';
+$sql = "SELECT sensor, what, value, UNIX_TIMESTAMP(`timestamp`) `timestamp` FROM sensor_data WHERE `timestamp` >= '2012-02-23' ORDER BY `timestamp` ASC";
 $stmt = db_query_resultset($sql);
 $data = array();
 while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {

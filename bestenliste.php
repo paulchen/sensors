@@ -27,6 +27,14 @@ foreach($data as &$row) {
 }
 unset($row);
 
+$update_file = 'minmax.last';
+if(file_exists($update_file)) {
+	$stat_data = stat($update_file);
+	$last_update = date('d.m.Y H:i', $stat_data['mtime']);
+}
+else {
+	$last_update = 'nie';
+}
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -56,8 +64,11 @@ a { text-decoration: none; }
 <body>
 <div>
 	<h1>Ewige Bestenliste</h1>
-	<div style="padding-bottom: 2em;">
+	<div style="padding-bottom: 1em;">
 		<a href=".">Status</a>
+	</div>
+	<div style="padding-bottom: 2em;">
+		Zuletzt aktualisiert: <?php echo $last_update ?>
 	</div>
 	<table>
 		<thead>
@@ -75,7 +86,7 @@ a { text-decoration: none; }
 						<td></td>
 					</tr>
 				<?php endif ?>
-				<tr id="data_<?php echo $index ?>" >
+				<tr>
 					<td class="<?php echo $oddstring ?>"><?php echo $row['description'] ?></td>
 					<td class="<?php echo $oddstring ?>"><?php echo $row['name'] ?></td>
 					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $row['formatted_max'] . "</strong> (" . $row['formatted_max_timestamp'] . ")" ?></td>
