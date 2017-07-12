@@ -11,9 +11,14 @@ sensor_args = { '11': Adafruit_DHT.DHT11,
 if len(sys.argv) == 3 and sys.argv[1] in sensor_args:
     sensor = sensor_args[sys.argv[1]]
     pin = sys.argv[2]
+    offset = 0
+elif len(sys.argv) == 4 and sys.argv[1] in sensor_args:
+    sensor = sensor_args[sys.argv[1]]
+    pin = sys.argv[2]
+    offset = int(sys.argv[3])
 else:
-    print('usage: sudo ./adafruit_dht.py [11|22|2302] GPIOpin#')
-    print('example: sudo ./adafruit_dht.py 2302 4 - Read from an AM2302 connected to GPIO #4')
+    print('usage: sudo ./adafruit_dht.py [11|22|2302] GPIOpin# [humidity offset]')
+    print('example: sudo ./adafruit_dht.py 2302 4 10 - Read from an AM2302 connected to GPIO #4, add 10% to humidity')
     sys.exit(1)
 
 humidity1, temperature1 = Adafruit_DHT.read_retry(sensor, pin)
@@ -32,5 +37,5 @@ if temperature_difference > 1 or humidity_difference > 5:
     sys.exit(2)
 
 
-print("{0:0.1f}\n{1:0.1f}".format(temperature1, humidity1))
+print("{0:0.1f}\n{1:0.1f}".format(temperature1, humidity1+offset))
 
