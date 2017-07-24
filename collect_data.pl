@@ -102,9 +102,9 @@ sub format_timestamp {
 sub log_raw_data {
 	my ($db, $data, $url) = @_;
 
-	my $stmt = $db->prepare('INSERT INTO raw_data (data, url) VALUES (?, ?)');
-	$stmt->execute(($data, $url));
-	$stmt->finish();
+#	my $stmt = $db->prepare('INSERT INTO raw_data (data, url) VALUES (?, ?)');
+#	$stmt->execute(($data, $url));
+#	$stmt->finish();
 
 	if($debug) {
 		log_status("Raw data:");
