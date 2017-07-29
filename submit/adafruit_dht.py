@@ -36,6 +36,9 @@ temperature_difference = abs(float(temperature1) - float(temperature2))
 if temperature_difference > 1 or humidity_difference > 5:
     sys.exit(2)
 
+if humidity1 == 0:
+    sys.exit(3)
+
 
 print("{0:0.1f}\n{1:0.1f}".format(temperature1, humidity1+offset))
 
