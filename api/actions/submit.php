@@ -21,6 +21,10 @@ if(!(isset($_REQUEST['value']) xor isset($_REQUEST['values']))) {
 function dew_point($temp, $humid) {
 	// https://www.wetterochs.de/wetter/feuchte.html
 
+	if($humid == 0) {
+		return array('dewp' => $temp, 'abshum' => 0);
+	}
+
 	if($temp >= 0) {
 		$a = 7.5;
 		$b = 237.3;
