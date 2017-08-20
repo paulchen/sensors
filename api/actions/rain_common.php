@@ -14,9 +14,6 @@ function calculate_total_rain($rain_index) {
 	$first = $rain_index[0];
 	$last = $rain_index[count($rain_index) - 1];
 
-	if($last < $first) {
-		$last = $first;
-	}
 	return ($last - $first + $overflows * 4096) * 0.295;
 }
 
