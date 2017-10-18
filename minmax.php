@@ -2,7 +2,7 @@
 
 require_once(dirname(__FILE__) . '/common.php');
 
-$sql = "SELECT sensor, what, value, UNIX_TIMESTAMP(`timestamp`) `timestamp` FROM sensor_data WHERE `timestamp` >= '2012-02-23' ORDER BY `timestamp` ASC";
+$sql = "SELECT sensor, what, value, UNIX_TIMESTAMP(`timestamp`) `timestamp` FROM sensor_data WHERE `timestamp` >= '2012-02-23'";
 $stmt = db_query_resultset($sql);
 $data = array();
 while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
@@ -18,11 +18,11 @@ while($row = $stmt->fetch(PDO::FETCH_ASSOC)) {
 		$data[$sensor][$what] = array();
 	}
 
-	if(!isset($data[$sensor][$what]['min']) || $value < $data[$sensor][$what]['min']['value']) {
+	if(!isset($data[$sensor][$what]['min']) || $value < $data[$sensor][$what]['min']['value'] || ($value == $data[$sensor][$what]['min']['value'] && $timestamp < $data[$sensor][$what]['min']['timestamp'])) {
 		$data[$sensor][$what]['min'] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 
-	if(!isset($data[$sensor][$what]['max']) || $value > $data[$sensor][$what]['max']['value']) {
+	if(!isset($data[$sensor][$what]['max']) || $value > $data[$sensor][$what]['max']['value'] || ($value == $data[$sensor][$what]['max']['value'] && $timestamp < $data[$sensor][$what]['max']['timestamp'])) {
 		$data[$sensor][$what]['max'] = array('timestamp' => $timestamp, 'value' => $value);
 	}
 }
