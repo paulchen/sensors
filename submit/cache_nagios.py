@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, oursql, sys, configparser
+import os, requests, oursql, sys, configparser
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 settings = configparser.ConfigParser()
