@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, oursql, urllib3
+import os, requests, logging, time, subprocess, threading, configparser, MySQLdb, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
@@ -74,10 +74,10 @@ def submit_value(sensor, values, server, whats):
     sensors = ';'.join([sensor['id']] * len(values))
     try:
         db_settings = settings['database']
-        db = oursql.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'])
+        db = MySQLdb.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'], autocommit=True)
 
         curs = db.cursor()
-        curs.execute('INSERT INTO cache (`server`, `sensors`, `whats`, `values`) VALUES (?, ?, ?, ?)', (server['name'], sensors, ';'.join(whats), ';'.join(values)))
+        curs.execute('INSERT INTO cache (`server`, `sensors`, `whats`, `values`) VALUES (%s, %s, %s, %s)', (server['name'], sensors, ';'.join(whats), ';'.join(values)))
         rowid = curs.lastrowid
 
         resp = s.get(url, params={'action': 'submit', 'sensors': sensors, 'whats': ';'.join(whats), 'values': ';'.join(values)}, timeout=30)
@@ -86,7 +86,7 @@ def submit_value(sensor, values, server, whats):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
+        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = %s', (rowid, ))
         curs.close()
         db.close()
 
