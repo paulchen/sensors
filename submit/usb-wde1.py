@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import serial, sys, os, configparser, threading, requests, time, logging, oursql, re, urllib3
+import serial, sys, os, configparser, threading, requests, time, logging, MySQLdb, re, urllib3
 
 
 port = '/dev/ttyUSB0'
@@ -73,10 +73,10 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
 
     try:
         db_settings = settings['database']
-        db = oursql.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'])
+        db = MySQLdb.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'], autocommit=True)
 
         curs = db.cursor()
-        curs.execute('INSERT INTO cache (`server`, `sensors`, `whats`, `values`) VALUES (?, ?, ?, ?)', (server['name'], sensor_string, what_string, value_string))
+        curs.execute('INSERT INTO cache (`server`, `sensors`, `whats`, `values`) VALUES (%s, %s, %s, %s)', (server['name'], sensor_string, what_string, value_string))
         rowid = curs.lastrowid
 
         logger.info('Submitting values: sensors=%s, whats=%s, values=%s', sensor_string, what_string, value_string)
@@ -85,7 +85,7 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         if content != 'ok':
             raise requests.exceptions.RequestException
 
-        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = ?', (rowid, ))
+        curs.execute('UPDATE cache SET submitted = NOW() WHERE id = %s', (rowid, ))
         curs.close()
         db.close()
         
