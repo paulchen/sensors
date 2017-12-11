@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, oursql, urllib3
+import os, requests, logging, time, subprocess, threading, configparser, MySQLdb, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
@@ -26,18 +26,15 @@ logger.addHandler(handler)
 logger.setLevel(logging.DEBUG)
 
 db_settings = settings['database']
-db = oursql.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'])
+db = MySQLdb.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'], autocommit=True)
 
-curs = db.cursor(oursql.DictCursor)
+curs = db.cursor(MySQLdb.cursors.DictCursor)
 curs2 = db.cursor()
 
 logger.info('Searching for rows that have not been submitted')
 
 curs.execute('SELECT `id`, `server`, `sensors`, `whats`, `values`, UNIX_TIMESTAMP(`timestamp`) AS `timestamp` FROM cache WHERE submitted IS NULL AND `timestamp` < DATE_SUB(NOW(), INTERVAL 10 MINUTE) ORDER BY `id` ASC LIMIT 100')
-while(1):
-    row = curs.fetchone()
-    if row == None:
-        break
+for row in curs:
     server = servers[row['server']]
     url = server['url'] + '/api/'
     s = requests.session()
@@ -51,7 +48,7 @@ while(1):
         content = resp.text
         if content == 'ok':
             logger.info('Setting row %s to submitted', row['id'])
-            curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = ?', (row['id'], ))
+            curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = %s', (row['id'], ))
 
     except urllib3.exceptions.ConnectTimeoutError:
         logger.error('Timeout during update')
