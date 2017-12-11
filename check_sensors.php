@@ -14,7 +14,7 @@ if($argv[1] != '--sensors' && $argv[1] != '-s') {
 	usage();
 }
 
-$sensors = split(',', $argv[2]);
+$sensors = explode(',', $argv[2]);
 foreach($sensors as $sensor) {
 	if(!preg_match('/^[0-9]+/', $sensor)) {
 		echo "Invalid sensor ID: $sensor\n";
