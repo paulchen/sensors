@@ -3,7 +3,7 @@ require_once(dirname(__FILE__) . '/api/common.php');
 require_once(dirname(__FILE__) . '/api/actions/rain_common.php');
 
 #$query = "SELECT id, UNIX_TIMESTAMP(`timestamp`) `timestamp`, value FROM sensor_data WHERE `timestamp` > '2016-07-20 00:00:00' AND sensor = 9 AND what = 4";
-$query = "SELECT id, UNIX_TIMESTAMP(`timestamp`) `timestamp`, value FROM sensor_data WHERE sensor = 9 AND what = 4 AND value > 100";
+$query = "SELECT id, UNIX_TIMESTAMP(`timestamp`) `timestamp`, value FROM sensor_data WHERE sensor = 9 AND what = 4 AND value > 10 AND `timestamp` > '2017-10-29 00:00:00'";
 $stmt = db_query_resultset($query);
 $count = 0;
 $handle = fopen('/tmp/fix_rain.csv', 'w');
