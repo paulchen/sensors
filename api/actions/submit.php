@@ -17,6 +17,7 @@ if(!(isset($_REQUEST['value']) xor isset($_REQUEST['values']))) {
 	die('2');
 }
 
+require_once(dirname(__FILE__) . '/rain_common.php');
 
 function dew_point($temp, $humid) {
 	// https://www.wetterochs.de/wetter/feuchte.html
@@ -46,7 +47,7 @@ function dew_point($temp, $humid) {
 
 	$abshum = 100000 * 18.016 / 8314.3 * $dd / $tk;
 
-	return array('dewp' => $td, 'abshum' => $abshum);
+	return array('dewp' => round($td, 1), 'abshum' => round($abshum, 1));
 }
 
 function apparent_temperature($temp, $humid, $wind) {
@@ -82,7 +83,75 @@ function apparent_temperature($temp, $humid, $wind) {
 		$c8 * $temp_f * $humid * $humid +
 		$c9 * $temp_f * $temp_f * $humid * $humid;
 
-	return ($hi_f - 32) / 1.8;
+	return round(($hi_f - 32) / 1.8, 1);
+}
+
+function get_cached_value($sensor, $what) {
+	global $memcached, $memcached_prefix;
+
+	$memcached_key = "${memcached_prefix}_value_${sensor}_${what}";
+	$value = $memcached->get($memcached_key);
+	if($value == null) {
+		return null;
+	}
+	return substr($value, 3);
+}
+
+function set_cached_value($sensor, $what, $value) {
+	global $memcached, $memcached_prefix;
+
+	$memcached_key = "${memcached_prefix}_value_${sensor}_${what}";
+	$memcached->set($memcached_key, "V: $value", 290);
+}
+
+function add_inserts($cache_only, ...$values) {
+	global $inserts, $cache_inserts;
+
+	foreach($values as $value) {
+		if(!$cache_only) {
+			$inserts[] = $value;
+		}
+		$cache_inserts[] = $value;
+	}
+}
+
+function do_inserts($table, $inserts) {
+	if(count($inserts) == 0) {
+		return;
+	}
+
+	$parameters = array();
+	for($a=0; $a<count($inserts)/4; $a++) {
+		$parameters[] = '(FROM_UNIXTIME(?), ?, ?, ?)';
+	}
+	$parameter_string = implode(', ', $parameters);
+
+	db_query("INSERT INTO $table (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
+}
+
+function process_values($sensor_id, $what_short, $value) {
+	global $timestamp, $memcached_updates, $sensor_values;
+
+	$cache_only = false;
+	$cached_value = get_cached_value($sensor_id, $what_short);
+	if(time() - $timestamp < 290 && $cached_value != null && $cached_value == $value) {
+		$cache_only = true;
+/*
+		// $handle = fopen('/tmp/ipwe-wtf', 'a');
+		print("time(): " . time() . "\n");
+		print("timestamp: $timestamp\n");
+		print("sensor_id: $sensor_id\n");
+		print("what_short: $what_short\n");
+		print("value: $value\n");
+		print("cached_value: " . get_cached_value($sensor_id, $what_short) . "\n");
+		// fclose($handle);
+ */
+	}
+	else {
+		$memcached_updates[] = array('sensor' => $sensor_id, 'what' => $what_short, 'value' => $value);
+	}
+
+	add_inserts($cache_only, $timestamp, $sensor_id, $sensor_values[$what_short], $value);
 }
 
 
@@ -97,6 +166,7 @@ if(count($sensor_ids) != count($what_shorts) || count($sensor_ids) != count($val
 }
 
 $inserts = array();
+$cache_inserts = array();
 
 $query = 'SELECT s.id id
 	FROM sensors s
@@ -114,6 +184,9 @@ foreach($data as $row) {
 
 $dewpoint_data = array();
 $rain_sensors = array();
+
+$memcached_updates = array();
+
 for($a=0; $a<count($sensor_ids); $a++) {
 	$value = $values[$a];
 	$sensor_id = $sensor_ids[$a];
@@ -134,20 +207,16 @@ for($a=0; $a<count($sensor_ids); $a++) {
 		die('4a');
 	}
 
-	$inserts[] = $timestamp;
-	$inserts[] = $sensor_id;
-	$inserts[] = $sensor_values[$what_short];
-	$inserts[] = $value;
-
-	if($what_short == 'rain_idx') {
-		$rain_sensors[] = $sensor_id;
-	}
-
 	if($what_short == 'humid' || $what_short == 'temp' || $what_short == 'wind') {
 		if(!isset($dewpoint_data[$sensor_id])) {
 			$dewpoint_data[$sensor_id] = array();
 		}
 		$dewpoint_data[$sensor_id][$what_short] = $value;
+	}
+
+	process_values($sensor_id, $what_short, $value);
+	if($what_short == 'rain_idx') {
+		$rain_sensors[] = $sensor_id;
 	}
 }
 
@@ -156,34 +225,44 @@ foreach($dewpoint_data as $sensor_id => $data) {
 		$result = dew_point($data['temp'], $data['humid']);
 
 		foreach(array('dewp', 'abshum') as $sensor_value) {
-			$inserts[] = $timestamp;
-			$inserts[] = $sensor_id;
-			$inserts[] = $sensor_values[$sensor_value];
-			$inserts[] = $result[$sensor_value];
+			process_values($sensor_id, $sensor_value, $result[$sensor_value]);
 		}
 	}
 
 	if(isset($data['temp']) && isset($data['humid']) && isset($data['wind'])) {
 		$result = apparent_temperature($data['temp'], $data['humid'], $data['wind']);
 
-		$inserts[] = $timestamp;
-		$inserts[] = $sensor_id;
-		$inserts[] = $sensor_values['apparent'];
-		$inserts[] = $result;
+		process_values($sensor_id, 'apparent', $result);
 	}
 }
 
-$parameters = array();
-for($a=0; $a<count($inserts)/4; $a++) {
-	$parameters[] = '(FROM_UNIXTIME(?), ?, ?, ?)';
+if(time() - $timestamp < 100) {
+	// TODO this needs to be fixed for time() - $timestamp >= 100
+	$daily_rain_calculated = false;
+	foreach($rain_sensors as $sensor) {
+		$one_hour_ago = $timestamp - 3600;
+
+		$total_rain = get_total_rain($one_hour_ago, $timestamp, $sensor, $sensor_values['rain_idx']);
+
+		process_values($sensor, 'rain', $total_rain);
+
+		if(!$daily_rain_calculated && time() - $timestamp < 290) {
+			$one_day_ago = time() - 86400;
+
+			$daily_rain = get_total_rain($one_day_ago, time(), $sensor, $sensor_values['rain_idx']);
+			$memcached->set("${memcached_prefix}_daily_rain", $daily_rain, 86400);
+			$daily_rain_calculated = true;
+		}
+	}
 }
-$parameter_string = implode(', ', $parameters);
 
-db_query("INSERT INTO sensor_cache (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
-db_query("INSERT INTO sensor_data (timestamp, sensor, what, value) VALUES $parameter_string", $inserts);
+do_inserts('sensor_cache', $cache_inserts);
+do_inserts('sensor_data', $inserts);
 
-if(count($rain_sensors) > 0) {
-	require_once(dirname(__FILE__) . '/rain.php');
+if(time() - $timestamp < 290) {
+	foreach($memcached_updates as $value) {
+		set_cached_value($value['sensor'], $value['what'], $value['value']);
+	}
 }
 
 die('ok');
