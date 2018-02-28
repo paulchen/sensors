@@ -2,24 +2,22 @@
 <?php
 
 function usage() {
-	echo "Usage: check_battery.php --sensors <sensor>,<sensor>,... --config-file <directory>\n";
-	echo "--sensors and --config-file can be abbreviated to -s and -c, respectively.\n";
+	echo "Usage: check_battery.php --sensor <sensor> --config-file <directory>\n";
+	echo "--sensor and --config-file can be abbreviated to -s and -c, respectively.\n";
 	die(3);
 }
 
 if($argc != 3 && $argc != 5) {
 	usage();
 }
-if($argv[1] != '--sensors' && $argv[1] != '-s') {
+if($argv[1] != '--sensor' && $argv[1] != '-s') {
 	usage();
 }
 
-$sensors = explode(',', $argv[2]);
-foreach($sensors as $sensor) {
-	if(!preg_match('/^[0-9]+/', $sensor)) {
-		echo "Invalid sensor ID: $sensor\n";
-		die(3);
-	}
+$sensor_id = $argv[2];
+if(!preg_match('/^[0-9]+/', $sensor_id)) {
+	echo "Invalid sensor ID: $sensor_id\n";
+	die(3);
 }
 
 $config_file = 'config.properties';
@@ -41,55 +39,51 @@ foreach($data as $row) {
 	$value_ids[$row['id']] = $row;
 }
 
-$states = array(0);
-$messages = array();
-foreach($sensors as $sensor_id) {
-	$query = 'SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
-	$data = db_query($query, array($sensor_id));
-	if(count($data) == 0) {
-		echo "No data for sensor with ID $sensor\n";
-		die(3);
-	}
+$query = 'SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
+$data = db_query($query, array($sensor_id));
+if(count($data) == 0) {
+	echo "No data for sensor with ID $sensor_id\n";
+	die(3);
+}
 
-	$sensor = $data[0]['sensor'];
-	$sensor_description = $data[0]['description'];
+$sensor = $data[0]['sensor'];
+$sensor_description = $data[0]['description'];
 
-	if($sensor_description == '') {
-		$sensor_description = "Sensor $sensor";
-	}
+if($sensor_description == '') {
+	$sensor_description = "Sensor $sensor";
+}
 
-	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1';
-	$data = db_query($query, array($sensor_id));
-	if(count($data) == 1) {
-		$timestamp = $data[0]['timestamp'];
-	}
-	else {
-		$timestamp = $value; // TODO wtf, what is $value?
-	}
+$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM battery_changes WHERE sensor = ? ORDER BY id DESC LIMIT 0, 1';
+$data = db_query($query, array($sensor_id));
+if(count($data) == 1) {
+	$timestamp = $data[0]['timestamp'];
+}
+else {
+	$timestamp = 0; 
+}
 
-	if($timestamp == 0) {
-		$messages[] = "$sensor_description - no battery change recorded";
-		$states[] = 3;
-	}
+if($timestamp == 0) {
+	$message = "$sensor_description - no battery change recorded";
+	$state = 3;
+}
+else {
 	$battery_days = floor((time() - $timestamp)/86400);
 	if($battery_days > $config['battery_critical']) {
 		$critical = $config['battery_critical'];
-		$messages[] = "$sensor_description - last battery change was more than $critical days ago";
-		$states[] = 2;
+		$message = "$sensor_description - last battery change was more than $critical days ago";
+		$state = 2;
 	}
 	else if($battery_days > $config['battery_warning']) {
 		$warning = $config['battery_warning'];
-		$messages[] = "$sensor_description - last battery change was more than $warning days ago";
-		$states[] = 1;
+		$message = "$sensor_description - last battery change was more than $warning days ago";
+		$state = 1;
+	}
+	else {
+		$message = "$sensor_description - ok";
+		$state = 0;
 	}
 }
 
-if(count($messages) == 0) {
-	$message = 'all sensors ok';
-}
-else {
-	$message = implode('; ', $messages);
-}
 echo "$message\n";
-die(max($states));
+die($state);
 
