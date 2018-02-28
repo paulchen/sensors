@@ -92,11 +92,12 @@ if(count($data) == 0) {
 	die(3);
 }
 $timestamp_warning = false;
+$max_state = 0;
 foreach($timestamps as $timestamp) {
 	if(time()-$timestamp > $outdated && !$timestamp_warning) {
 		$timestamp_warning = true;
 		$message = "$sensor_description - no recent data";
-		$state = 3;
+		$max_state = 3;
 	}
 }
 
@@ -112,6 +113,7 @@ if(!$timestamp_warning) {
 
 		$name = $value_ids[$what]['name'];
 		$value = str_replace('%s', round($item, $value_ids[$what]['decimals']), $value_ids[$what]['format']);
+		$state = 0;
 		if($item < $limits[$what]['low_crit']) {
 			$state = 2;
 		}
@@ -130,10 +132,13 @@ if(!$timestamp_warning) {
 			case 2: $state_string = 'CRITICAL'; break;
 		}
 		$parts[] = "$name: $state_string ($value)";
+		if ($state > $max_state) {
+			$max_state = $state;
+		}
 	}
 	$message .= implode('; ', $parts);
 }
 
 echo "$message\n";
-die($state);
+die($max_state);
 
