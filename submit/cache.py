@@ -33,7 +33,9 @@ curs2 = db.cursor()
 
 logger.info('Searching for rows that have not been submitted')
 
-curs.execute('SELECT `id`, `server`, `sensors`, `whats`, `values`, UNIX_TIMESTAMP(`timestamp`) AS `timestamp` FROM cache WHERE submitted IS NULL AND `timestamp` < DATE_SUB(NOW(), INTERVAL 10 MINUTE) ORDER BY `id` ASC LIMIT 100')
+# fix for fucking DST problems
+# see https://stackoverflow.com/questions/5748547/mysql-date-sub-date-add-that-accounts-for-dst/42478811#42478811
+curs.execute("SELECT `id`, `server`, `sensors`, `whats`, `values`, UNIX_TIMESTAMP(`timestamp`) AS `timestamp` FROM cache WHERE submitted IS NULL AND `timestamp` < CONVERT_TZ(DATE_SUB(CONVERT_TZ(NOW(), @@session.time_zone, '+0:00'), INTERVAL 10 MINUTE), '+0:00', @@session.time_zone) ORDER BY `id` ASC LIMIT 100")
 for row in curs:
     server = servers[row['server']]
     url = server['url'] + '/api/'
