@@ -78,7 +78,9 @@ CREATE TABLE IF NOT EXISTS `sensor_cache` (
   `value` float NOT NULL,
   PRIMARY KEY (`id`),
   KEY `sensor` (`sensor`),
-  KEY `what` (`what`)
+  KEY `what` (`what`),
+  KEY `sensor_cache_timestamp_idx` (`timestamp`),
+  KEY `sensor_cache_sensor_what_timestamp_idx` (`sensor`,`what`,`timestamp`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
 --
