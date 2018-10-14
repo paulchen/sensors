@@ -296,10 +296,18 @@ foreach($keys as $index => $key) {
 
 	$avg_values[$index]['formatted_value'] = str_replace('%s', round_local($avg_values[$index]['value'], $values[$what]['decimals']), $values[$what]['format']);
 
-	$formatted_limits[$index]['low_crit'] = str_replace('%s', round_local($limits[$index]['low_crit'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['low_warn'] = str_replace('%s', round_local($limits[$index]['low_warn'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['high_warn'] = str_replace('%s', round_local($limits[$index]['high_warn'], $values[$what]['decimals']), $values[$what]['format']);
-	$formatted_limits[$index]['high_crit'] = str_replace('%s', round_local($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
+	if(isset($limits[$index])) {
+		$formatted_limits[$index]['low_crit'] = str_replace('%s', round_local($limits[$index]['low_crit'], $values[$what]['decimals']), $values[$what]['format']);
+		$formatted_limits[$index]['low_warn'] = str_replace('%s', round_local($limits[$index]['low_warn'], $values[$what]['decimals']), $values[$what]['format']);
+		$formatted_limits[$index]['high_warn'] = str_replace('%s', round_local($limits[$index]['high_warn'], $values[$what]['decimals']), $values[$what]['format']);
+		$formatted_limits[$index]['high_crit'] = str_replace('%s', round_local($limits[$index]['high_crit'], $values[$what]['decimals']), $values[$what]['format']);
+	}
+	else {
+		$formatted_limits[$index]['low_crit'] = 'Kein Limit festgelegt';
+		$formatted_limits[$index]['low_warn'] = 'Kein Limit festgelegt';
+		$formatted_limits[$index]['high_warn'] = 'Kein Limit festgelegt';
+		$formatted_limits[$index]['high_crit'] = 'Kein Limit festgelegt';
+	}
 }
 
 $timestamp = get_last_cron_run();
