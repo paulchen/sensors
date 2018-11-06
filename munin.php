@@ -10,12 +10,9 @@ if(isset($_ENV['config_dir'])) {
 require_once('common.php');
 
 $parts = explode('_', $argv[0]);
-if(count($parts) != 3) {
-	echo "Invalid name of symlink.\n";
-	die(3);
-}
-$value = $parts[1];
-$sensor_list = $parts[2];
+array_shift($parts);
+$sensor_list = array_pop($parts);
+$value = implode('_', $parts);
 
 $query = 'SELECT id, name, unit, min, max, decimals FROM sensor_values WHERE short = ?';
 $data = db_query($query, array($value));
