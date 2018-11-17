@@ -21,7 +21,7 @@ foreach($data as $row) {
 	}
 }
 
-$query = 'SELECT id, name, format, decimals, hide FROM sensor_values';
+$query = 'SELECT id, name, short AS short_name, format, decimals, hide FROM sensor_values';
 $data = db_query($query);
 $values = array();
 foreach($data as $row) {
@@ -373,6 +373,26 @@ foreach($data as $line) {
 	$last_row = $row;
 }
 
+function print_ice() {
+	echo ' <span style="color: blue; font-family: emoji;">❄️</span>';
+}
+
+function print_value($item, $what) {
+	echo "<strong>" . $item['formatted_value'] . "</strong>";
+	if($item['value'] < 0 && $what['short_name'] == 'temp') {
+		print_ice();
+	}
+	if(isset($item['formatted_timestamp'])) {
+		echo " (" . $item['formatted_timestamp'] . ")";
+	}
+}
+
+function print_location_ice($item, $what) {
+	if($item['value'] < 0 && $what['short_name'] == 'temp') {
+		print_ice();
+	}
+}
+
 ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.1//EN"
     "http://www.w3.org/TR/xhtml11/DTD/xhtml11.dtd">
@@ -407,16 +427,21 @@ function start_refresh_timer() {
 	$('#img_loading').css('visibility', 'hidden');
 }
 
-function format_value(type, types, value) {
-	var result = value;
+function find_type(types, id) {
+	var result = null;
 	$.each(types['type'], function(index, item) {
-		if(item['id'] == type) {
-			var format = item['format'];
-			result = format.replace(/%s/g, value);
+		if(item['id'] == id) {
+			result = item;
 		}
 	});
 
 	return result;
+}
+
+function format_value(type, types, value) {
+	var item = find_type(types, type);
+	var format = item['format'];
+	return format.replace(/%s/g, value);
 }
 
 function do_refresh() {
@@ -452,6 +477,9 @@ function do_refresh() {
 							var value_data = '<strong>';
 							value_data += format_value(value['type'], data['types'], measurement['localized_value']);
 							value_data += '</strong>';
+							if(measurement['value'] < 0 && find_type(data['types'], value['type'])['short_name'] == 'temp') {
+								value_data += '<?php print_ice() ?>';
+							}
 							if('timestamp' in measurement) {
 								value_data += ' (';
 								value_data += new Date(measurement['timestamp']).toString('<?php echo $config['date_pattern.javascript'] ?>');
@@ -583,13 +611,13 @@ $(document).ready(function() {
 					</tr>
 				<?php endif ?>
 				<tr id="data_<?php echo $index ?>" >
-					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description'] ?></td>
+					<td class="<?php echo $oddstring ?>"><?php echo $sensors[$sensor]['description']; print_location_ice($min_values[$index], $values[$what]) ?></td>
 					<td class="<?php echo $oddstring ?>"><?php echo $values[$what]['name'] ?></td>
 					<td class="state state_<?php echo $state_class[$index] ?>"><?php echo $states[$index] ?></td>
-					<td class="current <?php echo $oddstring ?>"><?php echo "<strong>" . $current_values[$index]['formatted_value'] . "</strong> (" . $current_values[$index]['formatted_timestamp'] . ")" ?></td>
-					<td class="maximum <?php echo $oddstring ?>"><?php echo "<strong>" . $max_values[$index]['formatted_value'] . "</strong> (" . $max_values[$index]['formatted_timestamp'] . ")" ?></td>
-					<td class="minimum <?php echo $oddstring ?>"><?php echo "<strong>" . $min_values[$index]['formatted_value'] . "</strong> (" . $min_values[$index]['formatted_timestamp'] . ")" ?></td>
-					<td class="average <?php echo $oddstring ?>"><?php echo "<strong>" . $avg_values[$index]['formatted_value'] . "</strong>" ?></td>
+					<td class="current <?php echo $oddstring ?>"><?php print_value($current_values[$index], $values[$what]) ?></td>
+					<td class="maximum <?php echo $oddstring ?>"><?php print_value($max_values[$index], $values[$what]) ?></td>
+					<td class="minimum <?php echo $oddstring ?>"><?php print_value($min_values[$index], $values[$what]) ?></td>
+					<td class="average <?php echo $oddstring ?>"><?php print_value($avg_values[$index], $values[$what]) ?></td>
 					<td class="tendency <?php echo $oddstring ?>"><?php echo $tendencies[$index] ?></td>
 				</tr>
 			<?php $previous_sensor = $sensor; endforeach; ?>
