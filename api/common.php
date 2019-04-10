@@ -57,7 +57,7 @@ function get_type_data($sensor_data = array()) {
 		}
 	}
 
-	$query = 'SELECT id, name, format, min, max, decimals, hide FROM sensor_values ORDER BY id ASC';
+	$query = 'SELECT id, short AS short_name, name, format, min, max, decimals, hide FROM sensor_values ORDER BY id ASC';
 	$data = db_query($query);
 	$type_data = array();
 	foreach($data as $row) {
