@@ -90,15 +90,15 @@ def submit_value(server, sensor_parts, what_parts, value_parts):
         db.close()
         
     except urllib3.exceptions.ConnectTimeoutError:
-        logger.error('Timeout during update')
+        logger.exception('Timeout during update')
         return
 
     except urllib3.exceptions.ReadTimeoutError:
-        logger.error('Timeout during update')
+        logger.exception('Timeout during update')
         return
 
     except requests.exceptions.RequestException:
-        logger.error('Error during update')
+        logger.exception('Error during update')
         return
 
     end_time = time.time()
