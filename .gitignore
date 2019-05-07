@@ -1,5 +1,6 @@
 *.log*
 config.properties
-wunderground/*
 log/*.log*
 minmax.last
+delete.sql
+cleanup.dat
