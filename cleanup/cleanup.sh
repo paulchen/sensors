@@ -5,7 +5,7 @@ if [ "$1" == "" ]; then
 fi
 
 TMP_LOG=/tmp/cleanup.log
-LOGFILE=log/cleanup.log
+LOGFILE=../log/cleanup.log
 ERROR=0
 
 fail() {

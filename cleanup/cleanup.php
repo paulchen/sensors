@@ -29,7 +29,7 @@ function handle_candidate($handle, $candidates, $key, $newest_value) {
 	}	
 }
 
-require_once(dirname(__FILE__) . '/common.php');
+require_once(dirname(__FILE__) . '/../common.php');
 
 $newest_values = array();
 $candidates = array();

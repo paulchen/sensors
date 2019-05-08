@@ -14,7 +14,7 @@ switch($argv[1]) {
 		die(2);
 }
 
-require_once(dirname(__FILE__) . '/common.php');
+require_once(dirname(__FILE__) . '/../common.php');
 
 function perform_delete($ids) {
 	global $table;
