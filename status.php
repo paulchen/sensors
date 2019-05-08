@@ -318,19 +318,10 @@ else {
 	$last_cron_run = date($config['date_pattern.php'], $timestamp);
 }
 
-$timestamp = get_last_successful_cron_run();
-if($timestamp == '') {
-	$last_successful_cron_run = 'nie';
-}
-else {
-	$last_successful_cron_run = date($config['date_pattern.php'], $timestamp);
-}
-
 $rain = get_rain();
 
 if(is_cli()) {
 	echo "Last cronjob run: $last_cron_run\n";
-	echo "Last successful cronjob run: $last_successful_cron_run\n\n\n";
 	foreach($keys as $index => $key) {
 		$sensor = $key['sensor'];
 		$what = $key['what'];
@@ -545,7 +536,6 @@ $(document).ready(function() {
 	<h1>Aktueller Sensorstatus</h1>
 	<div id="lastrun">
 		Letzte Datenaktualisierung: <span id="status_last_cron_run"><?php echo $last_cron_run; ?></span><br />
-		Letzte erfolgreiche Datenaktualisierung: <span id="status_last_successful_cron_run"><?php echo $last_successful_cron_run; ?></span><br />
 		Letzte Seitenaktualisierung: <span id="status_last_page_load"><?php echo date($config['date_pattern.php']); ?></span><br />
 		<img id="img_loading" src="ajax-loader.gif" alt="Lade..." title="Lade..." />
 	</div>

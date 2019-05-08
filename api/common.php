@@ -255,11 +255,9 @@ function get_image_urls() {
 
 function get_status() {
 	$last_cron_run = get_last_cron_run();
-	$last_successful_cron_run = get_last_successful_cron_run();
 
 	return array(
 		'last_cron_run' => $last_cron_run,
-		'last_successful_cron_run' => $last_successful_cron_run,
 		'last_page_load' => time()
 	);
 }

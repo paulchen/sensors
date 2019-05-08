@@ -178,15 +178,6 @@ function get_rain() {
 }
 
 function get_last_cron_run() {
-	$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp FROM cronjob_executions ORDER BY id DESC LIMIT 0, 1';
-	$data = db_query($query);
-	if(count($data) == 0) {
-		return '';
-	}
-	return $data[0]['timestamp'];
-}
-
-function get_last_successful_cron_run() {
 	$query = 'SELECT UNIX_TIMESTAMP(MAX(timestamp)) timestamp FROM sensor_cache';
 	$data = db_query($query);
 	if(count($data) == 0) {
