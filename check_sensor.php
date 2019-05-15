@@ -73,8 +73,9 @@ foreach($data as $row) {
 	$limits[$row['value']] = $row;
 }
 
-$query = 'SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_cache WHERE sensor = ? ORDER BY timestamp DESC LIMIT 0, ?';
-$db_data = db_query($query, array($sensor_id, count($value_ids)));
+$count = count($value_ids);
+$query = "SELECT UNIX_TIMESTAMP(timestamp) timestamp, what, value FROM sensor_cache WHERE sensor = ? ORDER BY timestamp DESC LIMIT 0, $count";
+$db_data = db_query($query, array($sensor_id));
 $data = array();
 $timestamps = array();
 foreach($db_data as $row) {
