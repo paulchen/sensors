@@ -151,7 +151,7 @@ function process_values($sensor_id, $what_short, $value) {
 		$memcached_updates[] = array('sensor' => $sensor_id, 'what' => $what_short, 'value' => $value);
 	}
 
-	add_inserts($cache_only, $timestamp, $sensor_id, $sensor_values[$what_short], $value);
+	add_inserts($cache_only, $timestamp, $sensor_id, $sensor_values[$what_short]['id'], $value);
 }
 
 
@@ -176,10 +176,10 @@ $query = 'SELECT s.id id
 	WHERE al.account = ?';
 $db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query($query, array($user_id)));
 
-$data = db_query('SELECT id, short FROM sensor_values');
+$data = db_query('SELECT id, short, min, max FROM sensor_values');
 $sensor_values = array();
 foreach($data as $row) {
-	$sensor_values[$row['short']] = $row['id'];
+	$sensor_values[$row['short']] = $row;
 }
 
 $dewpoint_data = array();
@@ -205,6 +205,15 @@ for($a=0; $a<count($sensor_ids); $a++) {
 	if(!isset($sensor_values[$what_short])) {
 		// TODO
 		die('4a');
+	}
+
+	if($sensor_values[$what_short]['min'] && $value < $sensor_values[$what_short]['min']) {
+		// ignore value that is too low; ignore the whole measurement (the other values may come from the same sensor!)
+		die('4c');
+	}
+	if($sensor_values[$what_short]['max'] && $value > $sensor_values[$what_short]['max']) {
+		// ignore value that is too high; ignore the whole measurement (the other values may come from the same sensor!)
+		die('4d');
 	}
 
 	if($what_short == 'humid' || $what_short == 'temp' || $what_short == 'wind') {
@@ -242,14 +251,14 @@ if(time() - $timestamp < 100) {
 	foreach($rain_sensors as $sensor) {
 		$one_hour_ago = $timestamp - 3600;
 
-		$total_rain = get_total_rain($one_hour_ago, $timestamp, $sensor, $sensor_values['rain_idx']);
+		$total_rain = get_total_rain($one_hour_ago, $timestamp, $sensor, $sensor_values['rain_idx']['id']);
 
 		process_values($sensor, 'rain', $total_rain);
 
 		if(!$daily_rain_calculated && time() - $timestamp < 290) {
 			$one_day_ago = time() - 86400;
 
-			$daily_rain = get_total_rain($one_day_ago, time(), $sensor, $sensor_values['rain_idx']);
+			$daily_rain = get_total_rain($one_day_ago, time(), $sensor, $sensor_values['rain_idx']['id']);
 			$memcached->set("${memcached_prefix}_daily_rain", $daily_rain, 86400);
 			$daily_rain_calculated = true;
 		}
