@@ -108,7 +108,7 @@ if(!$timestamp_warning) {
 	$parts = array();
 	foreach($data as $what => $item) {
 		if(!isset($limits[$what])) {
-			echo "Missing limits for sensor with ID $sensor_id\n";
+			echo "Missing limits for sensor value $what sensor with ID $sensor_id\n";
 			die(3);
 		}
 
