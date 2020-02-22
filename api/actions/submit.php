@@ -252,15 +252,19 @@ if(time() - $timestamp < 100) {
 		$one_hour_ago = $timestamp - 3600;
 
 		$total_rain = get_total_rain($one_hour_ago, $timestamp, $sensor, $sensor_values['rain_idx']['id']);
-
-		process_values($sensor, 'rain', $total_rain);
+		
+		if($total_rain < 100) {
+			process_values($sensor, 'rain', $total_rain);
+		}
 
 		if(!$daily_rain_calculated && time() - $timestamp < 290) {
 			$one_day_ago = time() - 86400;
 
 			$daily_rain = get_total_rain($one_day_ago, time(), $sensor, $sensor_values['rain_idx']['id']);
-			$memcached->set("${memcached_prefix}_daily_rain", $daily_rain, 86400);
-			$daily_rain_calculated = true;
+			if($daily_rain < 1000) {
+				$memcached->set("${memcached_prefix}_daily_rain", $daily_rain, 86400);
+				$daily_rain_calculated = true;
+			}
 		}
 	}
 }
