@@ -40,5 +40,5 @@ if humidity1 == 0:
     sys.exit(3)
 
 
-print("{0:0.1f}\n{1:0.1f}".format(temperature1, humidity1+offset))
+print("{0:0.1f}\n{1:0.1f}".format(temperature1, min(100, humidity1+offset)))
 
