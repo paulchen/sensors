@@ -92,6 +92,11 @@ if(count($data) == 0) {
 	echo "No data for '$sensor_description'.\n";
 	die(3);
 }
+if(count($data) != count($limits)) {
+	$missing = implode(', ', array_map(function($key) use ($value_ids) { return $value_ids[$key]['name']; }, array_keys(array_diff_key($limits, $data))));
+	echo "Missing data for value(s): $missing\n";
+	die(3);
+}
 $timestamp_warning = false;
 $max_state = 0;
 foreach($timestamps as $timestamp) {
