@@ -149,6 +149,7 @@ CREATE TABLE IF NOT EXISTS `sensor_values` (
   `max` float DEFAULT NULL,
   `decimals` int(11) NOT NULL,
   `hide` tinyint NOT NULL DEFAULT 0,
+  `rigid` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
