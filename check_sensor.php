@@ -52,7 +52,7 @@ foreach($data as $row) {
 $state = 0;
 $message = '';
 
-$query = 'SELECT sensor, description FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
+$query = 'SELECT sensor, description, display_name FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
 $data = db_query($query, array($sensor_id));
 if(count($data) == 0) {
 	echo "No data for sensor with ID $sensor\n";
@@ -60,9 +60,13 @@ if(count($data) == 0) {
 }
 
 $sensor = $data[0]['sensor'];
-$sensor_description = $data[0]['description'];
-
-if($sensor_description == '') {
+if($data[0]['display_name']) {
+	$sensor_description = $data[0]['display_name'];
+}
+else if($data[0]['description']) {
+	$sensor_description = $data[0]['description'];
+}
+else {
 	$sensor_description = "Sensor $sensor";
 }
 
