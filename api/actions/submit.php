@@ -174,9 +174,9 @@ $query = 'SELECT s.id id
 		JOIN `group` g ON (sg.group = g.id)
 		JOIN account_location al ON (g.location = al.location)
 	WHERE al.account = ?';
-$db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query($query, array($user_id)));
+$db_sensor_ids = array_map(function($a) { return $a['id']; }, db_query($query, array($user_id), 86400));
 
-$data = db_query('SELECT id, short, min, max FROM sensor_values');
+$data = db_query('SELECT id, short, min, max FROM sensor_values', array(), 86400);
 $sensor_values = array();
 foreach($data as $row) {
 	$sensor_values[$row['short']] = $row;

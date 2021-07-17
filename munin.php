@@ -15,7 +15,7 @@ $sensor_list = array_pop($parts);
 $value = implode('_', $parts);
 
 $query = 'SELECT id, name, unit, min, max, decimals, rigid FROM sensor_values WHERE short = ?';
-$data = db_query($query, array($value));
+$data = db_query($query, array($value), 86400);
 if(count($data) != 1) {
 	echo "Invalid sensor value specified.\n";
 	die(3);
@@ -38,7 +38,7 @@ $query = 'SELECT s.sensor sensor, s.type type, COALESCE(s.display_name, s.descri
 	ORDER BY id DESC
 	LIMIT 0, 1';
 foreach($sensors as $sensor_id) {
-	$data = db_query($query, array($sensor_id));
+	$data = db_query($query, array($sensor_id), 86400);
 	if(count($data) != 1) {
 		echo "Unknown sensor ID: $sensor_id\n";
 		die(3);
@@ -77,7 +77,7 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 	foreach($sensor_info as $index => $sensor) {
 		echo 'sensor' . $sensor['id'] . '.label ' . ($sensor['description'] != '' ? $sensor['description'] : "Sensor $index"). "\n";
 		echo 'sensor' . $sensor['id'] . ".draw LINE1\n";
-		$data = db_query($query, array($sensor['id'], $value_id));
+		$data = db_query($query, array($sensor['id'], $value_id), 86400);
 		if(count($data) > 0) {
 			$low_crit = $data[0]['low_crit'];
 			$low_warn = $data[0]['low_warn'];

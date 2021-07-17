@@ -50,10 +50,24 @@ function db_query_single($query, $parameters = array()) {
 	return $data[0];
 }
 
-function db_query($query, $parameters = array()) {
+function db_query($query, $parameters = array(), $cache_expiration = -1) {
+	global $memcached, $memcached_prefix;
+
+	if($cache_expiration > -1) {
+		$cache_key = $memcached_prefix . '_query_' . sha1($query . serialize($parameters));
+		if($data = $memcached->get($cache_key)) {
+			return unserialize($data);
+		}
+	}
+
 	$stmt = db_query_resultset($query, $parameters);
 	$data = $stmt->fetchAll(PDO::FETCH_ASSOC);
 	db_stmt_close($stmt);
+
+	if($cache_expiration > -1) {
+		$memcached->set($cache_key, serialize($data), $cache_expiration);
+	}
+
 	return $data;
 }
 
@@ -126,7 +140,7 @@ function http_auth() {
 	$password = $_SERVER['PHP_AUTH_PW'];
 	
 	$query = 'SELECT id, hash FROM api_accounts WHERE username = ?';
-	$data = db_query($query, array($username));
+	$data = db_query($query, array($username), 3600);
 	if(count($data) == 1) {
 		$db_hash = $data[0]['hash'];
 		$hash = crypt($password, $db_hash);

@@ -43,7 +43,7 @@ if($outdated == -1) {
 }
 
 $query = 'SELECT id, name, format, decimals FROM sensor_values';
-$data = db_query($query);
+$data = db_query($query, array(), 86400);
 $value_ids = array();
 foreach($data as $row) {
 	$value_ids[$row['id']] = $row;
@@ -53,7 +53,7 @@ $state = 0;
 $message = '';
 
 $query = 'SELECT sensor, description, display_name FROM sensors WHERE id = ? ORDER BY id DESC LIMIT 0, 1';
-$data = db_query($query, array($sensor_id));
+$data = db_query($query, array($sensor_id), 86400);
 if(count($data) == 0) {
 	echo "No data for sensor with ID $sensor\n";
 	die(3);
@@ -71,7 +71,7 @@ else {
 }
 
 $query = 'SELECT value, low_warn, low_crit, high_warn, high_crit FROM sensor_limits WHERE sensor = ?';
-$data = db_query($query, array($sensor_id));
+$data = db_query($query, array($sensor_id), 86400);
 $limits = array();
 foreach($data as $row) {
 	$limits[$row['value']] = $row;
