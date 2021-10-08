@@ -7,7 +7,7 @@ if len(sys.argv) != 2:
 
 altitude = sys.argv[1]
 
-sensor = BMP085.BMP085()
+sensor = BMP085.BMP085(busnum = 1)
 
 print('{0:0.2f}'.format(sensor.read_temperature()))
 print('{0:0.2f}'.format(sensor.read_pressure()/math.exp(-float(altitude)/7990)/100))

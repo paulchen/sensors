@@ -1,6 +1,6 @@
 #!/usr/bin/python3
 
-import os, requests, logging, time, subprocess, threading, configparser, MySQLdb, urllib3, _mysql_exceptions
+import os, requests, logging, time, subprocess, threading, configparser, MySQLdb, urllib3
 
 path = os.path.dirname(os.path.abspath(__file__)) + '/'
 
@@ -79,7 +79,7 @@ def submit_value(sensor, values, server, whats):
         db = MySQLdb.connect(host=db_settings['hostname'], user=db_settings['username'], passwd=db_settings['password'], db=db_settings['database'], autocommit=True)
         use_mysql = True
 
-    except _mysql_exceptions.OperationalError:
+    except:
         logger.error('Unable to connect to MySQL, working without database')
 
     try:
