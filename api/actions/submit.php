@@ -165,6 +165,11 @@ if(count($sensor_ids) != count($what_shorts) || count($sensor_ids) != count($val
 	die('5');
 }
 
+if(count($values) > 1 && $values[0] == 0 && count(array_unique($values)) == 1) {
+	// TODO
+	die('6');
+}
+
 $inserts = array();
 $cache_inserts = array();
 
