@@ -116,7 +116,8 @@ def submit_value(sensor, values, server, whats):
     index = 0
     for what in whats:
         value = values[index]
-        logger.info('Submitted %s %s of sensor %s to %s successfully in %s seconds', what, value, sensor['id'], url, end_time-start_time)
+        total_time = end_time - start_time
+        logger.info(f"Submitted {what} {value} of sensor {sensor['id']} to {url} successfully in {total_time:.2f} seconds")
         index = index + 1
 
 
