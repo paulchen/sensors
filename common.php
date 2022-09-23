@@ -17,6 +17,8 @@ $db_name = $config['db_database'];
 $db_host = $config['db_host'];
 $db = new PDO("mysql:dbname=$db_name;host=$db_host", $config['db_username'], $config['db_password']);
 $db->setAttribute(PDO::MYSQL_ATTR_USE_BUFFERED_QUERY, false);
+$db->setAttribute(PDO::ATTR_TIMEOUT, $config['db_timeout']);
+db_query("SET SESSION MAX_STATEMENT_TIME = ${config['db_timeout']}");
 db_query('SET NAMES utf8');
 
 unset($db_name);

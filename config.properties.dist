@@ -17,6 +17,9 @@ db_username = sensor_data
 db_password = sensor_data
 ; MySQL database name
 db_database = sensor_data
+; MySQL timeout
+db_timeout = 60
+
 
 ; if two values fall inside this period (in seconds), they will be considered to be duplicates of each other
 time_margin = 30
