@@ -343,12 +343,15 @@ if(is_cli()) {
 	exit;
 }
 
-$query = 'SELECT g.id, url, row, height, width, gg.`group` FROM munin_graphs g JOIN graph_group gg ON (g.id = gg.graph) ORDER BY id ASC';
+$query = 'SELECT g.id, url, row, height, width, gg.`group`, hide FROM munin_graphs g JOIN graph_group gg ON (g.id = gg.graph) ORDER BY row ASC, id ASC';
 $data = db_query($query);
 $graphs = array();
 $last_row = -1;
 foreach($data as $line) {
 	if(!in_array($line['group'], $selected_groups)) {
+		continue;
+	}
+	if($line['hide'] == 1 && !$show_hidden) {
 		continue;
 	}
 

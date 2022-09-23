@@ -200,6 +200,7 @@ CREATE TABLE IF NOT EXISTS `munin_graphs` (
   `row` int(11) NOT NULL,
   `height` int(11) NOT NULL,
   `width` int(11) NOT NULL,
+  `hide` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
