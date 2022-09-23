@@ -33,17 +33,29 @@ $requested_groups = isset($_REQUEST['groups']) ? $_REQUEST['groups'] : array();
 $requested_sensors = isset($_REQUEST['sensors']) ? $_REQUEST['sensors'] : array();
 $nothing_requested = (count($requested_locations) + count($requested_groups) + count($requested_sensors) == 0);
 
-$query = 'SELECT s.id sensor_id, COALESCE(s.display_name, s.description) sensor_name, s.hide sensor_hide,
-		g.id group_id, g.name group_name, g.visible group_visible,
-		l.id location_id, l.name location_name, l.visible location_visible
-	FROM sensors s
-		JOIN sensor_group sg ON (s.id = sg.sensor)
-		JOIN `group` g ON (sg.group = g.id)
-		JOIN `location` l ON (g.location = l.id)
-		JOIN account_location al ON (l.id = al.location)
-	WHERE al.account = ?
-	ORDER BY g.pos ASC, l.pos ASC, s.pos ASC';
-$data = db_query($query, array($user_id));
+if(is_cli()) {
+	$query = 'SELECT s.id sensor_id, COALESCE(s.display_name, s.description) sensor_name, s.hide sensor_hide,
+			g.id group_id, g.name group_name, g.visible group_visible,
+			0 location_id, \'\' location_name, 1 location_visible
+		FROM sensors s
+			JOIN sensor_group sg ON (s.id = sg.sensor)
+			JOIN `group` g ON (sg.group = g.id)
+		ORDER BY g.pos ASC, s.pos ASC';
+	$data = db_query($query);
+}
+else {
+	$query = 'SELECT s.id sensor_id, COALESCE(s.display_name, s.description) sensor_name, s.hide sensor_hide,
+			g.id group_id, g.name group_name, g.visible group_visible,
+			l.id location_id, l.name location_name, l.visible location_visible
+		FROM sensors s
+			JOIN sensor_group sg ON (s.id = sg.sensor)
+			JOIN `group` g ON (sg.group = g.id)
+			JOIN `location` l ON (g.location = l.id)
+			JOIN account_location al ON (l.id = al.location)
+		WHERE al.account = ?
+		ORDER BY g.pos ASC, l.pos ASC, s.pos ASC';
+	$data = db_query($query, array($user_id));
+}
 $locations = array();
 $selected_locations = array();
 $selected_groups = array();
