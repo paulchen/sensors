@@ -51,6 +51,9 @@ for row in curs:
         if content == 'ok':
             logger.info('Setting row %s to submitted', row['id'])
             curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = %s', (row['id'], ))
+        elif resp.status_code == 422:
+            logger.info('Setting row %s to submitted (was ignored by server)', row['id'])
+            curs2.execute('UPDATE cache SET `submitted` = NOW() WHERE `id` = %s', (row['id'], ))
 
     except urllib3.exceptions.ConnectTimeoutError:
         logger.error('Timeout during update')
