@@ -214,11 +214,13 @@ for($a=0; $a<count($sensor_ids); $a++) {
 
 	if($sensor_values[$what_short]['min'] && $value < $sensor_values[$what_short]['min']) {
 		// ignore value that is too low; ignore the whole measurement (the other values may come from the same sensor!)
-		die('4c');
+		http_response_code(422);
+		die('Value too low');
 	}
 	if($sensor_values[$what_short]['max'] && $value > $sensor_values[$what_short]['max']) {
 		// ignore value that is too high; ignore the whole measurement (the other values may come from the same sensor!)
-		die('4d');
+		http_response_code(422);
+		die('Value too high');
 	}
 
 	if($what_short == 'humid' || $what_short == 'temp' || $what_short == 'wind') {
