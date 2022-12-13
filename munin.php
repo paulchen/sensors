@@ -14,7 +14,7 @@ array_shift($parts);
 $sensor_list = array_pop($parts);
 $value = implode('_', $parts);
 
-$query = 'SELECT id, name, unit, min, max, decimals, rigid FROM sensor_values WHERE short = ?';
+$query = 'SELECT id, name, unit, min, max, decimals, rigid, limit_graph FROM sensor_values WHERE short = ?';
 $data = db_query($query, array($value), 86400);
 if(count($data) != 1) {
 	echo "Invalid sensor value specified.\n";
@@ -28,6 +28,7 @@ $value_min = $data[0]['min'];
 $value_max = $data[0]['max'];
 $value_decimals = $data[0]['decimals'];
 $value_rigid = $data[0]['rigid'];
+$value_limit = $data[0]['limit_graph'];
 
 $sensors = explode('.', $sensor_list);
 $sensor_info = array();
@@ -62,14 +63,16 @@ if(isset($argv[1]) && $argv[1] == 'config') {
 
 	echo "graph_title $title\n";
 	echo "graph_vtitle $value_unit\n";
-	if($value_min != '' && $value_max != '') {
-		echo "graph_args -l $value_min --upper-limit $value_max$rigid\n";
-	}
-	else if($value_min != '') {
-		echo "graph_args -l $value_min$rigid\n";
-	}
-	else if($value_max != '') {
-		echo "graph_args --upper-limit $value_max$rigid\n";
+	if($value_limit) {
+		if($value_min != '' && $value_max != '') {
+			echo "graph_args -l $value_min --upper-limit $value_max$rigid\n";
+		}
+		else if($value_min != '') {
+			echo "graph_args -l $value_min$rigid\n";
+		}
+		else if($value_max != '') {
+			echo "graph_args --upper-limit $value_max$rigid\n";
+		}
 	}
 	echo "graph_scale no\n";
 	echo "graph_category sensor_data\n";

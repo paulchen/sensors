@@ -150,6 +150,7 @@ CREATE TABLE IF NOT EXISTS `sensor_values` (
   `decimals` int(11) NOT NULL,
   `hide` tinyint NOT NULL DEFAULT 0,
   `rigid` tinyint NOT NULL DEFAULT 0,
+  `limit_graph` tinyint NOT NULL DEFAULT 0,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB  DEFAULT CHARSET=latin1 ;
 
@@ -157,11 +158,11 @@ CREATE TABLE IF NOT EXISTS `sensor_values` (
 -- Daten für Tabelle `sensor_values`
 --
 
-INSERT INTO `sensor_values` (`id`, `name`, `short`, `unit`, `format`, `min`, `max`, `decimals`) VALUES
-(1, 'Temperature', 'temp', 'Celsius', '%s °C', NULL, NULL, 1),
-(2, 'Humidity', 'humid', 'Percent', '%s %', 0, 100, 0),
-(3, 'Wind speed', 'wind', 'km/h', '%s km/h', 0, NULL, 0),
-(4, 'Precipitation', 'rain', 'Millimetres', '%s mm', 0, NULL, 0);
+INSERT INTO `sensor_values` (`id`, `name`, `short`, `unit`, `format`, `min`, `max`, `decimals`, `limit_graph`) VALUES
+(1, 'Temperature', 'temp', 'Celsius', '%s °C', NULL, NULL, 1, 0),
+(2, 'Humidity', 'humid', 'Percent', '%s %', 0, 100, 0, 1),
+(3, 'Wind speed', 'wind', 'km/h', '%s km/h', 0, NULL, 0, 1),
+(4, 'Precipitation', 'rain', 'Millimetres', '%s mm', 0, NULL, 0, 1);
 
 -- --------------------------------------------------------
 
