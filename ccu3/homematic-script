@@ -13,7 +13,7 @@ string device = "TODO";
 
 ! --- dont edit anything below this line ---
 
-if(dom.GetObject(device # ":1.TEMPERATURE") != null) {
+if(dom.GetObject(device # ":1.TEMPERATURE")) {
     string temperature = dom.GetObject(device # ":1.TEMPERATURE").Value();
 }
 else {
