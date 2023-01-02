@@ -1,0 +1,41 @@
+! --- edit these lines to your needs ---
+
+string baseUrl = "https://hostname.tld/sensors/api/?action=submit";
+string username = "TODO";
+string password = "TODO";
+integer sensor = 1;
+string device = "TODO";
+
+! find device id: <interface>.<serial number> from CCU3's device list
+! edit the above variables accordingly
+! add a program to your CCU3 which periodically runs a script (e.g. all 5 minutes) and paste this script
+
+
+! --- dont edit anything below this line ---
+
+if(dom.GetObject(device # ":1.TEMPERATURE") != null) {
+    string temperature = dom.GetObject(device # ":1.TEMPERATURE").Value();
+}
+else {
+    string temperature = dom.GetObject(device # ":1.ACTUAL_TEMPERATURE").Value();
+}
+string humidity = dom.GetObject(device # ":1.HUMIDITY").Value();
+
+string sensors = "&sensors=" # sensor # "%3B" # sensor;
+string whats = "&whats=temp%3Bhumid";
+string values = "&values=" # temperature # "%3B" # humidity;
+
+
+string auth = "--user " # username # " --password " # password;
+string url = baseUrl # sensors # whats # values;
+
+string command = "wget " # auth # " '" # url # "' -q -O /dev/null";
+WriteLine(command);
+
+boolean unreachable = dom.GetObject(device # ":0.UNREACH").Value();
+
+if (!unreachable && (temperature != 0 || humidity != 0)) {
+    dom.GetObject("CUxD.CUX2801001:2.CMD_EXEC").State(command);
+}
+
+
