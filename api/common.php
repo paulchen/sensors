@@ -145,25 +145,23 @@ function get_sensors_state($sensors = array()) {
 		$what = $row['what'];
 		$timestamp = $row['timestamp'];
 
-		$value = round($row['value'], $type_decimals[$what]);
-		$localized_value = round_local($row['value'], $type_decimals[$what]);
 		if(!isset($limits[$sensor_id]) || !isset($limits[$sensor_id][$what])) {
 			$state = 'unknown';
 			$state_description = 'UNBEKANNT (keine Limits gesetzt)';
 		}
-		else if($value < $limits[$sensor_id][$what]['low_crit']) {
+		else if($row['value'] < $limits[$sensor_id][$what]['low_crit']) {
 			$state = 'critical';
 			$state_description = sprintf('KRITISCH (unter %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['low_crit'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value < $limits[$sensor_id][$what]['low_warn']) {
+		else if($row['value'] < $limits[$sensor_id][$what]['low_warn']) {
 			$state = 'warning';
 			$state_description = sprintf('WARNUNG (unter %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['low_warn'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value > $limits[$sensor_id][$what]['high_crit']) {
+		else if($row['value'] > $limits[$sensor_id][$what]['high_crit']) {
 			$state = 'critical';
 			$state_description = sprintf('KRITISCH (über %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['high_crit'], $type_decimals[$what]), $type_formats[$what]));
 		}
-		else if($value > $limits[$sensor_id][$what]['high_warn']) {
+		else if($row['value'] > $limits[$sensor_id][$what]['high_warn']) {
 			$state = 'warning';
 			$state_description = sprintf('WARNUNG (über %s)', str_replace('%s', round_local($limits[$sensor_id][$what]['high_warn'], $type_decimals[$what]), $type_formats[$what]));
 		}
@@ -171,6 +169,9 @@ function get_sensors_state($sensors = array()) {
 			$state = 'ok';
 			$state_description = 'OK';
 		}
+
+		$value = round($row['value'], $type_decimals[$what]);
+		$localized_value = round_local($row['value'], $type_decimals[$what]);
 
 		$cur_state = $state;
 		if(time()-$timestamp > $config['value_outdated_period']) {
