@@ -156,6 +156,10 @@ def process_sensor(sensor, servers):
 
     whats = sensor['values'].split(',')
 
+    if len(values) != len(whats):
+        logger.debug('Invalid number of values determined for sensor %s; expected %s, actual %s', sensor['id'], len(whats), len(values))
+        return
+
     threads = []
     for server in servers:
         t = threading.Thread(target = submit_value, args = (sensor, values, server, whats))
