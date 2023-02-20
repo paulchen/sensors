@@ -91,8 +91,11 @@ def submit_value(sensor, values, server, whats):
         resp = s.get(url, params={'action': 'submit', 'sensors': sensors, 'whats': ';'.join(whats), 'values': ';'.join(values)}, timeout=30)
 
         content = resp.text
-        if content != 'ok':
+        ignored = False
+        if content != 'ok' and resp.status_code != 422:
             raise requests.exceptions.RequestException
+        if resp.status_code == 422:
+            ignored = True
 
         if use_mysql:
             curs.execute('UPDATE cache SET submitted = NOW() WHERE id = %s', (rowid, ))
@@ -117,7 +120,10 @@ def submit_value(sensor, values, server, whats):
     for what in whats:
         value = values[index]
         total_time = end_time - start_time
-        logger.info(f"Submitted {what} {value} of sensor {sensor['id']} to {url} successfully in {total_time:.2f} seconds")
+        if ignored:
+            logger.info(f"Submitted {what} {value} of sensor {sensor['id']} to {url} in {total_time:.2f} seconds, but value was ignored by the server")
+        else:
+            logger.info(f"Submitted {what} {value} of sensor {sensor['id']} to {url} successfully in {total_time:.2f} seconds")
         index = index + 1
 
 
