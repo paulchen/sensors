@@ -9,9 +9,8 @@ LOGFILE=../log/cleanup.log
 ERROR=0
 
 fail() {
-	echo "Fail!"
+	echo "Fail!" >> "$TMP_LOG"
 	ERROR=1
-	exit 1
 }
 
 run_script() {
@@ -28,9 +27,15 @@ cd "$DIRNAME"
 rm -f "$TMP_LOG"
 
 run_script duplicates.php "$1"
-run_script cleanup.php "$1"
-# run_script check.php "$1"
-run_script delete.php "$1"
+if [ "$ERROR" -eq "0" ]; then
+	run_script cleanup.php "$1"
+fi
+#if [ "$ERROR" -eq "0" ]; then
+#	run_script check.php "$1"
+#fi
+if [ "$ERROR" -eq "0" ]; then
+	run_script delete.php "$1"
+fi
 
 cat "$TMP_LOG" >> "$LOGFILE"
 
